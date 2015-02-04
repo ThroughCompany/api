@@ -1,0 +1,51 @@
+{
+  "name": "ThroughCompany-API",
+  "version": "0.0.1",
+  "description": "ThroughCompany's REST Api",
+  "main": "server.js",
+  "author": "Tim Officer",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ThroughCompany/api"
+  },
+  "engines": {
+    "node": "0.10.35"
+  },
+  "dependencies": {
+    "async": "0.9.x",
+    "aws-sdk": "2.1.x",
+    "bcrypt-nodejs": "0.0.x",
+    "compression": "1.2.x",
+    "body-parser": "1.10.x",
+    "cors": "2.4.x",
+    "express": "4.10.x",
+    "express-validator": "2.3.0",
+    "fb": "0.7.0",
+    "gridfs-stream": "0.5.1",
+    "jwt-simple": "0.2.0",
+    "moment": "2.8.x",
+    "mongodb": "1.3.23",
+    "mongoose": "3.8.22",
+    "moment-timezone": "^0.2.1",
+    "mongoose-schema-extend": "0.1.x",
+    "newrelic": "^1.10.0",
+    "response-time": "2.2.0",
+    "node-ab": "0.0.1",
+    "node-uuid": "1.4.1",
+    "nodemailer": "0.6.1",
+    "serve-favicon": "^2.2.0",
+    "serve-static": "^1.8.1",
+    "swagger-node-express": "2.1.0",
+    "underscore": "1.7.0",
+    "winston": "0.8.x"
+  },
+  "devDependencies": {
+    "gulp": "3.8.10",
+    "gulp-jshint": "1.9.0",
+    "jshint-stylish": "1.0.0",
+    "mocha": "1.17.1 ",
+    "shelljs": "0.3.0",
+    "should": "3.1.4",
+    "sinon": "1.9.0"
+  }
+}

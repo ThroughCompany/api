@@ -1,0 +1,16 @@
+// docs for jshint : http://www.jshint.com/docs/
+// options for jshint : http://www.jshint.com/docs/options/
+
+{
+  "node": true,
+  "globals": { 								//list all global vars
+  	"describe" : true,
+  	"before": true,
+  	"it": true
+  },
+  "undef": true, 							//flag undefined vars
+  "unused": true, 							//flag unused vars
+  "bitwise": true, 							//prohibit bitwise operators
+  "eqeqeq": true, 							//disallow == and !=
+  "freeze": true 							//prohibit overwriting native objects
+}

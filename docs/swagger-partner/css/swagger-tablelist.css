@@ -1,0 +1,18 @@
+
+
+.swagger-section #header {
+	background: rgba(25,25,25,0.95);
+}
+
+.swagger-section #header a#logo {
+	background: none;
+	padding:0;
+}
+
+.swagger-section #header a#logo > img {
+	height:20px;
+}
+
+.swagger-section #header a#explore {
+	display: none !important;
+}
