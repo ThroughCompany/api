@@ -17,9 +17,9 @@ deploy:
     steps:
         - heroku-deploy:
             key-name: HEROKU_DEPLOY_KEY
-            
+
     after-steps:
         - sherzberg/slack-notify:
             subdomain: wercker
             token: $SLACK_TOKEN
-            channel: general
+            channel: development
