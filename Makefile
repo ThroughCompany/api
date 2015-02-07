@@ -1,7 +1,8 @@
-default: create-links
+default:
 	npm install
 
-create-links:
+post-install:
 	cd ./node_modules; \
 	ln -snf ../src; \
 	ln -snf ../src/modules; \
+	ln -snf ../tests; \

@@ -78,12 +78,28 @@ var developmentConfig = _.extend(defaults, {
   db: 'mongodb://localhost:27017/throughcompany'
 });
 
+/* =========================================================================
+ * Local
+ * ========================================================================= */
+var localConfig = _.extend(defaults, {
+  db: 'mongodb://localhost:27017/throughcompany'
+});
+
+/* =========================================================================
+ * Test
+ * ========================================================================= */
+var testConfig = _.extend(defaults, {
+  db: 'mongodb://localhost:27017/throughcompany-test'
+});
+
 /* ========================================================================= */
 var env = process.env.NODE_ENV || 'development';
 
 var envs = {
   production: productionConfig,
-  development: developmentConfig
+  development: developmentConfig,
+  local: localConfig,
+  test: testConfig
 };
 
 var envConfig = null;
