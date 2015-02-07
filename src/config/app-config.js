@@ -67,28 +67,28 @@ var defaults = {
 /* =========================================================================
  * Production
  * ========================================================================= */
-var productionConfig = _.extend(defaults, {
+var productionConfig = _.extend(_.clone(defaults), {
   db: process.env.MONGOLAB_URI
 });
 
 /* =========================================================================
  * Development
  * ========================================================================= */
-var developmentConfig = _.extend(defaults, {
-  db: 'mongodb://localhost:27017/throughcompany'
+var developmentConfig = _.extend(_.clone(defaults), {
+  db: 'mongodb://dev-readwrite:QUZAmaf4ehuj@ds041651.mongolab.com:41651/heroku_app33783922'
 });
 
 /* =========================================================================
  * Local
  * ========================================================================= */
-var localConfig = _.extend(defaults, {
+var localConfig = _.extend(_.clone(defaults), {
   db: 'mongodb://localhost:27017/throughcompany'
 });
 
 /* =========================================================================
  * Test
  * ========================================================================= */
-var testConfig = _.extend(defaults, {
+var testConfig = _.extend(_.clone(defaults), {
   db: 'mongodb://localhost:27017/throughcompany-test'
 });
 
