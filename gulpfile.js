@@ -19,10 +19,7 @@ gulp.task('default');
 gulp.task('test', ['test-int']);
 
 gulp.task('test-int', function() {
-  return gulp.src('tests/integration/**/**/**-test.js', {
-      read: false,
-      ui: 'tdd',
-    })
+  return gulp.src('tests/integration/**/**/**-test.js')
     .pipe(mocha({
       reporter: 'spec'
     }));
