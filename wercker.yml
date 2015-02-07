@@ -22,4 +22,4 @@ deploy:
         - sherzberg/slack-notify:
             subdomain: wercker
             token: $SLACK_TOKEN
-            channel: development
+            channel: "#development"
