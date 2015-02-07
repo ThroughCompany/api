@@ -132,6 +132,10 @@ if (envConfig.ENV_PROD) {
   });
 }
 
+if (process.env.WERCKER_MONGODB_URL) {
+  envConfig.db = process.env.WERCKER_MONGODB_URL;
+}
+
 /* =========================================================================
  * Expose
  * ========================================================================= */
