@@ -6,9 +6,7 @@ services:
 build:
   steps:
     - npm-install
-
-    - hgen/gulp:
-        tasks: test
+    - make test
 
     - script:
         name: build info
