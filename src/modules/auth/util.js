@@ -73,9 +73,9 @@ AuthUtil.prototype.decodeToken = function(token, next) {
   var decodedToken;
 
   try {
-    decodedToken = jwt.decode(token, CompanyFloor.config.tokenKey);
+    decodedToken = jwt.decode(token, appConfig.tokenKey);
   } catch (err) {
-    return next(new error.InvalidArgumentError('Error decoding access token'));
+    return next(new error.UnauthorizedError('Error decoding access token'));
   }
 
   return next(null, decodedToken);

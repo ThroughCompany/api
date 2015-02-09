@@ -7,7 +7,7 @@ var async = require('async');
 var uuid = require('node-uuid');
 
 //modules
-var errors = require('modules/error').errors;
+var errors = require('modules/error');
 var CommonService = require('modules/common');
 
 //models
@@ -135,15 +135,19 @@ UserService.prototype.getAll = function(options, next) {
  * @param {function} next - callback
  */
 UserService.prototype.getById = function(options, next) {
+  if (!options) return next(new error.InvalidArgumentError('options is required'));
   if (!options.userId) return next(new error.InvalidArgumentError('User Id is required'));
 
   var query = User.findOne({
     _id: options.userId
   });
 
-  if (options.populate && _.isArray(options.populate)) User.addPopulateToQuery(query, options.populate);
+  query.exec(function(err, user) {
+    if (err) return next(err);
+    if (!user) return next(new errors.ObjectNotFoundError('User not found'));
 
-  return query.exec(next);
+    next(null, user);
+  });
 };
 
 /**
@@ -153,14 +157,14 @@ UserService.prototype.getById = function(options, next) {
  * @param {function} next - callback
  */
 UserService.prototype.getByEmail = function(options, next) {
+  if (!options) return next(new error.InvalidArgumentError('options is required'));
   if (!options.email) return next(new error.InvalidArgumentError('Email is required'));
 
   var query = User.findOne({
     email: options.email.toLowerCase()
   });
 
-  return query.exec(next);
-
+  query.exec(next);
 };
 
 /**
@@ -169,13 +173,14 @@ UserService.prototype.getByEmail = function(options, next) {
  * @param {function} next - callback
  */
 UserService.prototype.getByFacebookId = function(options, next) {
+  if (!options) return next(new error.InvalidArgumentError('options is required'));
   if (!options.facebookId) return next(new error.InvalidArgumentError('Facebook Id is required'));
 
   var query = User.findOne({
-    'auth.facebook.id': options.facebookId
+    'facebook.id': options.facebookId
   });
 
-  return query.exec(next);
+  query.exec(next);
 };
 
 /**

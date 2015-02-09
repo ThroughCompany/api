@@ -21,7 +21,7 @@ var appConfig = require('src/config/app-config');
 var errors = require('modules/error/errors');
 var logger = require('modules/logger');
 
-var error = require('modules/error'); //middleware
+var errorMiddleware = require('src/middleware/errorMiddleware');
 
 /* =========================================================================
  * Init Express
@@ -49,7 +49,7 @@ function init(next) {
   app.use(compress()); //GZIP compression
   app.use(bodyParser.json()); //parse application/json
   app.use(bodyParser.urlencoded({ // parse application/x-www-form-urlencoded
-   extended: true
+    extended: true
   }));
   app.use(expressValidator());
   app.use(logParams);
@@ -72,7 +72,7 @@ function init(next) {
     return next(new errors.ObjectNotFoundError('path: ' + req.url + ' not found'));
   });
 
-  app.use(error);
+  app.use(errorMiddleware);
 
   var httpServer = app.listen(appConfig.port, function() {
     logger.info('http server listening @: ' + appConfig.port);

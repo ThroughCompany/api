@@ -4,6 +4,9 @@
 var express = require('express');
 var swagger = require('swagger-node-express');
 
+//middleware
+var authMiddleware = require('src/middleware/authMiddleware');
+
 var controller = require('./controller');
 
 /* =========================================================================
@@ -19,7 +22,10 @@ var getUsers = {
     produces: ['application/json']
   },
   action: function(req, res, next) {
-    controller.getUsers(req, res, next);
+    authMiddleware.authenticationRequired(req, res, function(err) {
+      if (err) return next(err);
+      controller.getUsers(req, res, next);
+    });
   }
 };
 

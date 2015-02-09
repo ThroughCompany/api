@@ -79,24 +79,14 @@ Controller.prototype.updateUserById = function(req, res, next) {
 /** 
  * @description Get a user's authorization claims
  */
-Controller.prototype.getUserClaimsBydId = function(req, res, next) {
+Controller.prototype.getUserClaimsById = function(req, res, next) {
   var userId = req.params.id;
-  var populate = ['companyUsers.permissions'];
 
-  async.waterfall([
-    function getUser(callback) {
-      userService.getById({
-        userId: userId,
-        populate: populate
-      }, callback);
-    },
-    function getUserClaims(user, callback) {
-      authService.getUserClaims(user, callback);
-    }
-  ], function finish(err, claims) {
+  authService.getUserClaims({
+    userId: userId
+  }, function(err, claims) {
     if (err) return next(err);
-    else if (!claims) return res.json(404);
-    else return res.json(200, claims);
+    return res.status(200).json(claims);
   });
 };
 

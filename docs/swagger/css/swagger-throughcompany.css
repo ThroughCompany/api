@@ -1,0 +1,22 @@
+.swagger-section #header {
+  background: #278ECC;
+}
+.swagger-section #header a#logo {
+  background: none;
+  padding: 0;
+  /*color: #BCDDEF;*/
+  
+  color: #FFFFFF;
+}
+.swagger-section #header .input {
+  margin-top: -2px !important;
+}
+.swagger-section #header .input > input {
+  border: 3px solid #9ECDE8;
+}
+.swagger-section #header a#logo > img {
+  height: 20px;
+}
+.swagger-section #header a#explore {
+  display: none !important;
+}
