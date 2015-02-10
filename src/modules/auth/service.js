@@ -172,20 +172,18 @@ AuthService.prototype.authenticateFacebook = function authenticateFacebook(optio
                 facebookUsername: facebookData.username
               }, callback);
             } else {
-              userEntityManager.update({
+              userService.update({
                 userId: user._id,
                 updates: {
-                  auth: {
-                    facebook: {
-                      id: facebookData.id,
-                      username: facebookData.username
-                    }
+                  facebook: {
+                    id: facebookData.id,
+                    username: facebookData.username
                   }
                 }
               }, callback, true);
             }
           });
-        } else return userEntityManager.createUsingFacebook({
+        } else return userService.createUsingFacebook({
           email: facebookData.email,
           facebookId: facebookData.id,
           facebookUsername: facebookData.username
