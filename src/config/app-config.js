@@ -27,6 +27,7 @@ var defaults = {
     name: NAME,
     systemEmail: SYSTEMEMAIL
   },
+  newrelic: 'xxxxxxxxxx',
   port: PORT,
   apiVersion: packageConfig.version,
   tokenKey: TOKENKEY,
@@ -68,14 +69,16 @@ var defaults = {
  * Production
  * ========================================================================= */
 var productionConfig = _.extend(_.clone(defaults), {
-  db: process.env.MONGOLAB_URI
+  db: process.env.MONGOLAB_URI,
+  newrelic: 'throughcompany-api-prod'
 });
 
 /* =========================================================================
  * Development
  * ========================================================================= */
 var developmentConfig = _.extend(_.clone(defaults), {
-  db: 'mongodb://dev-readwrite:QUZAmaf4ehuj@ds041651.mongolab.com:41651/heroku_app33783922'
+  db: 'mongodb://dev-readwrite:QUZAmaf4ehuj@ds041651.mongolab.com:41651/heroku_app33783922',
+  newrelic: 'throughcompany-api-dev'
 });
 
 /* =========================================================================
