@@ -18,6 +18,9 @@ var adminService;
 
 var logger;
 
+var ROLE_NAMES;
+var PERMISSON_NAMES;
+
 /* =========================================================================
  * Db Seed
  * ========================================================================= */
@@ -56,6 +59,9 @@ steps.push(function loadDependencies_step(done) {
 
   logger = require('modules/logger');
 
+  ROLE_NAMES = require('modules/role/constants/role-names');
+  PERMISSON_NAMES = require('modules/permission/constants/permission-names');
+
   done();
 });
 
@@ -93,10 +99,10 @@ steps.push(function createRolesAndPermissions_step(done) {
   var _steps = [];
 
   //roles names
-  var PROJECT_ADMIN_ROLE_NAME = 'Project Admin';
+  //var PROJECT_ADMIN_ROLE_NAME = 'Project Admin';
 
   //permission names
-  var PROJECT_ADD_USERS_PERMISSION_NAME = 'Add Project Users';
+  //var PROJECT_ADD_USERS_PERMISSION_NAME = 'Add Project Users';
 
   var projectAdminRole;
   var addProjectUsersPermission;
@@ -107,7 +113,7 @@ steps.push(function createRolesAndPermissions_step(done) {
       //find roles
       function findProjectAdminRole_step(cb2) {
         Role.findOne({
-          name: PROJECT_ADMIN_ROLE_NAME
+          name: ROLE_NAMES.PROJECT_ADMIN
         }, function(err, role) {
           if (err) return cb2(err);
           if (role) projectAdminRole = role;
@@ -117,7 +123,7 @@ steps.push(function createRolesAndPermissions_step(done) {
       //find permissions
       function findAddProjectUserPermission_step(cb2) {
         Permission.findOne({
-          name: PROJECT_ADD_USERS_PERMISSION_NAME
+          name: PERMISSON_NAMES.ADD_PROJECT_USERS
         }, function(err, permission) {
           if (err) return cb2(err);
           if (permission) addProjectUsersPermission = permission;
@@ -132,10 +138,10 @@ steps.push(function createRolesAndPermissions_step(done) {
     async.series([
       function createProjectAdminRole_step(cb2) {
         if (!projectAdminRole) {
-          logger.info('creating role: ' + PROJECT_ADMIN_ROLE_NAME);
+          logger.info('creating role: ' + ROLE_NAMES.PROJECT_ADMIN);
 
           var _projectAdminRole = new Role();
-          _projectAdminRole.name = PROJECT_ADMIN_ROLE_NAME;
+          _projectAdminRole.name = ROLE_NAMES.PROJECT_ADMIN;
 
           _projectAdminRole.save(function(err, role) {
             if (err) return cb2(err);
@@ -143,7 +149,7 @@ steps.push(function createRolesAndPermissions_step(done) {
             cb2();
           });
         } else {
-          logger.info('role: ' + PROJECT_ADMIN_ROLE_NAME + ' found, skipping...');
+          logger.info('role: ' + ROLE_NAMES.PROJECT_ADMIN + ' found, skipping...');
           cb2();
         }
       }
@@ -155,11 +161,10 @@ steps.push(function createRolesAndPermissions_step(done) {
     async.series([
       function createProjectAdminPermissions_step(cb2) {
         if (!addProjectUsersPermission) {
-          logger.info('creating permission: ' + PROJECT_ADD_USERS_PERMISSION_NAME);
-
+          logger.info('creating permission: ' + PERMISSON_NAMES.ADD_PROJECT_USERS);
 
           var _addProjectUsersPermission = new Permission();
-          _addProjectUsersPermission.name = PROJECT_ADD_USERS_PERMISSION_NAME;
+          _addProjectUsersPermission.name = PERMISSON_NAMES.ADD_PROJECT_USERS;
           _addProjectUsersPermission.roles = [];
           _addProjectUsersPermission.roles.push(projectAdminRole);
 
@@ -169,7 +174,7 @@ steps.push(function createRolesAndPermissions_step(done) {
             cb2();
           });
         } else {
-          logger.info('permission: ' + PROJECT_ADD_USERS_PERMISSION_NAME + ' found, skipping...');
+          logger.info('permission: ' + PERMISSON_NAMES.ADD_PROJECT_USERS + ' found, skipping...');
           cb2();
         }
       }
