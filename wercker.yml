@@ -6,7 +6,7 @@ services:
 build:
   steps:
     - npm-install
-    #- npm-test
+    - npm-test
 
     - script:
         name: build info

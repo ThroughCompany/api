@@ -16,7 +16,7 @@ var authUtil = require('modules/auth/util');
 function AuthMiddleware() {}
 
 //authentication middleware =================================================================
-AuthMiddleware.prototype.authenticationRequired = function(req, res, next) {
+AuthMiddleware.prototype.authenticationRequired = function authenticationRequired(req, res, next) {
   var token = (req.body && req.body.access_token) || (req.query && req.query.access_token) || req.headers['x-access-token'];
 
   if (!token) {
@@ -36,18 +36,27 @@ AuthMiddleware.prototype.authenticationRequired = function(req, res, next) {
   }
 };
 
-//authoriazation middleware =================================================================
+//authorization middleware =================================================================
 //checks for id as URL param against current user id claim
-AuthMiddleware.prototype.currentUserIdParamRequired = function(paramName) {
+AuthMiddleware.prototype.currentUserIdParamRequired = function currentUserIdParamRequired(paramName) {
   var param = paramName || 'id';
 
-  return function currentUserIdParamRequired(req, res, next) {
-    if (!req.user || !req.claims || !req.params[param] || req.params[param] !== req.claims.userId) {
-      return next(new errors.ForbiddenError());
+  return function _currentUserIdParamRequired(req, res, next) {
+    if (!req.claims || !req.params[param] || (req.params[param] !== req.claims.userId && !req.claims.admin)) { //allow admins to bypass
+      return next(new errors.ForbiddenError('Current user id does not match user id param'));
     } else {
       next();
     }
   };
+};
+
+//checks that current user is an system level admin
+AuthMiddleware.prototype.adminRequired = function adminRequired(req, res, next) {
+  if (!req.claims || !req.claims.admin) {
+    return next(new errors.ForbiddenError('Current user is not an admin'));
+  } else {
+    next();
+  }
 };
 
 // //checks for id as URL param against current company ids claim

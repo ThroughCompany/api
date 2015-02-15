@@ -1,6 +1,8 @@
 /* =========================================================================
  * Dependencies
  * ========================================================================= */
+require('tests/integration/before-all');
+
 var should = require('should');
 
 var app = require('src');
@@ -19,7 +21,6 @@ var agent;
 /* =========================================================================
  * Before All
  * ========================================================================= */
-require('tests/integration/before-all');
 
 before(function(done) {
   agent = require('tests/lib/agent').getAgent();

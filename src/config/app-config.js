@@ -1,5 +1,3 @@
-'use strict';
-
 /* =========================================================================
  * Dependencies
  * ========================================================================= */
@@ -105,7 +103,7 @@ var testConfig = _.extend(_.clone(defaults), {
 });
 
 /* ========================================================================= */
-var env = process.env.NODE_ENV || process.argv[2] || 'development';
+var env = process.env.NODE_ENV || 'development';
 
 var envs = {
   production: productionConfig,

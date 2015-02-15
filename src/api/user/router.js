@@ -24,7 +24,10 @@ var getUsers = {
   action: function(req, res, next) {
     authMiddleware.authenticationRequired(req, res, function(err) {
       if (err) return next(err);
-      controller.getUsers(req, res, next);
+      authMiddleware.adminRequired(req, res, function(err) {
+        if (err) return next(err);
+        controller.getUsers(req, res, next);
+      });
     });
   }
 };
@@ -42,7 +45,13 @@ var getUserById = {
     produces: ['application/json']
   },
   action: function(req, res, next) {
-    controller.getUserById(req, res, next);
+    authMiddleware.authenticationRequired(req, res, function(err) {
+      if (err) return next(err);
+      authMiddleware.currentUserIdParamRequired('id')(req, res, function(err) {
+        if (err) return next(err);
+        controller.getUserById(req, res, next);
+      });
+    });
   }
 };
 
@@ -59,7 +68,13 @@ var getUserClaimsById = {
     produces: ['application/json']
   },
   action: function(req, res, next) {
-    controller.getUserClaimsById(req, res, next);
+    authMiddleware.authenticationRequired(req, res, function(err) {
+      if (err) return next(err);
+      authMiddleware.currentUserIdParamRequired('id')(req, res, function(err) {
+        if (err) return next(err);
+        controller.getUserClaimsById(req, res, next);
+      });
+    });
   }
 };
 

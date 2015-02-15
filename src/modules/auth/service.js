@@ -13,6 +13,7 @@ var errors = require('modules/error');
 
 //services
 var userService = require('modules/user');
+var adminService = require('modules/admin');
 
 //models
 var Auth = require('./data/model');
@@ -203,16 +204,31 @@ AuthService.prototype.getUserClaims = function getUserClaims(options, next) {
   if (!options) return next(new errors.InvalidArgumentError('options is required'));
   if (!options.userId) return next(new errors.InvalidArgumentError('User Id is required'));
 
+  var _this = this;
+  var user = null;
+  var admin = null;
+
   async.waterfall([
     function getUserById_step(done) {
       userService.getById({
         userId: options.userId
       }, done);
     },
-    function getUserClaims_step(user, done) {
+    function getAdminByUserId_step(_user, done) {
+      if (!_user) return done(new errors.ObjectNotFoundError('User not found'));
+      user = _user;
+
+      adminService.getByUserId({
+        userId: user._id
+      }, done);
+    },
+    function getUserClaims_step(_admin, done) {
+      admin = _admin;
+
       var userClaims = {
         userId: user._id,
         email: user.email,
+        admin: admin ? true : false,
         projectIds: []
       };
 
