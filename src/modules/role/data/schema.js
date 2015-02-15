@@ -1,9 +1,7 @@
-"use strict";
-
 /* =========================================================================
  * Dependencies
  * ========================================================================= */
-var baseSchema = require('./base-schema');
+var baseSchema = require('modules/common/data/base-schema');
 
 /* =========================================================================
  * Schema
@@ -13,14 +11,8 @@ var roleSchema = baseSchema.extend({
     type: String,
     trim: true,
     required: true,
-    index: {
-      unique: true
-    }
-  },
-  permissions: [{
-    type: String,
-    ref: 'Permission'
-  }]
+    unique: true
+  }
 });
 
 /* =========================================================================

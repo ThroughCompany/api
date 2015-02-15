@@ -4,7 +4,7 @@
  * Dependencies
  * ========================================================================= */
 var mongoose = require('mongoose');
-var roleSchema = require('./role-schema');
+var roleSchema = require('./schema');
 
 /* =========================================================================
  * Exports
