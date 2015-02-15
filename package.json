@@ -39,13 +39,13 @@
     "underscore": "1.7.0",
     "winston": "0.8.x",
     "yargs": "^2.1.1",
-    "gulp": "3.8.10"
-  },
-  "devDependencies": {
+    "gulp": "3.8.10",
     "gulp-jshint": "1.9.0",
     "gulp-mocha": "2.0.0",
     "jshint-stylish": "1.0.0",
-    "shelljs": "0.3.0",
+    "shelljs": "0.3.0"
+  },
+  "devDependencies": {
     "should": "3.1.4",
     "sinon": "1.9.0",
     "supertest": "0.15.0"
