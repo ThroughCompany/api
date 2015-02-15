@@ -26,19 +26,9 @@ Controller.prototype.getUsers = function(req, res, next) {
  * @description Create a new user
  */
 Controller.prototype.createUser = function(req, res, next) {
+  var data = req.body;
 
-  //form data
-  var email = req.body.email;
-  var password = req.body.password;
-
-  async.waterfall([
-    function createNewUser(callback) {
-      userService.createUsingCredentials({
-        email: email,
-        password: password
-      }, callback);
-    }
-  ], function finish(err, newUser) {
+  userService.createUsingCredentials(req.body, function(err, newUser) {
     if (err) return next(err);
     else return res.status(201).json(newUser);
   });

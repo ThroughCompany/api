@@ -33,6 +33,7 @@ util.inherits(UserService, CommonService);
  * @param {function} next - callback
  */
 UserService.prototype.createUsingCredentials = function(options, next) {
+  if (!options) return next(new errors.InvalidArgumentError('options is required'));
   if (!options.email) return next(new errors.InvalidArgumentError('Email is required'));
   if (!options.password) return next(new errors.InvalidArgumentError('Password is required'));
 
@@ -84,6 +85,7 @@ UserService.prototype.createUsingCredentials = function(options, next) {
  * @param {function} next - callback
  */
 UserService.prototype.createUsingFacebook = function(options, next) {
+  if (!options) return next(new errors.InvalidArgumentError('options is required'));
   if (!options.email) return next(new errors.InvalidArgumentError('Email is required'));
   if (!options.facebookId) return next(new errors.InvalidArgumentError('Facebook Id is required'));
 
@@ -123,6 +125,8 @@ UserService.prototype.createUsingFacebook = function(options, next) {
  * @param {function} next - callback
  */
 UserService.prototype.getAll = function(options, next) {
+  if (!options) return next(new errors.InvalidArgumentError('options is required'));
+  
   var query = User.find({});
 
   return query.exec(next);

@@ -12,13 +12,13 @@ var controller = require('./controller');
 /* =========================================================================
  * Swagger specs
  * ========================================================================= */
-var getUsers = {
+var getProjects = {
   spec: {
-    path: '/users',
-    summary: 'Get a list of users',
+    path: '/projects',
+    summary: 'Get a list of projects',
     method: 'GET',
-    nickname: 'getUsers',
-    type: 'User',
+    nickname: 'getProjects',
+    type: 'Project',
     produces: ['application/json']
   },
   action: function(req, res, next) {
@@ -26,22 +26,22 @@ var getUsers = {
       if (err) return next(err);
       authMiddleware.adminRequired(req, res, function(err) {
         if (err) return next(err);
-        controller.getUsers(req, res, next);
+        controller.getProjects(req, res, next);
       });
     });
   }
 };
 
-var getUserById = {
+var getProjectById = {
   spec: {
-    path: '/users/{id}',
-    summary: 'Get a user by id',
+    path: '/projects/{id}',
+    summary: 'Get a project by id',
     method: 'GET',
     parameters: [
-      swagger.params.path('id', 'user\s id', 'string')
+      swagger.params.path('id', 'project\'s id', 'string')
     ],
-    nickname: 'getUserById',
-    type: 'User',
+    nickname: 'getProjects',
+    type: 'Project',
     produces: ['application/json']
   },
   action: function(req, res, next) {
@@ -49,63 +49,41 @@ var getUserById = {
       if (err) return next(err);
       authMiddleware.currentUserIdParamRequired('id')(req, res, function(err) {
         if (err) return next(err);
-        controller.getUserById(req, res, next);
+        controller.getProjectById(req, res, next);
       });
     });
   }
 };
 
-var getUserClaimsById = {
+var createProject = {
   spec: {
-    path: '/users/{id}/claims',
-    summary: 'Get a user claims by id',
-    method: 'GET',
-    parameters: [
-      swagger.params.path('id', 'user\'s id', 'string')
-    ],
-    nickname: 'getUserClaimsById',
-    type: 'User',
-    produces: ['application/json']
-  },
-  action: function(req, res, next) {
-    authMiddleware.authenticationRequired(req, res, function(err) {
-      if (err) return next(err);
-      authMiddleware.currentUserIdParamRequired('id')(req, res, function(err) {
-        if (err) return next(err);
-        controller.getUserClaimsById(req, res, next);
-      });
-    });
-  }
-};
-
-var createUser = {
-  spec: {
-    path: '/users',
-    summary: 'Create a new user',
+    path: '/projects',
+    summary: 'Create a project',
     method: 'POST',
     parameters: [
-      swagger.params.body('auth', 'user\'s info (email, password)', 'string')
+      swagger.params.body('project', 'project info', 'string')
     ],
-    nickname: 'createUser',
-    type: 'User',
-    consumes: ['application/json'],
+    nickname: 'createProject',
+    type: 'Project',
     produces: ['application/json']
   },
   action: function(req, res, next) {
-    controller.createUser(req, res, next);
+    authMiddleware.authenticationRequired(req, res, function(err) {
+      if (err) return next(err);
+      controller.createProject(req, res, next);
+    });
   }
 };
 
-swagger.addGet(getUsers);
-swagger.addGet(getUserById);
-swagger.addGet(getUserClaimsById);
-swagger.addPost(createUser);
+swagger.addGet(getProjects);
+swagger.addGet(getProjectById);
+swagger.addPost(createProject);
 
 /* =========================================================================
  *   Swagger declarations
  * ========================================================================= */
 
-swagger.configureDeclaration('users', {
-  description: 'Operations for users',
+swagger.configureDeclaration('projects', {
+  description: 'Operations for projects',
   produces: ['application/json']
 });

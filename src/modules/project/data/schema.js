@@ -1,11 +1,9 @@
-"use strict";
-
 /* =========================================================================
  * Dependencies
  * ========================================================================= */
-var mongoose = require('mongoose');
-var util = require('util');
-var BaseSchema = require('../models/Base').schema;
+var _ = require('underscore');
+
+var baseSchema = require('modules/common/data/base-schema');
 
 /* =========================================================================
  * Constants
@@ -14,7 +12,7 @@ var BaseSchema = require('../models/Base').schema;
 /* =========================================================================
  * Schema
  * ========================================================================= */
-var projectSchema = BaseSchema.extend({
+var projectSchema = baseSchema.extend({
   name: {
     type: String,
     trim: true,
@@ -28,12 +26,17 @@ var projectSchema = BaseSchema.extend({
   collection: 'projects'
 });
 
+
 /* =========================================================================
- *
- *   Exports
- *
+ * Statics
  * ========================================================================= */
-module.exports = {
-  model: mongoose.model('Project', projectSchema),
-  schema: projectSchema
-};
+_.extend(projectSchema.statics, {});
+
+/* =========================================================================
+ * Private Helpers
+ * ========================================================================= */
+
+/* =========================================================================
+ * Exports
+ * ========================================================================= */
+module.exports = projectSchema;
