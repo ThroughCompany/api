@@ -1,4 +1,5 @@
 var appConfig = require('src/config/app-config');
+
 /**
  * New Relic agent configuration.
  *
@@ -9,7 +10,7 @@ exports.config = {
   /**
    * Array of application names.
    */
-  app_name: [appConfig.newrelic],
+  app_name: [appConfig.newrelic.name],
   /**
    * Your New Relic license key.
    */
