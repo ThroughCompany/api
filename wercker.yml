@@ -5,7 +5,7 @@ services:
 
 build:
   steps:
-    - npm-install --production false
+    - npm-install
     - gulp-test
 
     - script:
