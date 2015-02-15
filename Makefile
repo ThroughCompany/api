@@ -6,6 +6,7 @@ post-install:
 	ln -snf ../src; \
 	ln -snf ../src/modules; \
 	ln -snf ../tests; \
+	gulp db-seed \
 
 test:
 	./node_modules/.bin/_mocha \

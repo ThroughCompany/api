@@ -12,7 +12,7 @@ var CommonService = require('modules/common');
 
 //models
 var User = require('./data/model');
-var Auth = require('src/modules/auth/data/model');
+var Auth = require('modules/auth/data/model');
 
 var authUtil = require('modules/auth/util');
 

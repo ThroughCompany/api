@@ -17,7 +17,7 @@ gulp.task('default');
  * Tests
  * ========================================================================= */
 gulp.task('test', ['test-int'], function() {
-  process.exit(0);	//hacky shit because gulp doesn't exit - causes wercker to timeout
+  process.exit(0); //hacky shit because gulp doesn't exit - causes wercker to timeout
 });
 
 gulp.task('test-int', function() {
@@ -25,6 +25,13 @@ gulp.task('test-int', function() {
     .pipe(mocha({
       reporter: 'spec'
     }));
+});
+
+/* =========================================================================
+ * Database
+ * ========================================================================= */
+gulp.task('db-seed', function() {
+	shell.exec('node ./tools/seed/seed-db');
 });
 
 /* =========================================================================
