@@ -4,15 +4,14 @@ services:
   - wercker/mongodb@1.0.1
 
 build:
-  steps:
-    - npm-install
-    - npm-test
-
-    - script:
-        name: build info
-        code: |
-          echo "node version $(node -v) running"
-          echo "npm version $(npm -v) running"
+    steps:
+        - npm-install
+        - npm-test
+        - script:
+            name: build info
+            code: |
+              echo "node version $(node -v) running"
+              echo "npm version $(npm -v) running"
 deploy:
     steps:
         - heroku-deploy:
