@@ -16,7 +16,9 @@ gulp.task('default');
 /* =========================================================================
  * Tests
  * ========================================================================= */
-gulp.task('test', ['test-int']);
+gulp.task('test', ['test-int'], function() {
+  process.exit(0);	//hacky shit because gulp doesn't exit - causes wercker to timeout
+});
 
 gulp.task('test-int', function() {
   return gulp.src('tests/integration/**/**/**-test.js')
