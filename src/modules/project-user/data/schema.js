@@ -1,5 +1,3 @@
-"use strict";
-
 /* =========================================================================
  * Dependencies
  * ========================================================================= */
@@ -9,9 +7,13 @@ var baseSchema = require('modules/common/data/base-schema');
  * Schema
  * ========================================================================= */
 var projectUserSchema = baseSchema.extend({
-  company: {
+  project: {
     type: String,
     ref: 'Project',
+  },
+  user: {
+    type: String,
+    ref: 'User',
   },
   permissions: [{
     type: String,

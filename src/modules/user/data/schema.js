@@ -3,13 +3,12 @@
  * ========================================================================= */
 var _ = require('underscore');
 
-var projectUserSchema = require('modules/project-user/data/schema');
 var baseSchema = require('modules/common/data/base-schema');
 
 /* =========================================================================
  * Constants
  * ========================================================================= */
-var DEFAULTIMAGEURL = 'https://s3.amazonaws.com/CompanyFloor_Assets/user-avatar.jpg';
+var DEFAULTIMAGEURL = 'https://s3.amazonaws.com/ThroughCompany_Assets/user-avatar.jpg';
 
 /* =========================================================================
  * Schema
@@ -42,7 +41,10 @@ var userSchema = baseSchema.extend({
     type: String,
     default: DEFAULTIMAGEURL
   },
-  projectUsers: [projectUserSchema],
+  projectUsers: [{
+    type: String,
+    ref: 'ProjectUser'
+  }],
   facebook: {
     id: {
       type: String,

@@ -18,9 +18,9 @@ var projectSchema = baseSchema.extend({
     trim: true,
     required: true
   },
-  users: [{
+  projectUsers: [{
     type: String,
-    ref: 'User'
+    ref: 'ProjectUser'
   }]
 }, {
   collection: 'projects'
