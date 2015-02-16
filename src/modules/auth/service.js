@@ -229,21 +229,21 @@ AuthService.prototype.getUserClaims = function getUserClaims(options, next) {
         userId: user._id,
         email: user.email,
         admin: admin ? true : false,
-        projectIds: []
+        projectUserIds: []
       };
 
-      if (user.projectUsers) {
-        user.projectUsers.forEach(function(projectUser) {
+      // if (user.projectUsers) {
+      //   user.projectUsers.forEach(function(projectUserId) {
 
-          userClaims.projectIds.push(projectUser.project);
+      //     userClaims.projectUserId.push(projectUserId);
 
-          if (projectUser.permissions) {
-            projectUser.permissions.forEach(function(permission) {
-              userClaims[permission.name + '-' + projectUser.project] = true;
-            });
-          }
-        });
-      }
+      //     if (projectUser.permissions) {
+      //       projectUser.permissions.forEach(function(permission) {
+      //         userClaims[permission.name + '-' + projectUser.project] = true;
+      //       });
+      //     }
+      //   });
+      // }
 
       done(null, userClaims);
     }

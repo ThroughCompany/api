@@ -21,6 +21,13 @@ var projectUserSchema = baseSchema.extend({
   }]
 });
 
+projectUserSchema.index({
+  project: 1,
+  user: 1
+}, {
+  unique: true
+});
+
 /* =========================================================================
  * Exports
  * ========================================================================= */

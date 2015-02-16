@@ -58,7 +58,7 @@ var getUserById = {
 var getUserClaimsById = {
   spec: {
     path: '/users/{id}/claims',
-    summary: 'Get a user claims by id',
+    summary: 'Get a user\'s claims by id',
     method: 'GET',
     parameters: [
       swagger.params.path('id', 'user\'s id', 'string')
@@ -96,10 +96,34 @@ var createUser = {
   }
 };
 
+var getUserProjectsById = {
+  spec: {
+    path: '/users/{id}/projects',
+    summary: 'Get a user\'s project by id',
+    method: 'GET',
+    parameters: [
+      swagger.params.path('id', 'user\'s id', 'string')
+    ],
+    nickname: 'getUserProjectsById',
+    type: 'User',
+    produces: ['application/json']
+  },
+  action: function(req, res, next) {
+    authMiddleware.authenticationRequired(req, res, function(err) {
+      if (err) return next(err);
+      authMiddleware.currentUserIdParamRequired('id')(req, res, function(err) {
+        if (err) return next(err);
+        controller.getUserProjectsById(req, res, next);
+      });
+    });
+  }
+};
+
 swagger.addGet(getUsers);
 swagger.addGet(getUserById);
 swagger.addGet(getUserClaimsById);
 swagger.addPost(createUser);
+swagger.addGet(getUserProjectsById);
 
 /* =========================================================================
  *   Swagger declarations

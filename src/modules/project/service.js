@@ -131,8 +131,6 @@ ProjectService.prototype.getById = function(options, next) {
 
 /**
  * @param {object} options
- * @param {object} findOptions - hash of mongoose query params
- * @param {array} [populate] - array of keys to populate
  * @param {function} next - callback
  */
 ProjectService.prototype.getAll = function(options, next) {
@@ -141,6 +139,39 @@ ProjectService.prototype.getAll = function(options, next) {
   var query = Project.find({});
 
   return query.exec(next);
+};
+
+/**
+ * @param {object} options
+ * @param {object} options.userId
+ * @param {function} next - callback
+ */
+ProjectService.prototype.getByUserId = function(options, next) {
+  if (!options) return next(new errors.InvalidArgumentError('options is required'));
+  if (!options.userId) return next(new errors.InvalidArgumentError('User Id is required'));
+
+  var _this = this;
+
+  async.waterfall([
+    function findProjectUsersByUserId_step(done) {
+      var query = ProjectUser.find({
+        user: options.userId
+      });
+
+      query.exec(done);
+    },
+    function findProjectsById_step(projectUsers, done) {
+      var projectIds = _.pluck(projectUsers, 'project');
+
+      var query = Project.find({
+        _id: {
+          $in: projectIds
+        }
+      });
+
+      query.exec(done);
+    }
+  ], next);
 };
 
 /* =========================================================================
