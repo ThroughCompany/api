@@ -7,10 +7,12 @@ var util = require('util');
  * Abstract Error
  * ========================================================================= */
 var AbstractError = function(errorType) {
-  Error.captureStackTrace(this, this)
+  Error.captureStackTrace(this, this);
 
-  var isMessage = (typeof errorType === 'string');
-  this.message = isMessage ? errorType : errorType.message;
+  if (errorType) {
+    var isMessage = (typeof errorType === 'string');
+    this.message = isMessage ? errorType : errorType.message;
+  }
 };
 util.inherits(AbstractError, Error);
 

@@ -1,39 +1,25 @@
-"use strict";
-
 /* =========================================================================
  * Dependencies
  * ========================================================================= */
-var mongoose = require('mongoose');
-var util = require('util');
-var BaseSchema = require('../models/Base').schema;
-
-/* =========================================================================
- * Constants
- * ========================================================================= */
+var baseSchema = require('modules/common/data/base-schema');
 
 /* =========================================================================
  * Schema
  * ========================================================================= */
-var projectSchema = BaseSchema.extend({
+var permissionSchema = baseSchema.extend({
   name: {
     type: String,
     trim: true,
-    required: true
+    required: true,
+    unique: true
   },
-  users: [{
+  roles: [{
     type: String,
-    ref: 'User'
+    ref: 'Role'
   }]
-}, {
-  collection: 'projects'
 });
 
 /* =========================================================================
- *
- *   Exports
- *
+ * Exports
  * ========================================================================= */
-module.exports = {
-  model: mongoose.model('Project', projectSchema),
-  schema: projectSchema
-};
+module.exports = permissionSchema;

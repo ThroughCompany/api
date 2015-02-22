@@ -1,9 +1,5 @@
-'use strict';
-
 /* =========================================================================
- *
- *   Dependencies
- *
+ * Dependencies
  * ========================================================================= */
 var async = require('async');
 var uuid = require('node-uuid');
@@ -24,11 +20,11 @@ Controller.prototype.authenticateWithCredentials = function authenticateWithCred
   var password = req.body.password;
 
   async.waterfall([
-    function authenticateUser(callback) {
+    function authenticateUser(done) {
       authService.authenticateCredentials({
         email: email,
         password: password
-      }, callback);
+      }, done);
     }
   ], function finish(err, results) {
     if (err) return next(err);
@@ -47,13 +43,16 @@ Controller.prototype.authenticateWithFacebook = function authenticateWithFaceboo
   if (!facebookAccessToken) return next(new error.InvalidArgumentError('Facebook access token is required'));
 
   async.waterfall([
-    function authenticateUser(callback) {
-      authService.authenticateFacebook(facebookAccessToken, callback);
+    function authenticateUser(done) {
+      authService.authenticateFacebook({
+        facebookAccessToken: facebookAccessToken
+      }, done);
     },
-    function generateToken(user, callback) {
-      authUtil.generateAuthToken(user, function(err, token, expires) {
-
-        return callback(err, user, token, expires);
+    function generateToken(user, done) {
+      authUtil.generateAuthToken({
+        user: user
+      }, function(err, token, expires) {
+        return done(err, user, token, expires);
       });
     }
   ], function finish(err, user, token, expires) {

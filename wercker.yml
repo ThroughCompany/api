@@ -1,0 +1,24 @@
+box: wercker/nodejs
+
+services:
+  - wercker/mongodb@1.0.1
+
+build:
+    steps:
+        - npm-install
+        - npm-test
+        - script:
+            name: build info
+            code: |
+              echo "node version $(node -v) running"
+              echo "npm version $(npm -v) running"
+deploy:
+    steps:
+        - heroku-deploy:
+            key-name: HEROKU_DEPLOY_KEY
+
+    after-steps:
+        - sherzberg/slack-notify:
+            subdomain: wercker
+            token: $SLACK_TOKEN
+            channel: $SLACK_CHANNEL

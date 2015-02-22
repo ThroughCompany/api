@@ -8,70 +8,29 @@ var baseSchema = require('modules/common/data/base-schema');
 /* =========================================================================
  * Constants
  * ========================================================================= */
-var DEFAULTIMAGEURL = 'https://s3.amazonaws.com/ThroughCompany_Assets/user-avatar.jpg';
 
 /* =========================================================================
  * Schema
  * ========================================================================= */
-var userSchema = baseSchema.extend({
-  email: {
+var projectSchema = baseSchema.extend({
+  name: {
     type: String,
     trim: true,
-    required: true,
-    index: {
-      unique: true
-    }
-  },
-  firstname: {
-    type: String,
-    default: '',
-    trim: true
-  },
-  lastname: {
-    type: String,
-    default: '',
-    trim: true
-  },
-  active: {
-    type: Boolean,
-    required: true,
-    default: false
-  },
-  imageUrl: {
-    type: String,
-    default: DEFAULTIMAGEURL
+    required: true
   },
   projectUsers: [{
     type: String,
     ref: 'ProjectUser'
-  }],
-  facebook: {
-    id: {
-      type: String,
-      index: {
-        unique: false,
-        sparse: true
-      }
-    }
-  }
+  }]
+}, {
+  collection: 'projects'
 });
 
-/* =========================================================================
- * Hooks
- * ========================================================================= */
-userSchema.pre('save', function(next) {
-
-  if (this.facebook && this.facebook.id) {
-    this.imageUrl = "https://graph.facebook.com/" + this.facebook.id + "/picture?type=large";
-  }
-
-  next();
-});
 
 /* =========================================================================
  * Statics
  * ========================================================================= */
-_.extend(userSchema.statics, {});
+_.extend(projectSchema.statics, {});
 
 /* =========================================================================
  * Private Helpers
@@ -80,4 +39,4 @@ _.extend(userSchema.statics, {});
 /* =========================================================================
  * Exports
  * ========================================================================= */
-module.exports = userSchema;
+module.exports = projectSchema;

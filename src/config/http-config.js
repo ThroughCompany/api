@@ -1,8 +1,7 @@
-'use strict';
-
 /* =========================================================================
  * Dependencies
  * ========================================================================= */
+var util = require('util');
 var http = require('http');
 var path = require('path');
 var express = require('express');
@@ -21,7 +20,7 @@ var appConfig = require('src/config/app-config');
 var errors = require('modules/error/errors');
 var logger = require('modules/logger');
 
-var error = require('modules/error'); //middleware
+var errorMiddleware = require('src/middleware/errorMiddleware');
 
 /* =========================================================================
  * Init Express
@@ -49,7 +48,7 @@ function init(next) {
   app.use(compress()); //GZIP compression
   app.use(bodyParser.json()); //parse application/json
   app.use(bodyParser.urlencoded({ // parse application/x-www-form-urlencoded
-   extended: true
+    extended: true
   }));
   app.use(expressValidator());
   app.use(logParams);
@@ -72,7 +71,7 @@ function init(next) {
     return next(new errors.ObjectNotFoundError('path: ' + req.url + ' not found'));
   });
 
-  app.use(error);
+  app.use(errorMiddleware);
 
   var httpServer = app.listen(appConfig.port, function() {
     logger.info('http server listening @: ' + appConfig.port);
@@ -188,6 +187,8 @@ function benchmark() {
     res.on('finish', function() {
       var time = parseFloat(res.get('x-response-time'));
       var status = '';
+      var method = 'info';
+
       if (time < 199) {
         status = 'BENCHMARK-GOOD';
       }
@@ -196,11 +197,13 @@ function benchmark() {
       }
       if (time >= 500 && time < 999) {
         status = 'BENCHMARK-SLOW';
+        method = 'warn';
       }
       if (time >= 1000) {
         status = 'BENCHMARK-BAD';
+        method = 'error';
       }
-      logger.info(util.format('%s %dms %s %s', status, time, req.method, req.originalUrl));
+      logger[method](util.format('%s %dms %s %s', status, time, req.method, req.originalUrl));
     });
     _responseTime.apply(this, arguments);
   };

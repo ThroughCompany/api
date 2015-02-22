@@ -1,7 +1,8 @@
 /* =========================================================================
  * Depedencies
  * ========================================================================= */
-var errors = require('./errors');
+//modules
+var errors = require('modules/error');
 var logger = require('modules/logger');
 
 var appConfig = require('src/config/app-config');

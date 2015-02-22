@@ -1,9 +1,12 @@
+"use strict";
+
 /* =========================================================================
  * Dependencies
  * ========================================================================= */
-var errors = require('./errors');
+var mongoose = require('mongoose');
+var roleSchema = require('./schema');
 
 /* =========================================================================
- * Expose
+ * Exports
  * ========================================================================= */
-module.exports = errors;
+module.exports = mongoose.model('Role', roleSchema);

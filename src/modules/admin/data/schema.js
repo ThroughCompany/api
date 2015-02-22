@@ -1,34 +1,22 @@
 /* =========================================================================
  * Dependencies
  * ========================================================================= */
+var _ = require('underscore');
+
 var baseSchema = require('modules/common/data/base-schema');
 
 /* =========================================================================
  * Schema
  * ========================================================================= */
-var projectUserSchema = baseSchema.extend({
-  project: {
-    type: String,
-    ref: 'Project',
-  },
+var adminSchema = baseSchema.extend({
   user: {
     type: String,
     ref: 'User',
-  },
-  permissions: [{
-    type: String,
-    ref: 'Permission'
-  }]
-});
-
-projectUserSchema.index({
-  project: 1,
-  user: 1
-}, {
-  unique: true
+    required: true
+  }
 });
 
 /* =========================================================================
  * Exports
  * ========================================================================= */
-module.exports = projectUserSchema;
+module.exports = adminSchema;

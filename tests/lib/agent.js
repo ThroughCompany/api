@@ -1,27 +1,25 @@
-"use strict";
-
 /* =========================================================================
  * Dependencies
  * ========================================================================= */
-var baseSchema = require('./base-schema');
+var request = require('supertest');
 
 /* =========================================================================
- * Schema
+ * Constructor
  * ========================================================================= */
-var permissionSchema = baseSchema.extend({
-  name: {
-    type: String,
-    trim: true,
-    required: true,
-    unique: true
-  },
-  roles: [{
-    type: String,
-    ref: 'Role'
-  }]
-});
+function Agent() {}
+
+Agent.prototype.init = function(app) {
+  var _this = this;
+  
+  _this.app = app;
+  _this.agent = request.agent(app);
+};
+
+Agent.prototype.getAgent = function() {
+  return this.agent;
+};
 
 /* =========================================================================
  * Exports
  * ========================================================================= */
-module.exports = permissionSchema;
+module.exports = new Agent();

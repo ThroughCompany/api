@@ -1,29 +1,15 @@
-"use strict";
-
 /* =========================================================================
  * Dependencies
  * ========================================================================= */
-var baseSchema = require('./base-schema');
+var mongoose = require('mongoose');
+
+var adminSchema = require('./schema');
 
 /* =========================================================================
- * Schema
+ * Private Helpers
  * ========================================================================= */
-var roleSchema = baseSchema.extend({
-  name: {
-    type: String,
-    trim: true,
-    required: true,
-    index: {
-      unique: true
-    }
-  },
-  permissions: [{
-    type: String,
-    ref: 'Permission'
-  }]
-});
 
 /* =========================================================================
  * Exports
  * ========================================================================= */
-module.exports = roleSchema;
+module.exports = mongoose.model('Admin', adminSchema);

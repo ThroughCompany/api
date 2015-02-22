@@ -1,34 +1,21 @@
 /* =========================================================================
  * Dependencies
  * ========================================================================= */
-var baseSchema = require('modules/common/data/base-schema');
+
 
 /* =========================================================================
- * Schema
+ * Constructor
  * ========================================================================= */
-var projectUserSchema = baseSchema.extend({
-  project: {
-    type: String,
-    ref: 'Project',
-  },
-  user: {
-    type: String,
-    ref: 'User',
-  },
-  permissions: [{
-    type: String,
-    ref: 'Permission'
-  }]
-});
+function TestUtils() {}
 
-projectUserSchema.index({
-  project: 1,
-  user: 1
-}, {
-  unique: true
-});
+TestUtils.prototype.getServerErrorMessage = function getServerErrorMessage(response) {
+  if (!response || !response.body) return null;
+  if (!response.body.errors || !response.body.errors.length) return null;
+
+  return response.body.errors[0].message;
+};
 
 /* =========================================================================
  * Exports
  * ========================================================================= */
-module.exports = projectUserSchema;
+module.exports = new TestUtils();

@@ -7,12 +7,12 @@ var async = require('async');
 var uuid = require('node-uuid');
 
 //modules
-var errors = require('modules/error').errors;
+var errors = require('modules/error');
 var CommonService = require('modules/common');
 
 //models
 var User = require('./data/model');
-var Auth = require('src/modules/auth/data/model');
+var Auth = require('modules/auth/data/model');
 
 var authUtil = require('modules/auth/util');
 
@@ -33,6 +33,7 @@ util.inherits(UserService, CommonService);
  * @param {function} next - callback
  */
 UserService.prototype.createUsingCredentials = function(options, next) {
+  if (!options) return next(new errors.InvalidArgumentError('options is required'));
   if (!options.email) return next(new errors.InvalidArgumentError('Email is required'));
   if (!options.password) return next(new errors.InvalidArgumentError('Password is required'));
 
@@ -84,14 +85,15 @@ UserService.prototype.createUsingCredentials = function(options, next) {
  * @param {function} next - callback
  */
 UserService.prototype.createUsingFacebook = function(options, next) {
-  if (!options.email) return next(new error.InvalidArgumentError('Email is required'));
-  if (!options.facebookId) return next(new error.InvalidArgumentError('Facebook Id is required'));
+  if (!options) return next(new errors.InvalidArgumentError('options is required'));
+  if (!options.email) return next(new errors.InvalidArgumentError('Email is required'));
+  if (!options.facebookId) return next(new errors.InvalidArgumentError('Facebook Id is required'));
 
   var _this = this;
 
   options.email = options.email.toLowerCase();
 
-  if (!REGEXES.email.test(options.email)) return next(new error.InvalidArgumentError(options.email + ' is not a valid email address'));
+  if (!REGEXES.email.test(options.email)) return next(new errors.InvalidArgumentError(options.email + ' is not a valid email address'));
 
   async.waterfall([
     function getUserByEmail(done) {
@@ -100,7 +102,7 @@ UserService.prototype.createUsingFacebook = function(options, next) {
       }, done);
     },
     function createNewUser(foundUser, done) {
-      if (foundUser) return callback(new error.InvalidArgumentError('A user with the email ' + options.email + ' already exists'));
+      if (foundUser) return callback(new errors.InvalidArgumentError('A user with the email ' + options.email + ' already exists'));
 
       var user = new User();
       user.email = options.email.toLowerCase();
@@ -123,6 +125,8 @@ UserService.prototype.createUsingFacebook = function(options, next) {
  * @param {function} next - callback
  */
 UserService.prototype.getAll = function(options, next) {
+  if (!options) return next(new errors.InvalidArgumentError('options is required'));
+  
   var query = User.find({});
 
   return query.exec(next);
@@ -135,15 +139,19 @@ UserService.prototype.getAll = function(options, next) {
  * @param {function} next - callback
  */
 UserService.prototype.getById = function(options, next) {
-  if (!options.userId) return next(new error.InvalidArgumentError('User Id is required'));
+  if (!options) return next(new errors.InvalidArgumentError('options is required'));
+  if (!options.userId) return next(new errors.InvalidArgumentError('User Id is required'));
 
   var query = User.findOne({
     _id: options.userId
   });
 
-  if (options.populate && _.isArray(options.populate)) User.addPopulateToQuery(query, options.populate);
+  query.exec(function(err, user) {
+    if (err) return next(err);
+    if (!user) return next(new errors.ObjectNotFoundError('User not found'));
 
-  return query.exec(next);
+    next(null, user);
+  });
 };
 
 /**
@@ -153,14 +161,14 @@ UserService.prototype.getById = function(options, next) {
  * @param {function} next - callback
  */
 UserService.prototype.getByEmail = function(options, next) {
-  if (!options.email) return next(new error.InvalidArgumentError('Email is required'));
+  if (!options) return next(new errors.InvalidArgumentError('options is required'));
+  if (!options.email) return next(new errors.InvalidArgumentError('Email is required'));
 
   var query = User.findOne({
     email: options.email.toLowerCase()
   });
 
-  return query.exec(next);
-
+  query.exec(next);
 };
 
 /**
@@ -169,13 +177,14 @@ UserService.prototype.getByEmail = function(options, next) {
  * @param {function} next - callback
  */
 UserService.prototype.getByFacebookId = function(options, next) {
-  if (!options.facebookId) return next(new error.InvalidArgumentError('Facebook Id is required'));
+  if (!options) return next(new errors.InvalidArgumentError('options is required'));
+  if (!options.facebookId) return next(new errors.InvalidArgumentError('Facebook Id is required'));
 
   var query = User.findOne({
-    'auth.facebook.id': options.facebookId
+    'facebook.id': options.facebookId
   });
 
-  return query.exec(next);
+  query.exec(next);
 };
 
 /**
@@ -184,7 +193,7 @@ UserService.prototype.getByFacebookId = function(options, next) {
  * @param {function} next - callback
  */
 UserService.prototype.delete = function(options, next) {
-  if (!options.userId) return next(new error.InvalidArgumentError('User Id is required'));
+  if (!options.userId) return next(new errors.InvalidArgumentError('User Id is required'));
 
   User.findOneAndRemove({
     _id: options.userId
@@ -199,8 +208,8 @@ UserService.prototype.delete = function(options, next) {
  * @param {bool} allowAll
  */
 UserService.prototype.update = function(options, next, allowAll) {
-  if (!options.userId) return next(new error.InvalidArgumentError('User Id is required'));
-  if (!options.updates) return next(new error.InvalidArgumentError('Updates is required'));
+  if (!options.userId) return next(new errors.InvalidArgumentError('User Id is required'));
+  if (!options.updates) return next(new errors.InvalidArgumentError('Updates is required'));
 
   var self = this;
 
@@ -212,7 +221,7 @@ UserService.prototype.update = function(options, next, allowAll) {
       }, callback);
     },
     function updateUser(user, callback) {
-      if (!user) return callback(new error.InvalidArgumentError('No user exists with the id ' + options.userId));
+      if (!user) return callback(new errors.InvalidArgumentError('No user exists with the id ' + options.userId));
 
       user.update(options.updates, callback, allowAll);
     }

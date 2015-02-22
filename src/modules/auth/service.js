@@ -6,14 +6,14 @@ var async = require('async');
 var bcrypt = require('bcrypt-nodejs');
 var _ = require('underscore');
 var jwt = require('jwt-simple');
-var authUtil = require('./util');
 var fb = require('fb');
 
 //modules
-var errors = require('modules/error').errors;
+var errors = require('modules/error');
 
 //services
 var userService = require('modules/user');
+var adminService = require('modules/admin');
 
 //models
 var Auth = require('./data/model');
@@ -105,33 +105,25 @@ AuthService.prototype.authenticateToken = function authenticateToken(options, ne
   if (!options) return next(new errors.InvalidArgumentError('options is required'));
   if (!options.token) return next(new errors.InvalidArgumentError('Token is required'));
 
-  async.waterfall([
+  var _this = this;
 
-    function decodeToken(callback) {
-      authUtil.decodeToken(token, callback);
+  async.waterfall([
+    function decodeToken(done) {
+      authUtil.decodeToken(options.token, done);
     },
-    function findUserById(decodedToken, callback) {
-      if (decodedToken.exp <= Date.now()) return callback(new errors.UnauthorizedError('Access token has expired'));
+    function findUserById(decodedToken, done) {
+      if (decodedToken.exp <= Date.now()) return done(new errors.UnauthorizedError('Access token has expired'));
 
       var userId = decodedToken.iss;
-      var populate = ['companyUsers.permissions'];
 
-      userEntityManager.getById({
-        userId: userId,
-        populate: populate
-      }, function(error, user) {
-        return callback(error, user, decodedToken);
-      });
-    },
-    function getUserClaims(user, decodedToken, callback) {
-      authService.getUserClaims(user, function(err, claims) {
-        return callback(err, user, claims);
-      });
+      _this.getUserClaims({
+        userId: userId
+      }, done);
     }
-  ], function finish(err, user, claims) {
+  ], function finish(err, claims) {
     if (err) return next(err);
 
-    return next(null, user, claims);
+    return next(null, claims);
   });
 };
 
@@ -181,20 +173,18 @@ AuthService.prototype.authenticateFacebook = function authenticateFacebook(optio
                 facebookUsername: facebookData.username
               }, callback);
             } else {
-              userEntityManager.update({
+              userService.update({
                 userId: user._id,
                 updates: {
-                  auth: {
-                    facebook: {
-                      id: facebookData.id,
-                      username: facebookData.username
-                    }
+                  facebook: {
+                    id: facebookData.id,
+                    username: facebookData.username
                   }
                 }
               }, callback, true);
             }
           });
-        } else return userEntityManager.createUsingFacebook({
+        } else return userService.createUsingFacebook({
           email: facebookData.email,
           facebookId: facebookData.id,
           facebookUsername: facebookData.username
@@ -210,30 +200,54 @@ AuthService.prototype.authenticateFacebook = function authenticateFacebook(optio
  * @description Get a user's authorization claims
  *
  */
-AuthService.prototype.getUserClaims = function getUserClaims(user, next) {
-  if (!user) return new errors.InternalServiceError('User is required');
+AuthService.prototype.getUserClaims = function getUserClaims(options, next) {
+  if (!options) return next(new errors.InvalidArgumentError('options is required'));
+  if (!options.userId) return next(new errors.InvalidArgumentError('User Id is required'));
 
-  var userClaims = {
-    userId: user._id.toString(), //add user id claim
-    email: user.email,
-    companyIds: []
-  };
+  var _this = this;
+  var user = null;
+  var admin = null;
 
-  if (user.companyUsers) {
+  async.waterfall([
+    function getUserById_step(done) {
+      userService.getById({
+        userId: options.userId
+      }, done);
+    },
+    function getAdminByUserId_step(_user, done) {
+      if (!_user) return done(new errors.ObjectNotFoundError('User not found'));
+      user = _user;
 
-    user.companyUsers.forEach(function(companyUser) {
+      adminService.getByUserId({
+        userId: user._id
+      }, done);
+    },
+    function getUserClaims_step(_admin, done) {
+      admin = _admin;
 
-      userClaims.companyIds.push(companyUser.company); // add company id claims
+      var userClaims = {
+        userId: user._id,
+        email: user.email,
+        admin: admin ? true : false,
+        projectUserIds: []
+      };
 
-      if (companyUser.permissions) {
-        companyUser.permissions.forEach(function(permission) {
-          userClaims[permission.name + '-' + companyUser.company] = true;
-        });
-      }
-    });
-  }
+      // if (user.projectUsers) {
+      //   user.projectUsers.forEach(function(projectUserId) {
 
-  return next(null, userClaims);
+      //     userClaims.projectUserId.push(projectUserId);
+
+      //     if (projectUser.permissions) {
+      //       projectUser.permissions.forEach(function(permission) {
+      //         userClaims[permission.name + '-' + projectUser.project] = true;
+      //       });
+      //     }
+      //   });
+      // }
+
+      done(null, userClaims);
+    }
+  ], next);
 };
 
 /* =========================================================================

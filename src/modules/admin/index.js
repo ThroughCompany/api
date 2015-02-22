@@ -1,8 +1,6 @@
 /* =========================================================================
  * Dependencies
  * ========================================================================= */
-var app = require('src');
+var adminService = require('./service');
 
-app.init({
-  http: true
-});
+module.exports = adminService;

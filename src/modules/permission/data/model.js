@@ -4,7 +4,7 @@
  * Dependencies
  * ========================================================================= */
 var mongoose = require('mongoose');
-var permissionSchema = require('./permission-schema');
+var permissionSchema = require('./schema');
 
 /* =========================================================================
  * Exports

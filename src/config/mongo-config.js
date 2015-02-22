@@ -29,6 +29,8 @@ function init(next, forceReConnect) {
 
   dbConnection = mongoose.connection;
 
+  logger.info('Connect to MongoDb @ ' + appConfig.db);
+
   dbConnection.on('open', function(err) {
     if (!err) logger.info('Connected to MongoDb @ ' + appConfig.db);
 

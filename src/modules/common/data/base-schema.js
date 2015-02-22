@@ -11,9 +11,6 @@ var _ = require('underscore');
 /* =========================================================================
  * Constants
  * ========================================================================= */
-var ALLOWED_KEYS = [];
-var RESTRICTED_KEYS = ['_id', 'modified', 'created'];
-var POPULATE_PATHS = [];
 
 /* =========================================================================
  * Private Helpers
@@ -85,29 +82,6 @@ _.extend(baseSchema.methods, {
     delete res.__t;
 
     return res;
-  },
-  update: function(updates, next, allowAll) {
-    var self = this;
-
-    var allowed = (self.schema.statics.getAllowedKeys) ? ALLOWED_KEYS.concat(self.schema.statics.getAllowedKeys()) : ALLOWED_KEYS;
-    var restricted = (self.schema.statics.getRestrictedKeys) ? RESTRICTED_KEYS.concat(self.schema.statics.getRestrictedKeys()) : RESTRICTED_KEYS;
-    var allowedData = (allowAll) ? updates : {};
-
-    if (!allowAll) {
-      _.each(allowed, function(key) {
-        if (key in updates) {
-          allowedData[key] = updates[key];
-        }
-      })
-    }
-    _.each(restricted, function(key) {
-      delete allowedData[key];
-    });
-
-    _.extend(self, allowedData);
-    // NOTE: using save instead of an update because 
-    // mongoose update does not enforce defaults, setters, validators
-    self.save(next);
   }
 });
 

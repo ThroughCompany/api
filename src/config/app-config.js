@@ -1,5 +1,3 @@
-'use strict';
-
 /* =========================================================================
  * Dependencies
  * ========================================================================= */
@@ -26,6 +24,10 @@ var defaults = {
   app: {
     name: NAME,
     systemEmail: SYSTEMEMAIL
+  },
+  newrelic: {
+    name: 'xxxxxxxxxx',
+    key: 'xxxxxxxxxx'
   },
   port: PORT,
   apiVersion: packageConfig.version,
@@ -67,15 +69,37 @@ var defaults = {
 /* =========================================================================
  * Production
  * ========================================================================= */
-var productionConfig = _.extend(defaults, {
-  db: process.env.MONGOLAB_URI
+var productionConfig = _.extend(_.clone(defaults), {
+  db: process.env.MONGOLAB_URI,
+  newrelic: {
+    name: 'throughcompany-api-prod',
+    key: '462c7ca3a4079021f443e836d9b9357ef276ba42'
+  }
 });
 
 /* =========================================================================
  * Development
  * ========================================================================= */
-var developmentConfig = _.extend(defaults, {
+var developmentConfig = _.extend(_.clone(defaults), {
+  db: 'mongodb://dev-readwrite:QUZAmaf4ehuj@ds041651.mongolab.com:41651/heroku_app33783922',
+  newrelic: {
+    name: 'throughcompany-api-dev',
+    key: '462c7ca3a4079021f443e836d9b9357ef276ba42'
+  }
+});
+
+/* =========================================================================
+ * Local
+ * ========================================================================= */
+var localConfig = _.extend(_.clone(defaults), {
   db: 'mongodb://localhost:27017/throughcompany'
+});
+
+/* =========================================================================
+ * Test
+ * ========================================================================= */
+var testConfig = _.extend(_.clone(defaults), {
+  db: 'mongodb://localhost:27017/throughcompany-test'
 });
 
 /* ========================================================================= */
@@ -83,7 +107,9 @@ var env = process.env.NODE_ENV || 'development';
 
 var envs = {
   production: productionConfig,
-  development: developmentConfig
+  development: developmentConfig,
+  local: localConfig,
+  test: testConfig
 };
 
 var envConfig = null;
@@ -114,6 +140,10 @@ if (envConfig.ENV_PROD) {
 
     if (err.stack) console.error(err.stack);
   });
+}
+
+if (process.env.WERCKER_MONGODB_URL) {
+  envConfig.db = process.env.WERCKER_MONGODB_URL;
 }
 
 /* =========================================================================

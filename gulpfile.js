@@ -3,6 +3,8 @@
  * ========================================================================= */
 var gulp = require('gulp');
 var jshint = require('gulp-jshint');
+var mocha = require('gulp-mocha');
+
 var shell = require('shelljs');
 var async = require('async');
 
@@ -10,6 +12,27 @@ var async = require('async');
  * Default Task
  * ========================================================================= */
 gulp.task('default');
+
+/* =========================================================================
+ * Tests
+ * ========================================================================= */
+gulp.task('test', ['test-int'], function() {
+  process.exit(0); //hacky shit because gulp doesn't exit - causes wercker to timeout
+});
+
+gulp.task('test-int', function() {
+  return gulp.src('tests/integration/**/**/**-test.js')
+    .pipe(mocha({
+      reporter: 'spec'
+    }));
+});
+
+/* =========================================================================
+ * Database
+ * ========================================================================= */
+gulp.task('db-seed', function() {
+	shell.exec('node ./tools/seed/seed-db');
+});
 
 /* =========================================================================
  * Jshint
