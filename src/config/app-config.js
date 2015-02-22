@@ -38,13 +38,13 @@ var defaults = {
       host: 'smtp.mailgun.org',
       port: '587',
       user: 'postmaster@sandbox75137.mailgun.org',
-      password: '1f8pxsndgox2'
+      password: 'xxx'
     }
   },
   aws: {
     s3: {
-      accessKeyId: 'AKIAJGQFPLH32K7TGWHQ',
-      secretAccessKey: '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',
+      accessKeyId: 'xxx',
+      secretAccessKey: 'xxx',
       region: 'US Standard',
       maxRetries: 1,
       apiVersion: '',
