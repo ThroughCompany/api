@@ -5,6 +5,7 @@ require('tests/integration/before-all');
 
 var should = require('should');
 var async = require('async');
+var _ = require('underscore');
 
 var app = require('src');
 var appConfig = require('src/config/app-config');
@@ -20,6 +21,10 @@ var User = require('modules/user/data/model');
 var Admin = require('modules/admin/data/model');
 var Auth = require('modules/auth/data/model');
 var Project = require('modules/project/data/model');
+var ProjectUser = require('modules/project-user/data/model');
+var Permission = require('modules/permission/data/model');
+
+var PERMISSIONS_NAMES = require('modules/permission/constants/permission-names');
 
 var agent;
 
@@ -35,12 +40,15 @@ before(function(done) {
 
 describe('api', function() {
   describe('user', function() {
-    describe('GET - /projects', function() {
+    describe('POST - /projects', function() {
       describe('when user is not authenticated', function() {
-        it('should return a 401', function(done) {
+        var email = 'testuser@test.com';
+        var password = 'password';
+        var user = null;
 
+        it('should return a 401', function(done) {
           agent
-            .get('/projects')
+            .post('/projects')
             .end(function(err, response) {
               should.not.exist(err);
               should.exist(response);
@@ -56,7 +64,7 @@ describe('api', function() {
         });
       });
 
-      describe('when user is not an admin', function() {
+      describe('when invalid data is passed', function() {
         var email = 'testuser@test.com';
         var password = 'password';
         var user = null;
@@ -101,11 +109,14 @@ describe('api', function() {
           }, done);
         });
 
-        it('should return a 401', function(done) {
+        it('should return a 400', function(done) {
 
           agent
-            .get('/projects')
+            .post('/projects')
             .set('x-access-token', auth.token)
+            .send({
+              name: null
+            })
             .end(function(err, response) {
               should.not.exist(err);
               should.exist(response);
@@ -114,26 +125,25 @@ describe('api', function() {
               should.exist(error);
 
               var status = response.status;
-              status.should.equal(403);
+              status.should.equal(400);
 
               var errorMessage = testUtils.getServerErrorMessage(response);
 
               should.exist(errorMessage);
-              errorMessage.should.equal('Current user is not an admin');
+              errorMessage.should.equal('Name is required');
 
               done();
             });
         });
       });
 
-      describe('when user is authenticated and is an admin', function() {
+      describe('when valid data is passed', function() {
         var email = 'testuser@test.com';
         var password = 'password';
-        var projectName = 'Project 1';
         var user = null;
-        var admin = null;
         var auth = null;
-        var project = null;
+
+        var projectName = 'Project FOOBAR';
 
         before(function(done) {
           async.series([
@@ -148,16 +158,6 @@ describe('api', function() {
                 cb();
               });
             },
-            function createAdmin_step(cb) {
-              adminService.create({
-                userId: user._id
-              }, function(err, _admin) {
-                if (err) return cb(err);
-
-                admin = _admin;
-                cb();
-              });
-            },
             function authenticateUser_step(cb) {
               authService.authenticateCredentials({
                 email: email,
@@ -168,17 +168,6 @@ describe('api', function() {
                 auth = _auth;
                 cb();
               });
-            },
-            function createUserProjectStep_step(cb) {
-              projectService.create({
-                createdByUserId: user._id,
-                name: projectName
-              }, function(err, _project) {
-                if (err) return cb(err);
-
-                project = _project;
-                cb();
-              });
             }
           ], done);
         });
@@ -186,12 +175,6 @@ describe('api', function() {
         after(function(done) {
           User.remove({
             email: email
-          }, done);
-        });
-
-        after(function(done) {
-          Admin.remove({
-            user: user._id
           }, done);
         });
 
@@ -203,24 +186,56 @@ describe('api', function() {
 
         after(function(done) {
           Project.remove({
-            _id: project._id
+            name: projectName
           }, done);
         });
 
-        it('should return a list of users', function(done) {
+        it('should create a new project and create a new project user with permissions', function(done) {
 
           agent
-            .get('/projects')
+            .post('/projects')
             .set('x-access-token', auth.token)
+            .send({
+              name: projectName
+            })
             .end(function(err, response) {
               should.not.exist(err);
               should.exist(response);
 
-              var projects = response.body;
+              var status = response.status;
+              status.should.equal(201);
 
-              projects.length.should.equal(1);
+              var newProject = response.body;
+              should.exist(newProject);
 
-              done();
+              newProject.name.should.equal(projectName);
+              newProject.projectUsers.length.should.equal(1);
+
+              var projectUserId = newProject.projectUsers[0];
+
+              ProjectUser.findById(projectUserId, function(err, projectUser) {
+                if (err) return next(err);
+
+                should.exist(projectUser);
+
+                projectUser.user.should.equal(user._id);
+
+                Permission.find({
+                  _id: {
+                    $in: projectUser.permissions
+                  }
+                }, function(err, permissions) {
+                  if (err) return next(err);
+
+                  var addUserPermissions = _.find(permissions, function(perm) {
+                    return perm.name === PERMISSIONS_NAMES.ADD_PROJECT_USERS;
+                  });
+
+                  should.exist(addUserPermissions);
+
+                  done();
+                });
+              });
             });
         });
       });

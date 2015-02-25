@@ -35,12 +35,15 @@ before(function(done) {
 
 describe('api', function() {
   describe('user', function() {
-    describe('GET - /projects', function() {
+    describe('GET - /projects/{id}', function() {
       describe('when user is not authenticated', function() {
-        it('should return a 401', function(done) {
+        var email = 'testuser@test.com';
+        var password = 'password';
+        var user = null;
 
+        it('should return a 401', function(done) {
           agent
-            .get('/projects')
+            .get('/projects/123')
             .end(function(err, response) {
               should.not.exist(err);
               should.exist(response);
@@ -56,7 +59,7 @@ describe('api', function() {
         });
       });
 
-      describe('when user is not an admin', function() {
+      describe('when project does not belong to the user', function() {
         var email = 'testuser@test.com';
         var password = 'password';
         var user = null;
@@ -101,10 +104,10 @@ describe('api', function() {
           }, done);
         });
 
-        it('should return a 401', function(done) {
+        it('should return a 403', function(done) {
 
           agent
-            .get('/projects')
+            .get('/projects/123')
             .set('x-access-token', auth.token)
             .end(function(err, response) {
               should.not.exist(err);
@@ -119,17 +122,18 @@ describe('api', function() {
               var errorMessage = testUtils.getServerErrorMessage(response);
 
               should.exist(errorMessage);
-              errorMessage.should.equal('Current user is not an admin');
+              errorMessage.should.equal('Current user id does not match user id param');
 
               done();
             });
         });
       });
 
-      describe('when user is authenticated and is an admin', function() {
+      describe('when project belongs to the user', function() {
         var email = 'testuser@test.com';
         var password = 'password';
         var projectName = 'Project 1';
+
         var user = null;
         var admin = null;
         var auth = null;
@@ -207,18 +211,19 @@ describe('api', function() {
           }, done);
         });
 
-        it('should return a list of users', function(done) {
+        it('should return a project', function(done) {
 
           agent
-            .get('/projects')
+            .get('/projects/' + project._id)
             .set('x-access-token', auth.token)
             .end(function(err, response) {
               should.not.exist(err);
               should.exist(response);
 
-              var projects = response.body;
-
-              projects.length.should.equal(1);
+              var newProject = response.body;
+              should.exist(newProject);
+              newProject.name.should.equal(projectName);
+              newProject._id.should.equal(project._id);
 
               done();
             });
