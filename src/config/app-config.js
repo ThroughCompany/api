@@ -45,8 +45,8 @@ var defaults = {
   },
   aws: {
     s3: {
-      accessKeyId: 'AKIAJGQFPLH32K7TGWHQ',
-      secretAccessKey: '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',
+      accessKeyId: 'xxx',
+      secretAccessKey: 'xxx',
       region: 'US Standard',
       maxRetries: 1,
       apiVersion: '',
