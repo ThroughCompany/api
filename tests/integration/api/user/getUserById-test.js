@@ -99,7 +99,7 @@ describe('api', function() {
           }, done);
         });
 
-        it('should return a 404', function(done) {
+        it('should return a 403', function(done) {
           agent
             .get('/users/123')
             .set('x-access-token', auth.token)

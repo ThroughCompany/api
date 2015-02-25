@@ -126,7 +126,7 @@ UserService.prototype.createUsingFacebook = function(options, next) {
  */
 UserService.prototype.getAll = function(options, next) {
   if (!options) return next(new errors.InvalidArgumentError('options is required'));
-  
+
   var query = User.find({});
 
   return query.exec(next);

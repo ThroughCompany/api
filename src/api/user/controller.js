@@ -45,7 +45,6 @@ Controller.prototype.getUserById = function(req, res, next) {
     userId: userId
   }, function(err, user) {
     if (err) return next(err);
-    else if (!user) return res.json(404);
     else res.status(200).json(user);
   });
 };
@@ -62,7 +61,6 @@ Controller.prototype.updateUserById = function(req, res, next) {
     updates: updates
   }, function(err, user) {
     if (err) return next(err);
-    else if (!user) return res.json(404);
     else return res.json(200, user);
   });
 };

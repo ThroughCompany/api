@@ -14,6 +14,9 @@ var errors = require('modules/error');
 //services
 var userService = require('modules/user');
 var adminService = require('modules/admin');
+var projectService = require('modules/project');
+var projectUserService = require('modules/project-user');
+var permissionService = require('modules/permission');
 
 //models
 var Auth = require('./data/model');
@@ -205,49 +208,81 @@ AuthService.prototype.getUserClaims = function getUserClaims(options, next) {
   if (!options.userId) return next(new errors.InvalidArgumentError('User Id is required'));
 
   var _this = this;
-  var user = null;
-  var admin = null;
 
-  async.waterfall([
-    function getUserById_step(done) {
+  async.auto({
+    user: function getUserById_step(done) {
       userService.getById({
         userId: options.userId
       }, done);
     },
-    function getAdminByUserId_step(_user, done) {
-      if (!_user) return done(new errors.ObjectNotFoundError('User not found'));
-      user = _user;
-
+    admin: function getAdminByUserId_step(done) {
       adminService.getByUserId({
-        userId: user._id
+        userId: options.userId
       }, done);
     },
-    function getUserClaims_step(_admin, done) {
-      admin = _admin;
+    projectUsers: function getProjectUsers_step(done) {
+      projectUserService.getByUserId({
+        userId: options.userId
+      }, done);
+    },
+    permissions: ['projectUsers', function getPermissions_step(done, results) {
+      var projectUsers = results.projectUsers;
 
-      var userClaims = {
-        userId: user._id,
-        email: user.email,
-        admin: admin ? true : false,
-        projectUserIds: []
-      };
+      var projectUserPermissionIds = _.pluck(projectUsers, 'permissions');
+      var permissionIds = [];
 
-      // if (user.projectUsers) {
-      //   user.projectUsers.forEach(function(projectUserId) {
+      _.each(projectUserPermissionIds, function(ids) {
+        permissionIds = permissionIds.concat(ids);
+      });
 
-      //     userClaims.projectUserId.push(projectUserId);
+      permissionIds = _.uniq(permissionIds);
 
-      //     if (projectUser.permissions) {
-      //       projectUser.permissions.forEach(function(permission) {
-      //         userClaims[permission.name + '-' + projectUser.project] = true;
-      //       });
-      //     }
-      //   });
-      // }
+      permissionService.getByIds({
+        ids: permissionIds
+      }, done);
+    }]
+  }, function(err, results) {
+    if (err) return next(err);
 
-      done(null, userClaims);
+    var user = results.user;
+    var admin = results.admin;
+    var projectUsers = results.projectUsers;
+    var permissions = results.permissions;
+
+    var userClaims = {
+      userId: user._id,
+      email: user.email,
+      admin: admin ? true : false,
+      projectIds: [],
+      projectPermissions: {}
+    };
+
+    if (projectUsers && projectUsers.length) {
+      projectUsers.forEach(function(projectUser) {
+        userClaims.projectIds.push(projectUser.project);
+
+        var projectPermissions = [];
+
+        if (projectUser.permissions) {
+          projectUser.permissions.forEach(function(permission) {
+            var foundPermission = _.find(permissions, function(p) {
+              return p._id === permission;
+            });
+
+            if (foundPermission) {
+              projectPermissions.push({
+                name: foundPermission.name
+              });
+            }
+          });
+        }
+
+        userClaims.projectPermissions[projectUser.project] = projectPermissions;
+      });
     }
-  ], next);
+
+    next(null, userClaims);
+  });
 };
 
 /* =========================================================================
