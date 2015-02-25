@@ -84,53 +84,6 @@ AuthService.prototype.authenticateCredentials = function authenticateCredentials
 };
 
 /**
- * @description Get a user's auth info by their id
- * @param {Object} options
- * @param {String} options.userId
- * @param {Function} next - callback
- */
-AuthService.prototype.getAuthByUserId = function getAuthByUserId(options, next) {
-  if (!options) return next(new errors.InvalidArgumentError('options is required'));
-  if (!options.userId) return next(new errors.InvalidArgumentError('options.userId is required'));
-
-  Auth.findOne({
-    user: options.userId
-  }, next);
-};
-
-/**
- * @description Authenticate a user's API token
- * @param {Object} options
- * @param {String} options.userId
- * @param {Function} next - callback
- */
-AuthService.prototype.authenticateToken = function authenticateToken(options, next) {
-  if (!options) return next(new errors.InvalidArgumentError('options is required'));
-  if (!options.token) return next(new errors.InvalidArgumentError('Token is required'));
-
-  var _this = this;
-
-  async.waterfall([
-    function decodeToken(done) {
-      authUtil.decodeToken(options.token, done);
-    },
-    function findUserById(decodedToken, done) {
-      if (decodedToken.exp <= Date.now()) return done(new errors.UnauthorizedError('Access token has expired'));
-
-      var userId = decodedToken.iss;
-
-      _this.getUserClaims({
-        userId: userId
-      }, done);
-    }
-  ], function finish(err, claims) {
-    if (err) return next(err);
-
-    return next(null, claims);
-  });
-};
-
-/**
  * @description Authenticate using a Facebook access token
  * @param {Object} options
  * @param {String} options.facebookAccessToken
@@ -196,6 +149,53 @@ AuthService.prototype.authenticateFacebook = function authenticateFacebook(optio
     }
   ], function finish(err, user) {
     return next(err, user);
+  });
+};
+
+/**
+ * @description Get a user's auth info by their id
+ * @param {Object} options
+ * @param {String} options.userId
+ * @param {Function} next - callback
+ */
+AuthService.prototype.getAuthByUserId = function getAuthByUserId(options, next) {
+  if (!options) return next(new errors.InvalidArgumentError('options is required'));
+  if (!options.userId) return next(new errors.InvalidArgumentError('options.userId is required'));
+
+  Auth.findOne({
+    user: options.userId
+  }, next);
+};
+
+/**
+ * @description Authenticate a user's API token
+ * @param {Object} options
+ * @param {String} options.userId
+ * @param {Function} next - callback
+ */
+AuthService.prototype.authenticateToken = function authenticateToken(options, next) {
+  if (!options) return next(new errors.InvalidArgumentError('options is required'));
+  if (!options.token) return next(new errors.InvalidArgumentError('Token is required'));
+
+  var _this = this;
+
+  async.waterfall([
+    function decodeToken(done) {
+      authUtil.decodeToken(options.token, done);
+    },
+    function findUserById(decodedToken, done) {
+      if (decodedToken.exp <= Date.now()) return done(new errors.UnauthorizedError('Access token has expired'));
+
+      var userId = decodedToken.iss;
+
+      _this.getUserClaims({
+        userId: userId
+      }, done);
+    }
+  ], function finish(err, claims) {
+    if (err) return next(err);
+
+    return next(null, claims);
   });
 };
 
