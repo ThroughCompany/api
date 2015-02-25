@@ -98,7 +98,7 @@ AuthService.prototype.authenticateFacebook = function authenticateFacebook(optio
   async.waterfall([
     function getFacebookData(done) {
       fb.setAccessToken(options.facebookAccessToken);
-      fb.api('me', done);
+      fb.napi('me', done);
     },
     function getUserByFacebookToken(facebookData, done) {
       if (!facebookData || facebookData.error) return done(new errors.InternalServiceError('There was a problem getting your Facebook data'));
@@ -106,28 +106,28 @@ AuthService.prototype.authenticateFacebook = function authenticateFacebook(optio
       userService.getByFacebookId({
         facebookId: facebookData.id
       }, function(error, user) {
-        return callback(error, user, facebookData);
+        return done(error, user, facebookData);
       });
     },
-    function connectOrRegisterWithFacebook(user, facebookData, callback) {
+    function connectOrRegisterWithFacebook(user, facebookData, done) {
       var facebookEmail = facebookData.email;
 
       if (user) {
-        return callback(null, user);
+        return done(null, user);
       } else {
         if (facebookEmail) {
-          userEntityManager.getByEmail({
+          userService.getByEmail({
             email: facebookEmail
           }, function(error, user) {
             if (error) {
-              return callback(error);
+              return done(error);
             }
             if (!user) {
-              return userEntityManager.createUsingFacebook({
+              return userService.createUsingFacebook({
                 email: facebookData.email,
                 facebookId: facebookData.id,
                 facebookUsername: facebookData.username
-              }, callback);
+              }, done);
             } else {
               userService.update({
                 userId: user._id,
@@ -137,14 +137,14 @@ AuthService.prototype.authenticateFacebook = function authenticateFacebook(optio
                     username: facebookData.username
                   }
                 }
-              }, callback, true);
+              }, done, true);
             }
           });
         } else return userService.createUsingFacebook({
           email: facebookData.email,
           facebookId: facebookData.id,
           facebookUsername: facebookData.username
-        }, callback);
+        }, done);
       }
     }
   ], function finish(err, user) {
