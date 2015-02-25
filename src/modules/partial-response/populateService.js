@@ -105,8 +105,6 @@ function populateCollection(options, next) {
 
   var objects = options.doc;
 
-  //console.log(objects);
-
   var idsToPopulate = [];
   var errorMsg = '';
 
@@ -119,12 +117,10 @@ function populateCollection(options, next) {
       idsToPopulate.push(val);
     } else {
       errorMsg = 'property ' + options.key + ' is not valid';
-      break;
+
+      logger.warn('missing property = ' + options.key);
     }
   }
-
-  // console.log('idsToPopulate');
-  // console.log(idsToPopulate);
 
   if (!idsToPopulate) {
     return next(new Errors.InvalidArgumentError(errorMsg));
@@ -142,25 +138,22 @@ function populateCollection(options, next) {
           query.select(select);
         }
 
-        //query.lean();
-
         query.exec(done);
       },
       function populateObjects_step(foundObjs, done) {
-        _.each(objects, function(object) {
 
-          var foundObject = _.findWhere(foundObjs, {
-            _id: getProperty(object, options.key)
-          });
+        foundObjs = _.indexBy(foundObjs, '_id');
 
-          var index = objects.indexOf(object);
+        _.each(objects, function(object, index) {
 
-          var obj = object.toJSON ? object.toJSON() : object;
+          var obj = object;
+          var foundObj = foundObjs[getProperty(obj, options.key)];
 
-          var foundObj = foundObject.toJSON ? foundObject.toJSON() : foundObject;
-
-          setProperty(obj, options.key, foundObj);
-
+          if (object) {
+            obj = (obj && obj.toJSON) ? obj.toJSON() : obj;
+            foundObj = (foundObj && foundObj.toJSON) ? foundObj.toJSON() : foundObj;
+            setProperty(obj, options.key, foundObj);
+          }
           objects[index] = obj;
         });
 
@@ -178,7 +171,6 @@ function populateCollection(options, next) {
  *
  */
 function getProperty(obj, propertyName) {
-  //console.log('GETTING prop : ' + propertyName);
 
   if (propertyName.indexOf('.') > 0) {
 
@@ -198,10 +190,7 @@ function getProperty(obj, propertyName) {
 
     return subObj;
   } else {
-    if (obj[propertyName]) {
-      return obj[propertyName];
-    }
-    return null;
+    return obj[propertyName] || null;
   }
 }
 
@@ -211,7 +200,6 @@ function getProperty(obj, propertyName) {
  *
  */
 function setProperty(obj, propertyName, value) {
-  //console.log('SETTING prop : ' + propertyName);
 
   if (propertyName.indexOf('.') > 0) {
 
@@ -231,6 +219,8 @@ function setProperty(obj, propertyName, value) {
   } else {
     obj[propertyName] = value;
   }
+
+  return obj;
 }
 
 /* =========================================================================
