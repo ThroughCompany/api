@@ -146,10 +146,23 @@ AuthService.prototype.authenticateFacebook = function authenticateFacebook(optio
           facebookUsername: facebookData.username
         }, done);
       }
+    },
+    function generateAuthToken_step(user, done) {
+      _user = user;
+      
+      authUtil.generateAuthToken({
+        user: _user
+      }, done);
     }
-  ], function finish(err, user) {
-    return next(err, user);
-  });
+  ], function finish(err, results) {
+    if (err) return next(err);
+
+    next(null, {
+      token: results.token,
+      expires: results.expires,
+      user: _user
+    });
+  }, next);
 };
 
 /**

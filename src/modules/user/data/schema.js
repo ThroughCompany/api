@@ -52,6 +52,10 @@ var userSchema = baseSchema.extend({
         unique: false,
         sparse: true
       }
+    },
+    username: {
+      type: String,
+      trim: true
     }
   }
 });

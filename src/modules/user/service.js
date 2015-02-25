@@ -102,16 +102,16 @@ UserService.prototype.createUsingFacebook = function(options, next) {
       }, done);
     },
     function createNewUser(foundUser, done) {
-      if (foundUser) return callback(new errors.InvalidArgumentError('A user with the email ' + options.email + ' already exists'));
+      if (foundUser) return done(new errors.InvalidArgumentError('A user with the email ' + options.email + ' already exists'));
 
       var user = new User();
       user.email = options.email.toLowerCase();
       user.active = true;
       user.created = Date.now();
-      user.auth.facebook.id = options.facebookId;
-      user.auth.facebook.username = options.facebookUsername;
+      user.facebook.id = options.facebookId;
+      user.facebook.username = options.facebookUsername;
 
-      user.save(callback);
+      user.save(done);
     }
   ], function finish(err, newUser) {
     return next(err, newUser);

@@ -47,23 +47,15 @@ Controller.prototype.authenticateWithFacebook = function authenticateWithFaceboo
       authService.authenticateFacebook({
         facebookAccessToken: facebookAccessToken
       }, done);
-    },
-    function generateToken(user, done) {
-      authUtil.generateAuthToken({
-        user: user
-      }, function(err, token, expires) {
-        return done(err, user, token, expires);
-      });
     }
-  ], function finish(err, user, token, expires) {
+  ], function finish(err, results) {
     if (err) return next(err);
 
     res.status(200).json({
-      token: token,
-      expires: expires,
-      user: user
+      token: results.token,
+      expires: results.expires,
+      user: results.user
     });
-
   });
 };
 
