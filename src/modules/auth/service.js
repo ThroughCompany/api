@@ -10,6 +10,7 @@ var fb = require('fb');
 
 //modules
 var errors = require('modules/error');
+var logger = require('modules/logger');
 
 //services
 var userService = require('modules/user');
@@ -114,42 +115,38 @@ AuthService.prototype.authenticateFacebook = function authenticateFacebook(optio
 
       if (user) {
         return done(null, user);
+      } else if (!facebookEmail) {
+        return done(new errors.InternalServiceError('There was a problem getting your Facebook data'));
       } else {
-        if (facebookEmail) {
-          userService.getByEmail({
-            email: facebookEmail
-          }, function(error, user) {
-            if (error) {
-              return done(error);
-            }
-            if (!user) {
-              return userService.createUsingFacebook({
-                email: facebookData.email,
-                facebookId: facebookData.id,
-                facebookUsername: facebookData.username
-              }, done);
-            } else {
-              userService.update({
-                userId: user._id,
-                updates: {
-                  facebook: {
-                    id: facebookData.id,
-                    username: facebookData.username
-                  }
+        userService.getByEmail({
+          email: facebookEmail
+        }, function(error, user) {
+          if (error) {
+            return done(error);
+          }
+          if (!user) {
+            return userService.createUsingFacebook({
+              email: facebookData.email,
+              facebookId: facebookData.id,
+              facebookUsername: facebookData.username
+            }, done);
+          } else {
+            userService.update({
+              userId: user._id,
+              updates: {
+                facebook: {
+                  id: facebookData.id,
+                  username: facebookData.username
                 }
-              }, done, true);
-            }
-          });
-        } else return userService.createUsingFacebook({
-          email: facebookData.email,
-          facebookId: facebookData.id,
-          facebookUsername: facebookData.username
-        }, done);
+              }
+            }, done, true);
+          }
+        });
       }
     },
     function generateAuthToken_step(user, done) {
       _user = user;
-      
+
       authUtil.generateAuthToken({
         user: _user
       }, done);

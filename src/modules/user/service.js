@@ -207,23 +207,27 @@ UserService.prototype.delete = function(options, next) {
  * @param {function} next - callback
  * @param {bool} allowAll
  */
-UserService.prototype.update = function(options, next, allowAll) {
+UserService.prototype.update = function(options, next) {
   if (!options.userId) return next(new errors.InvalidArgumentError('User Id is required'));
   if (!options.updates) return next(new errors.InvalidArgumentError('Updates is required'));
 
   var self = this;
+  var updates = options.updates;
 
   async.waterfall([
 
-    function findUserById(callback) {
+    function findUserById(done) {
       self.getById({
         userId: options.userId
-      }, callback);
+      }, done);
     },
-    function updateUser(user, callback) {
-      if (!user) return callback(new errors.InvalidArgumentError('No user exists with the id ' + options.userId));
+    function updateUser(user, done) {
+      if (!user) return done(new errors.InvalidArgumentError('No user exists with the id ' + options.userId));
 
-      user.update(options.updates, callback, allowAll);
+      user.facebook.id = updates.facebook && updates.facebook.id ? updates.facebook.id : null;
+      user.facebook.username = updates.facebook && updates.facebook.username ? updates.facebook.username : null;
+
+      user.save(done);
     }
   ], function finish(err, results) {
     return next(err, results);
