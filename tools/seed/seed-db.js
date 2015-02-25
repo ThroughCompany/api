@@ -26,14 +26,18 @@ var PERMISSON_NAMES;
  * ========================================================================= */
 var steps = [];
 
-function dbSeed() {
+function dbSeed(options, next) {
   console.log('--------------------------------------------\nRUNNING DB SEED STEPS...\n--------------------------------------------');
+
+  if (options.createAdmins === false) { //remove the create sys admins steps
+    steps.splice(1, 1);
+  }
 
   runSteps(steps, function() {
 
     console.log('\n--------------------------------------------\nFINISHED RUNNING DB SEED STEPS...\n--------------------------------------------');
 
-    process.exit(0);
+    next();
   });
 }
 
@@ -214,8 +218,12 @@ function functionName(fun) {
 /* =========================================================================
  * Run
  * ========================================================================= */
-app.init({
-  http: false
-}, function() {
-  dbSeed();
-});
+module.exports = {
+  run: function(options, next) {
+    app.init({
+      http: false
+    }, function() {
+      dbSeed(options, next);
+    });
+  }
+};
