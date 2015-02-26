@@ -11,6 +11,8 @@ var _ = require('underscore');
 var appConfig = require('src/config/app-config');
 var httpConfig = require('src/config/http-config');
 var mongoConfig = require('src/config/mongo-config');
+var pxConfig = require('src/config/px-config');
+var awsConfig = require('src/config/aws-config');
 
 /* NOTE: no app files, other than these config files should be loaded here 
   - our app files need to load (be required) after we connect to our databases
@@ -61,6 +63,14 @@ App.prototype.init = function init(options, next) {
 
   steps.push(function connectMongo_step(done) {
     mongoConfig.init(done);
+  });
+
+  steps.push(function configurePx_step(done) {
+    pxConfig.init(done);
+  });
+
+  steps.push(function configureAws_step(done) {
+    awsConfig.init(done);
   });
 
   if (options.http) {

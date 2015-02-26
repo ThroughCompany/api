@@ -4,7 +4,6 @@
 var util = require('util');
 var _ = require('underscore');
 var async = require('async');
-var uuid = require('node-uuid');
 
 //modules
 var errors = require('modules/error');

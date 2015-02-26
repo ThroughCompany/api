@@ -6,7 +6,6 @@ var async = require('async');
 var bcrypt = require('bcrypt-nodejs');
 var _ = require('underscore');
 var jwt = require('jwt-simple');
-var fb = require('fb');
 
 //modules
 var errors = require('modules/error');
@@ -18,6 +17,9 @@ var adminService = require('modules/admin');
 var projectService = require('modules/project');
 var projectUserService = require('modules/project-user');
 var permissionService = require('modules/permission');
+
+//lib
+var facebookApi = require('lib/facebook-api');
 
 //models
 var Auth = require('./data/model');
@@ -98,8 +100,9 @@ AuthService.prototype.authenticateFacebook = function authenticateFacebook(optio
 
   async.waterfall([
     function getFacebookData(done) {
-      fb.setAccessToken(options.facebookAccessToken);
-      fb.napi('me', done);
+      facebookApi.getUserByToken({
+        facebookAccessToken: options.facebookAccessToken
+      }, done);
     },
     function getUserByFacebookToken(facebookData, done) {
       if (!facebookData || facebookData.error) return done(new errors.InternalServiceError('There was a problem getting your Facebook data'));
