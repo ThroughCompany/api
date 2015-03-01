@@ -1,53 +1,64 @@
-/* =========================================================================
- * Dependencies
- * ========================================================================= */
-var async = require('async');
-var fs = require('fs');
+// /* =========================================================================
+//  * Dependencies
+//  * ========================================================================= */
+// var async = require('async');
+// var fs = require('fs');
 
-var errors = require('modules/error');
+// var errors = require('modules/error');
 
-//services
-var imageService = require('modules/image')
+// //services
+// var imageService = require('modules/image')
 
-/* =========================================================================
- * Controller
- * ========================================================================= */
-function Controller() {}
+// /* =========================================================================
+//  * Controller
+//  * ========================================================================= */
+// function Controller() {}
 
-/** 
- * @description Get all users
- */
-Controller.prototype.upload = function(req, res, next) {
-  var files = req.files;
+// /** 
+//  * @description Upload an image
+//  *
+//  * @returns {string} url - image url
+//  */
+// Controller.prototype.upload = function(req, res, next) {
+//   var files = req.files;
 
-  if (!files.image) {
-    return cleanup(files, function(err) {
-      if (err) return next(err);
-      return next(new errors.InvalidArgumentError('Image is required'));
-    });
-  }
+//   if (!files.image) {
+//     return cleanup(files, function(err) {
+//       if (err) return next(err);
+//       return next(new errors.InvalidArgumentError('Image is required'));
+//     });
+//   }
 
-  var image = files.image;
+//   var image = files.image;
 
-  imageService.upload({
-    name: image.name,
-    path: image.path
-  }, function(err, users) {
-    if (err) return next(err);
-    return res.status(200).json(users);
-  });
-};
+//   imageService.upload({
+//     imageType: '',
+//     fileName: image.name,
+//     filePath: image.path,
+//     fileType: image.type
+//   }, function(err, users) {
+//     if (err) return next(err);
+//     return res.status(200).json(users);
+//   });
+// };
 
-/* =========================================================================
- *  Private Helpers
- * ========================================================================= */
-function cleanup(files, next) {
-  async.each(files, function(file, done) {
-    fs.unlink(file.path, done);
-  }, next);
-}
+// /* =========================================================================
+//  *  Private Helpers
+//  * ========================================================================= */
 
-/* =========================================================================
- * Expose
- * ========================================================================= */
-module.exports = new Controller();
+// /** 
+//  * @description Delete a set of files
+//  *
+//  * @param {array} filePaths - array of file paths
+//  * @param {function} next - callback
+//  */
+// function cleanup(filePaths, next) {
+//   async.each(filePaths, function(filePath, done) {
+//     fs.unlink(filePath, done);
+//   }, next);
+// }
+
+// /* =========================================================================
+//  * Expose
+//  * ========================================================================= */
+// module.exports = new Controller();

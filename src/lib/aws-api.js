@@ -23,6 +23,8 @@ var BUCKETS = {
 function AwsApi() {}
 
 /**
+ * @description Upload a file to the proflie pic bucket
+ *
  * @param {object} options
  * @param {string} options.filePath
  * @param {string} options.fileName
@@ -48,30 +50,33 @@ function uploadImage(options, next) {
   if (!options.fileName) return next(new errors.InternalServiceError('options.fileName is required'));
   if (!options.fileType) return next(new errors.InternalServiceError('options.fileType is required'));
 
-  fs.readFile(options.filePath, function(err, fileData) {
-    if (err) return next(err);
+  async.waterfall([
+    function readFileFromDisk_step(done) {
+      fs.readFile(options.filePath, done);
+    },
+    function uploadFileToAws_step(fileData, done) {
+      var name = uuid.v4() + '-' + uuid.v4() + '-' + options.fileName;
 
-    var name = uuid.v4() + '-' + uuid.v4() + '-' + options.fileName;
-
-    var url = 'https://s3.amazonaws.com' + '/' + options.bucket + '/' + name;
-
-    s3.putObject({
-      ACL: 'public-read',
-      Bucket: options.bucket,
-      Key: name,
-      ContentType: options.fileType,
-      CacheControl: 'public, max-age=31536000',
-      Body: fileData
-    }, function(err) {
-      if (err) return next(err);
-
+      s3.putObject({
+        ACL: 'public-read',
+        Bucket: options.bucket,
+        Key: name,
+        ContentType: options.fileType,
+        CacheControl: 'public, max-age=31536000',
+        Body: fileData
+      }, done);
+    },
+    function cleanupFileFromDisk_step(result, done) {
       fs.unlink(options.filePath, function(err) {
         if (err) return next(err);
 
-        next(null, url);
+        var url = 'https://s3.amazonaws.com' + '/' + options.bucket + '/' + name;
+
+        //return just the url to the image on AWS
+        done(null, url);
       });
-    });
-  });
+    }
+  ], next);
 }
 
 /* =========================================================================

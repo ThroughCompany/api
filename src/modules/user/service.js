@@ -15,6 +15,8 @@ var Auth = require('modules/auth/data/model');
 
 var authUtil = require('modules/auth/util');
 
+var validator = require('./validator');
+
 /* =========================================================================
  * Constants
  * ========================================================================= */
@@ -33,18 +35,16 @@ util.inherits(UserService, CommonService);
  */
 UserService.prototype.createUsingCredentials = function(options, next) {
   if (!options) return next(new errors.InvalidArgumentError('options is required'));
-  if (!options.email) return next(new errors.InvalidArgumentError('Email is required'));
-  if (!options.password) return next(new errors.InvalidArgumentError('Password is required'));
 
   var _this = this;
 
-  options.email = options.email.toLowerCase();
-
-  if (!REGEXES.email.test(options.email)) return next(new errors.InvalidArgumentError(options.email + ' is not a valid email address'));
-  if (options.password.length < 6) return next(new errors.InvalidArgumentError('Password must be at least 6 characters'));
-
   async.waterfall([
+    function validateData_step(done) {
+      validator.validateCreate(options, done);
+    },
     function getUserByEmail(done) {
+      options.email = options.email.toLowerCase();
+
       _this.getByEmail({
         email: options.email
       }, done);
@@ -114,6 +114,54 @@ UserService.prototype.createUsingFacebook = function(options, next) {
     }
   ], function finish(err, newUser) {
     return next(err, newUser);
+  });
+};
+
+/**
+ * @param {object} options
+ * @param {string} userId
+ * @param {object} updates
+ * @param {function} next - callback
+ * @param {bool} allowAll
+ */
+UserService.prototype.update = function(options, next) {
+  if (!options.userId) return next(new errors.InvalidArgumentError('User Id is required'));
+  if (!options.updates) return next(new errors.InvalidArgumentError('Updates is required'));
+
+  var self = this;
+  var updates = options.updates;
+  var user = null;
+
+  async.waterfall([
+    function findUserById(done) {
+      self.getById({
+        userId: options.userId
+      }, done);
+    },
+    function validateData_step(_user, done) {
+      if (!_user) return done(new errors.InvalidArgumentError('No user exists with the id ' + options.userId));
+
+      user = _user;
+
+      validator.validateUpdate(user, options, done);
+    },
+    function updateUser(done) {
+      user.firstname = updates.firstname ? updates.firstname : user.firstname;
+      user.lastname = updates.lastname ? updates.lastname : user.lastname;
+
+      user.facebook.id = updates.facebook && updates.facebook.id ? updates.facebook.id : user.facebook.id;
+      user.facebook.username = updates.facebook && updates.facebook.username ? updates.facebook.username : user.facebook.username;
+
+      if(updates.social) {
+        user.social.facebook = updates.social.facebook ? updates.social.facebook : user.social.facebook;
+        user.social.gitHub = updates.social.gitHub ? updates.social.gitHub : user.social.gitHub;
+        user.social.linkedIn = updates.social.linkedIn ? updates.social.linkedIn : user.social.linkedIn;
+      }
+
+      user.save(done);
+    }
+  ], function finish(err, results) {
+    return next(err, results);
   });
 };
 
@@ -197,40 +245,6 @@ UserService.prototype.delete = function(options, next) {
   User.findOneAndRemove({
     _id: options.userId
   }, next);
-};
-
-/**
- * @param {object} options
- * @param {string} userId
- * @param {object} updates
- * @param {function} next - callback
- * @param {bool} allowAll
- */
-UserService.prototype.update = function(options, next) {
-  if (!options.userId) return next(new errors.InvalidArgumentError('User Id is required'));
-  if (!options.updates) return next(new errors.InvalidArgumentError('Updates is required'));
-
-  var self = this;
-  var updates = options.updates;
-
-  async.waterfall([
-
-    function findUserById(done) {
-      self.getById({
-        userId: options.userId
-      }, done);
-    },
-    function updateUser(user, done) {
-      if (!user) return done(new errors.InvalidArgumentError('No user exists with the id ' + options.userId));
-
-      user.facebook.id = updates.facebook && updates.facebook.id ? updates.facebook.id : null;
-      user.facebook.username = updates.facebook && updates.facebook.username ? updates.facebook.username : null;
-
-      user.save(done);
-    }
-  ], function finish(err, results) {
-    return next(err, results);
-  });
 };
 
 // public api ===============================================================================

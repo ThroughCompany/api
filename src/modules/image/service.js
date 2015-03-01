@@ -23,14 +23,22 @@ var IMAGE_TYPES = {
   PROFILE_PIC: 'PROFILE_PIC'
 };
 
+var ALLOWED_FILE_TYPES = {
+  JPG: 'JPG',
+  PNG: 'PNG'
+};
+
 /* =========================================================================
  * Constructor
  * ========================================================================= */
-var ImageService = function() {};
+function ImageService() {}
 
 /**
+ * @description Upload a file
+ *
  * @param {object} options
  * @param {function} next - callback
+ * @returns {string} url - image url
  */
 ImageService.prototype.upload = function(options, next) {
   if (!options) return next(new errors.InvalidArgumentError('options is required'));
@@ -38,10 +46,23 @@ ImageService.prototype.upload = function(options, next) {
   if (!options.filePath) return next(new errors.InvalidArgumentError('FilePath is required'));
   if (!options.fileName) return next(new errors.InvalidArgumentError('FileName is required'));
   if (!options.fileType) return next(new errors.InvalidArgumentError('FileType is required'));
+  if (!_.isString(options.fileType)) return next(new errors.InvalidArgumentError('FileType must be a string'));
+  options.fileType = options.fileType.toUpperCase();
 
   if (_.contains(_.values(IMAGE_TYPES), options.imageType)) return next(new errors.InvalidArgumentError(options.imageType + ' is not a valid image type'));
+  if (_.contains(_.values(ALLOWED_FILE_TYPES), options.fileType)) return next(new errors.InvalidArgumentError(options.fileType + ' is not a valid file type'));
 
   var _this = this;
+
+  switch (options.imageType) {
+    case IMAGE_TYPES.PROFILE_PIC:
+      awsApi.uploadProfilePic({
+        filePath: options.filePath,
+        fileName: options.fileName,
+        fileType: options.fileType
+      }, next);
+      break;
+  }
 };
 
 // public api ===============================================================================

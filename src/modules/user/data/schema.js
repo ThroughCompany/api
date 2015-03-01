@@ -57,6 +57,20 @@ var userSchema = baseSchema.extend({
       type: String,
       trim: true
     }
+  },
+  social: {
+    facebook: {
+      type: String,
+      trim: true
+    },
+    gitHub: {
+      type: String,
+      trim: true
+    },
+    linkedIn: {
+      type: String,
+      trim: true
+    }
   }
 });
 
