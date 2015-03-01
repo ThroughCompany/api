@@ -8,7 +8,6 @@ var baseSchema = require('modules/common/data/base-schema');
 /* =========================================================================
  * Constants
  * ========================================================================= */
-var DEFAULTIMAGEURL = 'https://s3.amazonaws.com/ThroughCompany_Assets/user-avatar.jpg';
 
 /* =========================================================================
  * Schema
@@ -22,12 +21,12 @@ var userSchema = baseSchema.extend({
       unique: true
     }
   },
-  firstname: {
+  firstName: {
     type: String,
     default: '',
     trim: true
   },
-  lastname: {
+  lastName: {
     type: String,
     default: '',
     trim: true
@@ -39,7 +38,7 @@ var userSchema = baseSchema.extend({
   },
   imageUrl: {
     type: String,
-    default: DEFAULTIMAGEURL
+    trim: true
   },
   projectUsers: [{
     type: String,
@@ -57,6 +56,10 @@ var userSchema = baseSchema.extend({
       type: String,
       trim: true
     }
+  },
+  location: {
+    type: String,
+    trim: true
   },
   social: {
     facebook: {

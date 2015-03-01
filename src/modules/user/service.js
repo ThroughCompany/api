@@ -21,6 +21,7 @@ var validator = require('./validator');
  * Constants
  * ========================================================================= */
 var REGEXES = require('modules/common/constants/regexes');
+var DEFAULTIMAGEURL = 'https://s3.amazonaws.com/throughcompany-assets/user-avatars/avatar';
 
 var UserService = function() {
   CommonService.call(this, User);
@@ -58,6 +59,7 @@ UserService.prototype.createUsingCredentials = function(options, next) {
       var user = new User();
       user.email = options.email;
       user.active = true;
+      user.imageUrl = DEFAULTIMAGEURL + randomNum(1, 4) + '.jpg';
 
       user.save(function(err, newUser) {
         done(err, newUser, hash);
@@ -109,6 +111,7 @@ UserService.prototype.createUsingFacebook = function(options, next) {
       user.created = Date.now();
       user.facebook.id = options.facebookId;
       user.facebook.username = options.facebookUsername;
+      user.imageUrl = DEFAULTIMAGEURL + randomNum(1, 4) + '.jpg'
 
       user.save(done);
     }
@@ -146,13 +149,14 @@ UserService.prototype.update = function(options, next) {
       validator.validateUpdate(user, options, done);
     },
     function updateUser(done) {
-      user.firstname = updates.firstname ? updates.firstname : user.firstname;
-      user.lastname = updates.lastname ? updates.lastname : user.lastname;
+      user.firstName = updates.firstName ? updates.firstName : user.firstName;
+      user.lastName = updates.lastName ? updates.lastName : user.lastName;
+      user.location = updates.location ? updates.location : user.location;
 
       user.facebook.id = updates.facebook && updates.facebook.id ? updates.facebook.id : user.facebook.id;
       user.facebook.username = updates.facebook && updates.facebook.username ? updates.facebook.username : user.facebook.username;
 
-      if(updates.social) {
+      if (updates.social) {
         user.social.facebook = updates.social.facebook ? updates.social.facebook : user.social.facebook;
         user.social.gitHub = updates.social.gitHub ? updates.social.gitHub : user.social.gitHub;
         user.social.linkedIn = updates.social.linkedIn ? updates.social.linkedIn : user.social.linkedIn;
@@ -247,5 +251,14 @@ UserService.prototype.delete = function(options, next) {
   }, next);
 };
 
-// public api ===============================================================================
+/* =========================================================================
+ * Private Helpers
+ * ========================================================================= */
+function randomNum(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+/* =========================================================================
+ * Export
+ * ========================================================================= */
 module.exports = new UserService();
