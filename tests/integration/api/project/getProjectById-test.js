@@ -176,7 +176,8 @@ describe('api', function() {
             function createUserProjectStep_step(cb) {
               projectService.create({
                 createdByUserId: user._id,
-                name: projectName
+                name: projectName,
+                shortDescription: 'short desc'
               }, function(err, _project) {
                 if (err) return cb(err);
 

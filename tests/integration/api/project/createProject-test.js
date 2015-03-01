@@ -196,7 +196,8 @@ describe('api', function() {
             .post('/projects')
             .set('x-access-token', auth.token)
             .send({
-              name: projectName
+              name: projectName,
+              shortDescription: 'short description'
             })
             .end(function(err, response) {
               should.not.exist(err);
