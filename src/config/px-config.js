@@ -19,11 +19,11 @@ function init(next) {
   //   //next();
   // });
 
-  px({
-    userId: appConfig.px.userId,
-    apiKey: appConfig.px.apiKey,
-    apiSecret: appConfig.px.apiSecret
-  });
+  // px({
+  //   userId: appConfig.px.userId,
+  //   apiKey: appConfig.px.apiKey,
+  //   apiSecret: appConfig.px.apiSecret
+  // });
 
   next();
 }

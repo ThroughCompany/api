@@ -16,6 +16,8 @@ var User = require('modules/user/data/model');
 var Project = require('./data/model');
 var ProjectUser = require('modules/project-user/data/model');
 
+var validator = require('./validator');
+
 /* =========================================================================
  * Constants
  * ========================================================================= */
@@ -37,8 +39,6 @@ util.inherits(ProjectService, CommonService);
  */
 ProjectService.prototype.create = function(options, next) {
   if (!options) return next(new errors.InvalidArgumentError('options is required'));
-  if (!options.createdByUserId) return next(new errors.InvalidArgumentError('Created By User Id is required'));
-  if (!options.name) return next(new errors.InvalidArgumentError('Name is required'));
 
   var _this = this;
   var user = null;
@@ -47,6 +47,9 @@ ProjectService.prototype.create = function(options, next) {
   var permissions = null;
 
   async.waterfall([
+    function validateData_step(done) {
+      validator.validateCreate(options, done);
+    },
     function findUserByUserId_step(done) {
       userService.getById({
         userId: options.createdByUserId
@@ -57,6 +60,8 @@ ProjectService.prototype.create = function(options, next) {
 
       var project = new Project();
       project.name = options.name;
+      project.shortDescription = options.shortDescription;
+      project.description = options.description;
 
       project.save(done);
     },
@@ -105,6 +110,45 @@ ProjectService.prototype.create = function(options, next) {
     if (err) return next(err);
 
     next(null, project);
+  });
+};
+
+/**
+ * @param {object} options
+ * @param {string} userId
+ * @param {object} updates
+ * @param {function} next - callback
+ */
+ProjectService.prototype.update = function(options, next) {
+  if (!options.projectId) return next(new errors.InvalidArgumentError('Project Id is required'));
+  if (!options.updates) return next(new errors.InvalidArgumentError('Updates is required'));
+
+  var _this = this;
+  var updates = options.updates;
+  var project = null;
+
+  async.waterfall([
+    function findUserById(done) {
+      _this.getById({
+        projectId: options.projectId
+      }, done);
+    },
+    function validateData_step(_project, done) {
+      if (!_project) return done(new errors.InvalidArgumentError('No project exists with the id ' + options.projectId));
+
+      project = _project;
+
+      validator.validateUpdate(project, options, done);
+    },
+    function updateProject(done) {
+      project.name = updates.name ? updates.name : project.name;
+      project.shortDescription = updates.shortDescription ? updates.shortDescription : project.shortDescription;
+      project.description = updates.description ? updates.description : project.description;
+
+      project.save(done);
+    }
+  ], function finish(err, results) {
+    return next(err, results);
   });
 };
 

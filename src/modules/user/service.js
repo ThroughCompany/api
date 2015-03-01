@@ -125,19 +125,18 @@ UserService.prototype.createUsingFacebook = function(options, next) {
  * @param {string} userId
  * @param {object} updates
  * @param {function} next - callback
- * @param {bool} allowAll
  */
 UserService.prototype.update = function(options, next) {
   if (!options.userId) return next(new errors.InvalidArgumentError('User Id is required'));
   if (!options.updates) return next(new errors.InvalidArgumentError('Updates is required'));
 
-  var self = this;
+  var _this = this;
   var updates = options.updates;
   var user = null;
 
   async.waterfall([
     function findUserById(done) {
-      self.getById({
+      _this.getById({
         userId: options.userId
       }, done);
     },

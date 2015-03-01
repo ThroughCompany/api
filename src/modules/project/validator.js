@@ -1,51 +1,39 @@
 /* =========================================================================
  * Dependencies
  * ========================================================================= */
-var _ = require('underscore');
 
-var baseSchema = require('modules/common/data/base-schema');
+//modules
+var errors = require('modules/error');
 
 /* =========================================================================
  * Constants
  * ========================================================================= */
 
 /* =========================================================================
- * Schema
+ * Constructor
  * ========================================================================= */
-var projectSchema = baseSchema.extend({
-  name: {
-    type: String,
-    trim: true,
-    required: true
-  },
-  shortDescription: {
-    type: String,
-    trim: true,
-    required: true
-  },
-  description: {
-    type: String,
-    trim: true
-  },
-  projectUsers: [{
-    type: String,
-    ref: 'ProjectUser'
-  }]
-}, {
-  collection: 'projects'
-});
+function Validator() {}
 
+Validator.prototype.validateCreate = function(data, next) {
+  if (!data.name) return next(new errors.InvalidArgumentError('Name is required'));
+  if (!data.shortDescription) return next(new errors.InvalidArgumentError('Short Description is required'));
+  if (!data.createdByUserId) return next(new errors.InvalidArgumentError('Created By User Id is required'));
 
-/* =========================================================================
- * Statics
- * ========================================================================= */
-_.extend(projectSchema.statics, {});
+  baseValidate(null, data, next);
+};
+
+Validator.prototype.validateUpdate = function(user, data, next) {
+  baseValidate(user, data, next);
+};
 
 /* =========================================================================
  * Private Helpers
  * ========================================================================= */
+function baseValidate(project, data, next) {
+  next();
+}
 
 /* =========================================================================
- * Exports
+ * Export
  * ========================================================================= */
-module.exports = projectSchema;
+module.exports = new Validator();
