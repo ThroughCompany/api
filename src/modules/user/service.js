@@ -259,7 +259,6 @@ UserService.prototype.uploadImage = function(options, next) {
   if (!options) return next(new errors.InvalidArgumentError('options is required'));
   if (!options.userId) return next(new errors.InvalidArgumentError('User Id is required'));
   if (!options.fileName) return next(new errors.InvalidArgumentError('File Name is required'));
-  if (!options.fileName) return next(new errors.InvalidArgumentError('File Name is required'));
   if (!options.filePath) return next(new errors.InvalidArgumentError('File Path is required'));
   if (!options.fileType) return next(new errors.InvalidArgumentError('File Type is required'));
   if (!options.imageType) return next(new errors.InvalidArgumentError('Image Type is required'));

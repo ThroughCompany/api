@@ -15,6 +15,7 @@ var errors = require('modules/error');
 /* =========================================================================
  * Constants
  * ========================================================================= */
+var IMAGE_TYPE_SIZES = require('modules/image/constants/image-type-sizes');
 
 /* =========================================================================
  * Controller
@@ -118,7 +119,7 @@ Controller.prototype.uploadImage = function(req, res, next) {
 
   var image = files.image;
 
-  console.log(imageType);
+  if (image.size > IMAGE_TYPE_SIZES.PROFILE_PIC) return next(new errors.InvalidArgumentError('file size cannot exceed ' + IMAGE_TYPE_SIZES.PROFILE_PIC + ' bytes'));
 
   userService.uploadImage({
     userId: userId,
