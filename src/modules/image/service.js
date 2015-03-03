@@ -5,9 +5,6 @@ var util = require('util');
 var _ = require('underscore');
 var async = require('async');
 var uuid = require('node-uuid');
-var px = require('6px');
-
-var appConfig = require('src/config/app-config');
 
 //modules
 var errors = require('modules/error');
@@ -15,6 +12,7 @@ var CommonService = require('modules/common');
 
 //lib
 var awsApi = require('lib/aws-api');
+var pxApi = require('lib/px-api');
 
 /* =========================================================================
  * Constants
@@ -52,15 +50,24 @@ ImageService.prototype.upload = function(options, next) {
 
   var _this = this;
 
-  switch (options.imageType) {
-    case IMAGE_TYPES.PROFILE_PIC:
-      awsApi.uploadProfilePic({
-        filePath: options.filePath,
-        fileName: options.fileName,
-        fileType: options.fileType
-      }, next);
-      break;
-  }
+  async.waterfall([
+    function uploadToAws_step(done) {
+      switch (options.imageType) {
+        case IMAGE_TYPES.PROFILE_PIC:
+          awsApi.uploadProfilePic({
+            filePath: options.filePath,
+            fileName: options.fileName,
+            fileType: options.fileType
+          }, done);
+          break;
+      }
+    },
+    // function uploadTxPx_step(imageUrl, done) {
+    //   pxApi.uploadImage({
+    //     imageUrl: imageUrl
+    //   }, done);
+    // }
+  ], next);
 };
 
 // public api ===============================================================================

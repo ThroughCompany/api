@@ -4,8 +4,8 @@
 var _ = require('underscore');
 var packageConfig = require('../../package');
 
-//var appSettings = require('../../appSettings');
-var appSettings = {};
+var appSettings = require('../../appSettings');
+//var appSettings = {};
 
 /* =========================================================================
  * Force UTC timezone

@@ -5,10 +5,16 @@ var fs = require('fs');
 var AWS = require('aws-sdk');
 var async = require('async');
 var uuid = require('node-uuid');
-var s3 = new AWS.S3();
+
+var appConfig = require('src/config/app-config');
 
 //modules
 var errors = require('modules/error');
+
+AWS.config.update({
+  accessKeyId: appConfig.aws.accessKeyId,
+  secretAccessKey: appConfig.aws.secretAccessKey
+});
 
 /* =========================================================================
  * Constants
@@ -51,6 +57,8 @@ function uploadImage(options, next) {
   if (!options.fileType) return next(new errors.InternalServiceError('options.fileType is required'));
 
   var path = uuid.v4() + '-' + uuid.v4() + '-' + options.fileName;
+
+  var s3 = new AWS.S3();
 
   async.waterfall([
     function readFileFromDisk_step(done) {
