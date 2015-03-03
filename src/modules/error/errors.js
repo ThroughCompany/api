@@ -41,6 +41,15 @@ util.inherits(ObjectNotFoundError, AbstractError);
 ObjectNotFoundError.prototype.name = 'Object not found Error';
 
 /* =========================================================================
+ * Internal Service Error
+ * ========================================================================= */
+var InternalServiceError = function(msg) {
+  AbstractError.call(this, msg);
+};
+util.inherits(InternalServiceError, AbstractError);
+InternalServiceError.prototype.name = 'Internal Service Error';
+
+/* =========================================================================
  * Not Implemented Error
  * ========================================================================= */
 var NotImplementedError = function(msg) {
@@ -147,6 +156,7 @@ module.exports = {
   ObjectNotFoundError: ObjectNotFoundError,
 
   // Application errors
+  InternalServiceError: InternalServiceError,
   DatabaseError: DatabaseError,
   NotImplementedError: NotImplementedError,
   InvalidArgumentError: InvalidArgumentError,

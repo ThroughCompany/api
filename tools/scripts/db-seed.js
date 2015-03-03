@@ -1,9 +1,16 @@
 /* =========================================================================
  * Dependencies
  * ========================================================================= */
-var userService = require('./service');
+var async = require('async');
+var _ = require('underscore');
+
+var app = require('src');
+
+var dbSeed = require('../seed/seed-db');
 
 /* =========================================================================
- * Export
+ * Run
  * ========================================================================= */
-module.exports = userService;
+dbSeed.run(function() {
+  process.exit(0);
+});

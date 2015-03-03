@@ -4,6 +4,9 @@
 var _ = require('underscore');
 var packageConfig = require('../../package');
 
+var appSettings = require('../../appSettings');
+//var appSettings = {};
+
 /* =========================================================================
  * Force UTC timezone
  * ========================================================================= */
@@ -44,27 +47,25 @@ var defaults = {
     }
   },
   aws: {
+    accessKeyId: 'xxx',
+    secretAccessKey: 'xxx',
+    region: 'xxx',
     s3: {
-      accessKeyId: 'xxx',
-      secretAccessKey: 'xxx',
-      region: 'US Standard',
-      maxRetries: 1,
-      apiVersion: '',
-      buckets: {
-        profilePics: {
-          name: 'Profile-Pictures'
-        },
-        companyDocuments: {
-          name: 'Company-Documents'
-        }
-      }
+      buckets: {}
     }
   },
   log: {
     level: 'debug',
     console: true
+  },
+  px: {
+    userId: 'xxx',
+    apiKey: 'xxx',
+    apiSecret: 'xxx'
   }
 };
+
+defaults = _.extend(defaults, appSettings);
 
 /* =========================================================================
  * Production

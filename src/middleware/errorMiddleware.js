@@ -62,6 +62,13 @@ function Middleware(err, req, res, next) {
     });
   }
 
+  if (error instanceof errors.InternalServiceError) {
+    return res.status(501).json({
+      message: 'Internal Service Error',
+      errors: errorMessageReponse(error)
+    });
+  }
+
   res.status(500).json({
     message: 'Error',
     errors: internalMessageResponse(error)

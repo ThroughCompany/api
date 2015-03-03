@@ -12,6 +12,8 @@ var appConfig = require('src/config/app-config');
 
 var agent = require('tests/lib/agent');
 
+var dbSeed = require('tools/seed/seed-db');
+
 /* =========================================================================
  * Before
  * ========================================================================= */
@@ -43,6 +45,18 @@ before(function(next) {
 });
 
 before(function(next) {
+  console.log('\nLOADING SEED DATA...');
+
+  dbSeed.run({
+    createAdmins: false
+  }, function() {
+
+    console.log('SEED DATA LOADED');
+    next();
+  });
+});
+
+before(function(next) {
   app.init({
     http: true
   }, next);
@@ -53,7 +67,6 @@ before(function(next) {
 
   httpConfig.init(function(err, expressConfig) {
     console.log('\nSTARTING TEST AGENT...');
-
 
     agent.init(expressConfig.app);
 

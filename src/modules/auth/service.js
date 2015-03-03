@@ -6,14 +6,20 @@ var async = require('async');
 var bcrypt = require('bcrypt-nodejs');
 var _ = require('underscore');
 var jwt = require('jwt-simple');
-var fb = require('fb');
 
 //modules
 var errors = require('modules/error');
+var logger = require('modules/logger');
 
 //services
 var userService = require('modules/user');
 var adminService = require('modules/admin');
+var projectService = require('modules/project');
+var projectUserService = require('modules/project-user');
+var permissionService = require('modules/permission');
+
+//lib
+var facebookApi = require('lib/facebook-api');
 
 //models
 var Auth = require('./data/model');
@@ -81,6 +87,85 @@ AuthService.prototype.authenticateCredentials = function authenticateCredentials
 };
 
 /**
+ * @description Authenticate using a Facebook access token
+ * @param {Object} options
+ * @param {String} options.facebookAccessToken
+ * @param {Function} next - callback
+ */
+AuthService.prototype.authenticateFacebook = function authenticateFacebook(options, next) {
+  if (!options) return next(new errors.InvalidArgumentError('options is required'));
+  if (!options.facebookAccessToken) return next(new errors.InvalidArgumentError('Facebook Access Token is required'));
+
+  var _this = this;
+
+  async.waterfall([
+    function getFacebookData(done) {
+      facebookApi.getUserByToken({
+        facebookAccessToken: options.facebookAccessToken
+      }, done);
+    },
+    function getUserByFacebookToken(facebookData, done) {
+      if (!facebookData || facebookData.error) return done(new errors.InternalServiceError('There was a problem getting your Facebook data'));
+
+      userService.getByFacebookId({
+        facebookId: facebookData.id
+      }, function(error, user) {
+        return done(error, user, facebookData);
+      });
+    },
+    function connectOrRegisterWithFacebook(user, facebookData, done) {
+      var facebookEmail = facebookData.email;
+
+      if (user) {
+        return done(null, user);
+      } else if (!facebookEmail) {
+        return done(new errors.InternalServiceError('There was a problem getting your Facebook data'));
+      } else {
+        userService.getByEmail({
+          email: facebookEmail
+        }, function(error, user) {
+          if (error) {
+            return done(error);
+          }
+          if (!user) {
+            return userService.createUsingFacebook({
+              email: facebookData.email,
+              facebookId: facebookData.id,
+              facebookUsername: facebookData.username
+            }, done);
+          } else {
+            userService.update({
+              userId: user._id,
+              updates: {
+                facebook: {
+                  id: facebookData.id,
+                  username: facebookData.username
+                }
+              }
+            }, done, true);
+          }
+        });
+      }
+    },
+    function generateAuthToken_step(user, done) {
+      _user = user;
+
+      authUtil.generateAuthToken({
+        user: _user
+      }, done);
+    }
+  ], function finish(err, results) {
+    if (err) return next(err);
+
+    next(null, {
+      token: results.token,
+      expires: results.expires,
+      user: _user
+    });
+  }, next);
+};
+
+/**
  * @description Get a user's auth info by their id
  * @param {Object} options
  * @param {String} options.userId
@@ -128,75 +213,6 @@ AuthService.prototype.authenticateToken = function authenticateToken(options, ne
 };
 
 /**
- * @description Authenticate using a Facebook access token
- * @param {Object} options
- * @param {String} options.facebookAccessToken
- * @param {Function} next - callback
- */
-AuthService.prototype.authenticateFacebook = function authenticateFacebook(options, next) {
-  if (!options) return next(new errors.InvalidArgumentError('options is required'));
-  if (!options.facebookAccessToken) return next(new errors.InvalidArgumentError('Facebook Access Token is required'));
-
-  var _this = this;
-
-  async.waterfall([
-    function getFacebookData(done) {
-      fb.setAccessToken(options.facebookAccessToken);
-      fb.api('me', done);
-    },
-    function getUserByFacebookToken(facebookData, done) {
-      if (!facebookData || facebookData.error) return done(new errors.InternalServiceError('There was a problem getting your Facebook data'));
-
-      userService.getByFacebookId({
-        facebookId: facebookData.id
-      }, function(error, user) {
-        return callback(error, user, facebookData);
-      });
-    },
-    function connectOrRegisterWithFacebook(user, facebookData, callback) {
-      var facebookEmail = facebookData.email;
-
-      if (user) {
-        return callback(null, user);
-      } else {
-        if (facebookEmail) {
-          userEntityManager.getByEmail({
-            email: facebookEmail
-          }, function(error, user) {
-            if (error) {
-              return callback(error);
-            }
-            if (!user) {
-              return userEntityManager.createUsingFacebook({
-                email: facebookData.email,
-                facebookId: facebookData.id,
-                facebookUsername: facebookData.username
-              }, callback);
-            } else {
-              userService.update({
-                userId: user._id,
-                updates: {
-                  facebook: {
-                    id: facebookData.id,
-                    username: facebookData.username
-                  }
-                }
-              }, callback, true);
-            }
-          });
-        } else return userService.createUsingFacebook({
-          email: facebookData.email,
-          facebookId: facebookData.id,
-          facebookUsername: facebookData.username
-        }, callback);
-      }
-    }
-  ], function finish(err, user) {
-    return next(err, user);
-  });
-};
-
-/**
  * @description Get a user's authorization claims
  *
  */
@@ -205,49 +221,81 @@ AuthService.prototype.getUserClaims = function getUserClaims(options, next) {
   if (!options.userId) return next(new errors.InvalidArgumentError('User Id is required'));
 
   var _this = this;
-  var user = null;
-  var admin = null;
 
-  async.waterfall([
-    function getUserById_step(done) {
+  async.auto({
+    user: function getUserById_step(done) {
       userService.getById({
         userId: options.userId
       }, done);
     },
-    function getAdminByUserId_step(_user, done) {
-      if (!_user) return done(new errors.ObjectNotFoundError('User not found'));
-      user = _user;
-
+    admin: function getAdminByUserId_step(done) {
       adminService.getByUserId({
-        userId: user._id
+        userId: options.userId
       }, done);
     },
-    function getUserClaims_step(_admin, done) {
-      admin = _admin;
+    projectUsers: function getProjectUsers_step(done) {
+      projectUserService.getByUserId({
+        userId: options.userId
+      }, done);
+    },
+    permissions: ['projectUsers', function getPermissions_step(done, results) {
+      var projectUsers = results.projectUsers;
 
-      var userClaims = {
-        userId: user._id,
-        email: user.email,
-        admin: admin ? true : false,
-        projectUserIds: []
-      };
+      var projectUserPermissionIds = _.pluck(projectUsers, 'permissions');
+      var permissionIds = [];
 
-      // if (user.projectUsers) {
-      //   user.projectUsers.forEach(function(projectUserId) {
+      _.each(projectUserPermissionIds, function(ids) {
+        permissionIds = permissionIds.concat(ids);
+      });
 
-      //     userClaims.projectUserId.push(projectUserId);
+      permissionIds = _.uniq(permissionIds);
 
-      //     if (projectUser.permissions) {
-      //       projectUser.permissions.forEach(function(permission) {
-      //         userClaims[permission.name + '-' + projectUser.project] = true;
-      //       });
-      //     }
-      //   });
-      // }
+      permissionService.getByIds({
+        ids: permissionIds
+      }, done);
+    }]
+  }, function(err, results) {
+    if (err) return next(err);
 
-      done(null, userClaims);
+    var user = results.user;
+    var admin = results.admin;
+    var projectUsers = results.projectUsers;
+    var permissions = results.permissions;
+
+    var userClaims = {
+      userId: user._id,
+      email: user.email,
+      admin: admin ? true : false,
+      projectIds: [],
+      projectPermissions: {}
+    };
+
+    if (projectUsers && projectUsers.length) {
+      projectUsers.forEach(function(projectUser) {
+        userClaims.projectIds.push(projectUser.project);
+
+        var projectPermissions = [];
+
+        if (projectUser.permissions) {
+          projectUser.permissions.forEach(function(permission) {
+            var foundPermission = _.find(permissions, function(p) {
+              return p._id === permission;
+            });
+
+            if (foundPermission) {
+              projectPermissions.push({
+                name: foundPermission.name
+              });
+            }
+          });
+        }
+
+        userClaims.projectPermissions[projectUser.project] = projectPermissions;
+      });
     }
-  ], next);
+
+    next(null, userClaims);
+  });
 };
 
 /* =========================================================================

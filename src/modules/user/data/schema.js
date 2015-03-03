@@ -8,7 +8,6 @@ var baseSchema = require('modules/common/data/base-schema');
 /* =========================================================================
  * Constants
  * ========================================================================= */
-var DEFAULTIMAGEURL = 'https://s3.amazonaws.com/ThroughCompany_Assets/user-avatar.jpg';
 
 /* =========================================================================
  * Schema
@@ -22,12 +21,12 @@ var userSchema = baseSchema.extend({
       unique: true
     }
   },
-  firstname: {
+  firstName: {
     type: String,
     default: '',
     trim: true
   },
-  lastname: {
+  lastName: {
     type: String,
     default: '',
     trim: true
@@ -37,9 +36,9 @@ var userSchema = baseSchema.extend({
     required: true,
     default: false
   },
-  imageUrl: {
+  profilePic: {
     type: String,
-    default: DEFAULTIMAGEURL
+    trim: true
   },
   projectUsers: [{
     type: String,
@@ -52,6 +51,28 @@ var userSchema = baseSchema.extend({
         unique: false,
         sparse: true
       }
+    },
+    username: {
+      type: String,
+      trim: true
+    }
+  },
+  location: {
+    type: String,
+    trim: true
+  },
+  social: {
+    facebook: {
+      type: String,
+      trim: true
+    },
+    gitHub: {
+      type: String,
+      trim: true
+    },
+    linkedIn: {
+      type: String,
+      trim: true
     }
   }
 });
@@ -62,7 +83,7 @@ var userSchema = baseSchema.extend({
 userSchema.pre('save', function(next) {
 
   if (this.facebook && this.facebook.id) {
-    this.imageUrl = "https://graph.facebook.com/" + this.facebook.id + "/picture?type=large";
+    this.profilePic = "https://graph.facebook.com/" + this.facebook.id + "/picture?type=large";
   }
 
   next();

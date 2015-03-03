@@ -40,30 +40,20 @@ Controller.prototype.authenticateWithCredentials = function authenticateWithCred
 Controller.prototype.authenticateWithFacebook = function authenticateWithFacebook(req, res, next) {
   var facebookAccessToken = req.body.facebookAccessToken;
 
-  if (!facebookAccessToken) return next(new error.InvalidArgumentError('Facebook access token is required'));
-
   async.waterfall([
     function authenticateUser(done) {
       authService.authenticateFacebook({
         facebookAccessToken: facebookAccessToken
       }, done);
-    },
-    function generateToken(user, done) {
-      authUtil.generateAuthToken({
-        user: user
-      }, function(err, token, expires) {
-        return done(err, user, token, expires);
-      });
     }
-  ], function finish(err, user, token, expires) {
+  ], function finish(err, results) {
     if (err) return next(err);
 
     res.status(200).json({
-      token: token,
-      expires: expires,
-      user: user
+      token: results.token,
+      expires: results.expires,
+      user: results.user
     });
-
   });
 };
 

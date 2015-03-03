@@ -28,7 +28,6 @@ AuthMiddleware.prototype.authenticationRequired = function authenticationRequire
       if (err) return next(err);
 
       //attach the user and their claims to the request
-      //req.user = claims.user;
       req.claims = claims;
 
       return next();

@@ -3,9 +3,11 @@
  * ========================================================================= */
 var express = require('express');
 var swagger = require('swagger-node-express');
+var multipart = require('connect-multiparty');
 
 //middleware
 var authMiddleware = require('src/middleware/authMiddleware');
+var multipartMiddleware = multipart();
 
 var controller = require('./controller');
 
@@ -119,11 +121,62 @@ var getUserProjectsById = {
   }
 };
 
+var updateUserById = {
+  spec: {
+    path: '/users/{id}',
+    summary: 'Update a user by id',
+    method: 'PATCH',
+    parameters: [
+      swagger.params.path('id', 'user\s id', 'string')
+    ],
+    nickname: 'updateUserById',
+    type: 'User',
+    produces: ['application/json']
+  },
+  action: function(req, res, next) {
+    authMiddleware.authenticationRequired(req, res, function(err) {
+      if (err) return next(err);
+      authMiddleware.currentUserIdParamRequired('id')(req, res, function(err) {
+        if (err) return next(err);
+        controller.updateUserById(req, res, next);
+      });
+    });
+  }
+};
+
+var uploadImage = {
+  spec: {
+    path: '/users/{id}/images',
+    summary: 'Upload a user image',
+    method: 'POST',
+    parameters: [
+      swagger.params.path('id', 'user\'s id', 'string')
+    ],
+    nickname: 'uploadImage',
+    type: 'User',
+    produces: ['application/json']
+  },
+  action: function(req, res, next) {
+    authMiddleware.authenticationRequired(req, res, function(err) {
+      if (err) return next(err);
+      authMiddleware.currentUserIdParamRequired('id')(req, res, function(err) {
+        if (err) return next(err);
+        multipartMiddleware(req, res, function(err) {
+          if (err) return next(err);
+          controller.uploadImage(req, res, next);
+        });
+      });
+    });
+  }
+};
+
 swagger.addGet(getUsers);
 swagger.addGet(getUserById);
 swagger.addGet(getUserClaimsById);
 swagger.addPost(createUser);
 swagger.addGet(getUserProjectsById);
+swagger.addPatch(updateUserById);
+swagger.addPost(uploadImage);
 
 /* =========================================================================
  *   Swagger declarations

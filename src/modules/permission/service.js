@@ -53,5 +53,27 @@ PermissionService.prototype.getByRoleName = function getByRoleName(options, next
   ], next);
 };
 
+
+/**
+ * @param {object} options
+ * @param {array} options.ids
+ * @param {function} next - callback
+ */
+PermissionService.prototype.getByIds = function getByIds(options, next) {
+  if (!options) return next(new errors.InvalidArgumentError('options is required'));
+  if (!options.ids || !_.isArray(options.ids)) return next(new errors.InvalidArgumentError('Ids is required'));
+
+  var _this = this;
+  var role = null;
+
+  var query = Permission.find({
+    _id: {
+      $in: options.ids
+    }
+  });
+
+  query.exec(next);
+};
+
 // public api ===============================================================================
 module.exports = new PermissionService();
