@@ -15,6 +15,9 @@ var Auth = require('modules/auth/data/model');
 
 var authUtil = require('modules/auth/util');
 
+//services
+var imageService = require('modules/image');
+
 var validator = require('./validator');
 
 /* =========================================================================
@@ -22,6 +25,7 @@ var validator = require('./validator');
  * ========================================================================= */
 var REGEXES = require('modules/common/constants/regexes');
 var DEFAULTIMAGEURL = 'https://s3.amazonaws.com/throughcompany-assets/user-avatars/avatar';
+var IMAGE_TYPES = require('modules/image/constants/image-types');
 
 var UserService = function() {
   CommonService.call(this, User);
@@ -59,7 +63,7 @@ UserService.prototype.createUsingCredentials = function(options, next) {
       var user = new User();
       user.email = options.email;
       user.active = true;
-      user.imageUrl = DEFAULTIMAGEURL + randomNum(1, 4) + '.jpg';
+      user.profilePic = DEFAULTIMAGEURL + randomNum(1, 4) + '.jpg';
 
       user.save(function(err, newUser) {
         done(err, newUser, hash);
@@ -111,7 +115,7 @@ UserService.prototype.createUsingFacebook = function(options, next) {
       user.created = Date.now();
       user.facebook.id = options.facebookId;
       user.facebook.username = options.facebookUsername;
-      user.imageUrl = DEFAULTIMAGEURL + randomNum(1, 4) + '.jpg'
+      user.profilePic = DEFAULTIMAGEURL + randomNum(1, 4) + '.jpg'
 
       user.save(done);
     }
@@ -243,11 +247,67 @@ UserService.prototype.getByFacebookId = function(options, next) {
  * @param {function} next - callback
  */
 UserService.prototype.delete = function(options, next) {
+  if (!options) return next(new errors.InvalidArgumentError('options is required'));
   if (!options.userId) return next(new errors.InvalidArgumentError('User Id is required'));
 
   User.findOneAndRemove({
     _id: options.userId
   }, next);
+};
+
+UserService.prototype.uploadImage = function(options, next) {
+  if (!options) return next(new errors.InvalidArgumentError('options is required'));
+  if (!options.userId) return next(new errors.InvalidArgumentError('User Id is required'));
+  if (!options.fileName) return next(new errors.InvalidArgumentError('File Name is required'));
+  if (!options.fileName) return next(new errors.InvalidArgumentError('File Name is required'));
+  if (!options.filePath) return next(new errors.InvalidArgumentError('File Path is required'));
+  if (!options.fileType) return next(new errors.InvalidArgumentError('File Type is required'));
+  if (!options.imageType) return next(new errors.InvalidArgumentError('Image Type is required'));
+
+  var validUserImageTypes = [IMAGE_TYPES.PROFILE_PIC];
+
+  if (!_.contains(validUserImageTypes, options.imageType)) return next(new errors.InvalidArgumentError(options.imageType + ' is not a valid image type'));
+
+  var _this = this;
+  var user = null;
+
+  async.waterfall([
+    function getUserById_step(done) {
+      _this.getById({
+        userId: options.userId
+      }, done);
+    },
+    function uploadImage_step(_user, done) {
+      if (!_user) return done(new errors.InvalidArgumentError('No user exists with the id ' + options.userId));
+
+      user = _user;
+
+      imageService.upload({
+        imageType: options.imageType,
+        fileName: options.fileName,
+        filePath: options.filePath,
+        fileType: options.fileType
+      }, done);
+    },
+    function addImageToUser_step(imageUrl, done) {
+      var err = null;
+
+      switch (options.imageType) {
+        case IMAGE_TYPES.PROFILE_PIC:
+          user.profilePic = imageUrl;
+          break
+        default:
+          err = new errors.InvalidArgumentError('Invalid image type');
+          break;
+      }
+
+      if (err) {
+        return done(err);
+      } else {
+        user.save(done);
+      }
+    }
+  ], next);
 };
 
 /* =========================================================================

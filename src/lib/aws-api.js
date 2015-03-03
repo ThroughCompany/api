@@ -50,17 +50,17 @@ function uploadImage(options, next) {
   if (!options.fileName) return next(new errors.InternalServiceError('options.fileName is required'));
   if (!options.fileType) return next(new errors.InternalServiceError('options.fileType is required'));
 
+  var path = uuid.v4() + '-' + uuid.v4() + '-' + options.fileName;
+
   async.waterfall([
     function readFileFromDisk_step(done) {
       fs.readFile(options.filePath, done);
     },
     function uploadFileToAws_step(fileData, done) {
-      var name = uuid.v4() + '-' + uuid.v4() + '-' + options.fileName;
-
       s3.putObject({
         ACL: 'public-read',
         Bucket: options.bucket,
-        Key: name,
+        Key: path,
         ContentType: options.fileType,
         CacheControl: 'public, max-age=31536000',
         Body: fileData
@@ -70,7 +70,7 @@ function uploadImage(options, next) {
       fs.unlink(options.filePath, function(err) {
         if (err) return next(err);
 
-        var url = 'https://s3.amazonaws.com' + '/' + options.bucket + '/' + name;
+        var url = 'https://s3.amazonaws.com' + '/' + options.bucket + '/' + path;
 
         //return just the url to the image on AWS
         done(null, url);

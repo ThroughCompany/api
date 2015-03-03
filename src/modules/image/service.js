@@ -19,13 +19,11 @@ var awsApi = require('lib/aws-api');
 /* =========================================================================
  * Constants
  * ========================================================================= */
-var IMAGE_TYPES = {
-  PROFILE_PIC: 'PROFILE_PIC'
-};
+var IMAGE_TYPES = require('./constants/image-types');
 
 var ALLOWED_FILE_TYPES = {
-  JPG: 'JPG',
-  PNG: 'PNG'
+  JPG: 'IMAGE/JPEG',
+  PNG: 'IMAGE/PNG'
 };
 
 /* =========================================================================
@@ -49,8 +47,8 @@ ImageService.prototype.upload = function(options, next) {
   if (!_.isString(options.fileType)) return next(new errors.InvalidArgumentError('FileType must be a string'));
   options.fileType = options.fileType.toUpperCase();
 
-  if (_.contains(_.values(IMAGE_TYPES), options.imageType)) return next(new errors.InvalidArgumentError(options.imageType + ' is not a valid image type'));
-  if (_.contains(_.values(ALLOWED_FILE_TYPES), options.fileType)) return next(new errors.InvalidArgumentError(options.fileType + ' is not a valid file type'));
+  if (!_.contains(_.values(IMAGE_TYPES), options.imageType)) return next(new errors.InvalidArgumentError(options.imageType + ' is not a valid image type'));
+  if (!_.contains(_.values(ALLOWED_FILE_TYPES), options.fileType)) return next(new errors.InvalidArgumentError(options.fileType + ' is not a valid file type'));
 
   var _this = this;
 

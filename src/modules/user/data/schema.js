@@ -36,7 +36,7 @@ var userSchema = baseSchema.extend({
     required: true,
     default: false
   },
-  imageUrl: {
+  profilePic: {
     type: String,
     trim: true
   },
@@ -83,7 +83,7 @@ var userSchema = baseSchema.extend({
 userSchema.pre('save', function(next) {
 
   if (this.facebook && this.facebook.id) {
-    this.imageUrl = "https://graph.facebook.com/" + this.facebook.id + "/picture?type=large";
+    this.profilePic = "https://graph.facebook.com/" + this.facebook.id + "/picture?type=large";
   }
 
   next();

@@ -16,8 +16,7 @@ function init(next) {
 
   AWS.config.update({
     accessKeyId: appConfig.aws.accessKeyId,
-    secretAccessKey: appConfig.aws.secretAccessKey,
-    region: appConfig.aws.region
+    secretAccessKey: appConfig.aws.secretAccessKey
   });
 
   next();

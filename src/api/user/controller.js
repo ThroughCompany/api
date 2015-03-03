@@ -10,6 +10,12 @@ var userService = require('modules/user');
 var projectService = require('modules/project');
 var imageService = require('modules/image');
 
+var errors = require('modules/error');
+
+/* =========================================================================
+ * Constants
+ * ========================================================================= */
+
 /* =========================================================================
  * Controller
  * ========================================================================= */
@@ -98,10 +104,12 @@ Controller.prototype.getUserProjectsById = function(req, res, next) {
 /** 
  * @description Upload a user image
  */
-Controller.prototype.upload = function(req, res, next) {
+Controller.prototype.uploadImage = function(req, res, next) {
+  var userId = req.params.id;
+  var imageType = req.query.imageType;
   var files = req.files;
 
-  if (!files.image) {
+  if (!files || !files.image) {
     return cleanup(files, function(err) {
       if (err) return next(err);
       return next(new errors.InvalidArgumentError('Image is required'));
@@ -110,8 +118,11 @@ Controller.prototype.upload = function(req, res, next) {
 
   var image = files.image;
 
-  imageService.upload({
-    imageType: '',
+  console.log(imageType);
+
+  userService.uploadImage({
+    userId: userId,
+    imageType: imageType,
     fileName: image.name,
     filePath: image.path,
     fileType: image.type
@@ -131,6 +142,8 @@ Controller.prototype.upload = function(req, res, next) {
  * @param {function} next - callback
  */
 function cleanup(filePaths, next) {
+  if (!filePaths || !filePaths.length) return next();
+
   async.each(filePaths, function(filePath, done) {
     fs.unlink(filePath, done);
   }, next);
