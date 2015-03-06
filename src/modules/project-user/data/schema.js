@@ -10,10 +10,12 @@ var projectUserSchema = baseSchema.extend({
   project: {
     type: String,
     ref: 'Project',
+    required: true
   },
   user: {
     type: String,
     ref: 'User',
+    required: true
   },
   permissions: [{
     type: String,
