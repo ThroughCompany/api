@@ -210,10 +210,17 @@ UserService.prototype.createAssetTag = function createAssetTag(options, next) {
     },
     function addTagToUser_step(_assetTag, done) {
 
+      var existingAssetTag = _.find(user.assetTags, function(assetTag) {
+        return assetTag.slug === _assetTag.slug;
+      });
+
+      if (existingAssetTag) return done(new errors.InvalidArgumentError(options.name + ' tag already exists. Cannot have duplicate tags'));
+
       assetTag = _assetTag;
 
       user.assetTags.push({
         name: assetTag.name,
+        slug: assetTag.slug,
         description: options.description
       });
 

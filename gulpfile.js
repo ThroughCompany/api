@@ -32,7 +32,7 @@ gulp.task('test-int', function() {
  * Database
  * ========================================================================= */
 gulp.task('db-seed', function() {
-	shell.exec('node ./tools/seed/seed-db');
+	shell.exec('node ./tools/scripts/db-seed');
 });
 
 /* =========================================================================

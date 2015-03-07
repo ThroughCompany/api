@@ -76,7 +76,12 @@ var userSchema = baseSchema.extend({
     }
   },
   assetTags: [{
+    _id: false,
     name: {
+      type: String,
+      trim: true
+    },
+    slug: {
       type: String,
       trim: true
     },

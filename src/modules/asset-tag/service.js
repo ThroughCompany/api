@@ -60,27 +60,30 @@ AssetTagService.prototype.getOrCreateByName = function getOrCreateByName(options
 
   async.waterfall([
     function verifyTagIsUnique_step(done) {
-      var query = AssetTag.find({
+      var query = AssetTag.findOne({
         slug: slug
       });
 
-      query.select('slug');
-
       query.exec(function(err, assetTag) {
         if (err) return done(err);
-        if (assetTag) return done(null, assetTag);
 
-        done();
+        done(null, assetTag);
       });
     },
-    function createAssetTag_step(done) {
+    function createAssetTag_step(assetTag, done) {
+      if (assetTag) return done(null, assetTag);
+
       var assetTag = new AssetTag();
       assetTag.name = options.name;
       assetTag.slug = slug;
 
       assetTag.save(done);
     }
-  ], next);
+  ], function(err, a) {
+    console.log(arguments);
+
+    next(err, a);
+  });
 };
 
 /**
@@ -98,7 +101,7 @@ AssetTagService.prototype.updateTagUserUseCount = function updateTagUserUseCount
 
   async.waterfall([
     function findTagByName_step(done) {
-      _.this.getByName({
+      _this.getByName({
         name: options.name
       }, done);
     },
@@ -137,6 +140,9 @@ AssetTagService.prototype.updateTagProjectUseCount = function updateTagProjectUs
 /* =========================================================================
  * Private Helpers
  * ========================================================================= */
+function generateSlug(name) {
+  return name.trim().replace(/\s/gi, '-').replace(/('|\.)/gi, '').toLowerCase();
+}
 
 /* =========================================================================
  * Export

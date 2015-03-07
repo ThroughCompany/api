@@ -12,7 +12,6 @@ var CommonService = require('modules/common');
 
 //lib
 var awsApi = require('lib/aws-api');
-var pxApi = require('lib/px-api');
 
 /* =========================================================================
  * Constants
@@ -61,12 +60,7 @@ ImageService.prototype.upload = function(options, next) {
           }, done);
           break;
       }
-    },
-    // function uploadTxPx_step(imageUrl, done) {
-    //   pxApi.uploadImage({
-    //     imageUrl: imageUrl
-    //   }, done);
-    // }
+    }
   ], next);
 };
 
