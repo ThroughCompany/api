@@ -170,6 +170,30 @@ var uploadImage = {
   }
 };
 
+var createAssetTag = {
+  spec: {
+    path: '/users/{id}/assettags',
+    summary: 'Add user asset tag',
+    method: 'POST',
+    parameters: [
+      swagger.params.path('id', 'user\'s id', 'string'),
+      swagger.params.body('tags', 'asset tag', 'string')
+    ],
+    nickname: 'createAssetTag',
+    type: 'User',
+    produces: ['application/json']
+  },
+  action: function(req, res, next) {
+    authMiddleware.authenticationRequired(req, res, function(err) {
+      if (err) return next(err);
+      authMiddleware.currentUserIdParamRequired('id')(req, res, function(err) {
+        if (err) return next(err);
+        controller.createAssetTag(req, res, next);
+      });
+    });
+  }
+};
+
 swagger.addGet(getUsers);
 swagger.addGet(getUserById);
 swagger.addGet(getUserClaimsById);
@@ -177,6 +201,7 @@ swagger.addPost(createUser);
 swagger.addGet(getUserProjectsById);
 swagger.addPatch(updateUserById);
 swagger.addPost(uploadImage);
+swagger.addPost(createAssetTag);
 
 /* =========================================================================
  *   Swagger declarations

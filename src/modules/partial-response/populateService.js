@@ -2,14 +2,13 @@
  * Dependencies
  * ========================================================================= */
 var util = require('util');
-var config = require('app/config');
 var path = require('path');
-var Errors = require(path.join(config.paths.config, 'error'));
 var _ = require('underscore');
 var async = require('async');
 
 //modules
 var logger = require('modules/logger');
+var errors = require('modules/error');
 
 /* =========================================================================
  * Constructor
@@ -21,8 +20,7 @@ function PopulateService() {
 }
 
 PopulateService.prototype.populate = function populate(options, next) {
-  if (!options) return next(new Errors.InvalidArgumentError('options is required'));
-  //if (!options.doc && !options.docs) return next(new Errors.InvalidArgumentError('options.doc or options.docs is required'));
+  if (!options) return next(new errors.InvalidArgumentError('options is required'));
   if (!options.doc && !options.docs) return next(null, null);
   if (options.docs) options.doc = options.docs;
 
@@ -123,7 +121,7 @@ function populateCollection(options, next) {
   }
 
   if (!idsToPopulate) {
-    return next(new Errors.InvalidArgumentError(errorMsg));
+    return next(new errors.InvalidArgumentError(errorMsg));
   }
 
   async.waterfall([

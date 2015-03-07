@@ -12,8 +12,8 @@ var baseSchema = require('modules/common/data/base-schema');
 /* =========================================================================
  * Schema
  * ========================================================================= */
-var userSchema = baseSchema.extend({
-  email: {
+var assetTagSchema = baseSchema.extend({
+  name: {
     type: String,
     trim: true,
     required: true,
@@ -21,88 +21,34 @@ var userSchema = baseSchema.extend({
       unique: true
     }
   },
-  firstName: {
+  slug: {
     type: String,
-    default: '',
-    trim: true
-  },
-  lastName: {
-    type: String,
-    default: '',
-    trim: true
-  },
-  active: {
-    type: Boolean,
+    trim: true,
     required: true,
-    default: false
-  },
-  profilePic: {
-    type: String,
-    trim: true
-  },
-  projectUsers: [{
-    type: String,
-    ref: 'ProjectUser'
-  }],
-  facebook: {
-    id: {
-      type: String,
-      index: {
-        unique: false,
-        sparse: true
-      }
-    },
-    username: {
-      type: String,
-      trim: true
+    index: {
+      unique: true
     }
   },
-  location: {
-    type: String,
-    trim: true
+  userUseCount: {
+    type: Number,
+    default: 0,
+    min: 0
   },
-  social: {
-    facebook: {
-      type: String,
-      trim: true
-    },
-    gitHub: {
-      type: String,
-      trim: true
-    },
-    linkedIn: {
-      type: String,
-      trim: true
-    }
-  },
-  assetTags: [{
-    name: {
-      type: String,
-      trim: true
-    },
-    description: {
-      type: String,
-      trim: true
-    }
-  }]
+  projectUseCount: {
+    type: Number,
+    default: 0,
+    min: 0
+  }
 });
 
 /* =========================================================================
  * Hooks
  * ========================================================================= */
-userSchema.pre('save', function(next) {
-
-  if (this.facebook && this.facebook.id) {
-    this.profilePic = "https://graph.facebook.com/" + this.facebook.id + "/picture?type=large";
-  }
-
-  next();
-});
 
 /* =========================================================================
  * Statics
  * ========================================================================= */
-_.extend(userSchema.statics, {});
+_.extend(assetTagSchema.statics, {});
 
 /* =========================================================================
  * Private Helpers
@@ -111,4 +57,4 @@ _.extend(userSchema.statics, {});
 /* =========================================================================
  * Exports
  * ========================================================================= */
-module.exports = userSchema;
+module.exports = assetTagSchema;

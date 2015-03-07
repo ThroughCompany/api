@@ -4,11 +4,11 @@
  * Dependencies
  * ========================================================================= */
 var appConfig = require('src/config/app-config');
-var errors = require('app/config/error');
 var _ = require('underscore');
 var async = require('async');
 
 var logger = require('modules/logger');
+var errors = require('modules/error');
 
 var FieldSelectorTreeNode = require('./fieldSelectorTreeNode');
 var FieldsCollection = require('./fieldsCollection');
@@ -27,15 +27,15 @@ var END_SUB_SELECT_EXPRESSION = ')';
 function PartialResponseParser() {}
 
 PartialResponseParser.prototype.parse = function(options, next) {
-  if (!options) return next(new Errors.InvalidArgumentError('options is required'));
+  if (!options) return next(new errors.InvalidArgumentError('options is required'));
   if (!options.fields) return next(null, null);
-  if (options.fields && !_.isString(options.fields)) return next(new Errors.InvalidArgumentError('options.fields must be a string'));
+  if (options.fields && !_.isString(options.fields)) return next(new errors.InvalidArgumentError('options.fields must be a string'));
 
   var fields = options.fields.trim();
 
   parseStringIntoFields(fields, function(err, fields) {
     if (err) return next(err);
-    if (!fields) return next(new Errors.InvalidArgumentError('Error parsing fields'));
+    if (!fields) return next(new errors.InvalidArgumentError('Error parsing fields'));
 
     var fieldsValid = true;
 
@@ -54,7 +54,7 @@ PartialResponseParser.prototype.parse = function(options, next) {
     fieldsValid = validateNodes(fields);
 
     if (!fieldsValid) {
-      return next(new Errors.InvalidArgumentError('fields cannot contain both include and exclude expressions'));
+      return next(new errors.InvalidArgumentError('fields cannot contain both include and exclude expressions'));
     }
 
     var results = {
@@ -82,7 +82,7 @@ function parseStringIntoFields(fields, next) {
   if (!fields) return next(null, null);
 
   if (startsWithReservedToken(fields)) {
-    return next(new Errors.InvalidArgumentError('A reserved token can not be the first character of the fields selector'));
+    return next(new errors.InvalidArgumentError('A reserved token can not be the first character of the fields selector'));
   }
 
   var results;
@@ -112,7 +112,7 @@ function parseString(fields) {
     switch (currentChar) {
       case NESTED_FIELD_SELECTOR:
         if (currentMemberName.length === 0) {
-          return next(new Errors.InvalidArgumentError('Nested Field token ' + NESTED_FIELD_SELECTOR + ' can not be preceeded by another reserved token.'));
+          return next(new errors.InvalidArgumentError('Nested Field token ' + NESTED_FIELD_SELECTOR + ' can not be preceeded by another reserved token.'));
         }
         childNode = parent.getOrAddChildNode(currentMemberName);
         currentMemberName = '';
@@ -134,7 +134,7 @@ function parseString(fields) {
         break;
       case BEGIN_SUB_SELECT_EXPRESSION:
         if (currentMemberName.length === 0) {
-          return next(new Errors.InvalidArgumentError('Begin Subselection token ' + BEGIN_SUB_SELECT_EXPRESSION + ' can not be preceeded by another reserved token.'));
+          return next(new errors.InvalidArgumentError('Begin Subselection token ' + BEGIN_SUB_SELECT_EXPRESSION + ' can not be preceeded by another reserved token.'));
         }
 
         childNode = parent.getOrAddChildNode(currentMemberName);

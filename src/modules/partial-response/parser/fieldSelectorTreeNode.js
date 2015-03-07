@@ -1,8 +1,7 @@
 /* =========================================================================
  * Dependencies
  * ========================================================================= */
-var config = require('app/config');
-var Errors = require('app/config/error');
+var appConfig = require('src/config/app-config');
 var _ = require('underscore');
 
 /* =========================================================================
