@@ -17,16 +17,21 @@ var authUtil = require('modules/auth/util');
 
 //services
 var imageService = require('modules/image');
+var assetTagService = require('modules/asset-tag');
 
 var validator = require('./validator');
 
 /* =========================================================================
  * Constants
  * ========================================================================= */
+var EVENTS = require('./constants/events');
 var REGEXES = require('modules/common/constants/regexes');
 var DEFAULTIMAGEURL = 'https://s3.amazonaws.com/throughcompany-assets/user-avatars/avatar';
 var IMAGE_TYPES = require('modules/image/constants/image-types');
 
+/* =========================================================================
+ * Constructor
+ * ========================================================================= */
 var UserService = function() {
   CommonService.call(this, User);
 };
@@ -38,7 +43,7 @@ util.inherits(UserService, CommonService);
  * @param {string} password
  * @param {function} next - callback
  */
-UserService.prototype.createUsingCredentials = function(options, next) {
+UserService.prototype.createUsingCredentials = function createUsingCredentials(options, next) {
   if (!options) return next(new errors.InvalidArgumentError('options is required'));
 
   var _this = this;
@@ -89,7 +94,7 @@ UserService.prototype.createUsingCredentials = function(options, next) {
  * @param {string} facebookUsername - facebook username
  * @param {function} next - callback
  */
-UserService.prototype.createUsingFacebook = function(options, next) {
+UserService.prototype.createUsingFacebook = function createUsingFacebook(options, next) {
   if (!options) return next(new errors.InvalidArgumentError('options is required'));
   if (!options.email) return next(new errors.InvalidArgumentError('Email is required'));
   if (!options.facebookId) return next(new errors.InvalidArgumentError('Facebook Id is required'));
@@ -130,7 +135,7 @@ UserService.prototype.createUsingFacebook = function(options, next) {
  * @param {object} updates
  * @param {function} next - callback
  */
-UserService.prototype.update = function(options, next) {
+UserService.prototype.update = function update(options, next) {
   if (!options.userId) return next(new errors.InvalidArgumentError('User Id is required'));
   if (!options.updates) return next(new errors.InvalidArgumentError('Updates is required'));
 
@@ -174,7 +179,59 @@ UserService.prototype.update = function(options, next) {
 
 /**
  * @param {object} options
- * @param {object} findOptions - hash of mongoose query params
+ * @param {string} userId
+ * @param {string} name
+ * @param {object} updates
+ * @param {function} next - callback
+ */
+UserService.prototype.createAssetTag = function createAssetTag(options, next) {
+  if (!options) return next(new errors.InvalidArgumentError('options is required'));
+  if (!options.userId) return next(new errors.InvalidArgumentError('User Id is required'));
+  if (!options.name) return next(new errors.InvalidArgumentError('Name is required'));
+
+  var _this = this;
+  var user = null;
+  var assetTag = null;
+
+  async.waterfall([
+    function findUserById_step(done) {
+      _this.getById({
+        userId: options.userId
+      }, done);
+    },
+    function findAssetTag_step(_user, done) {
+      if (!_user) return done(new errors.InvalidArgumentError('No user exists with the id ' + options.userId));
+
+      user = _user;
+
+      assetTagService.getOrCreateByName({
+        name: options.name
+      }, done);
+    },
+    function addTagToUser_step(_assetTag, done) {
+
+      assetTag = _assetTag;
+
+      user.assetTags.push({
+        name: assetTag.name,
+        description: options.description
+      });
+
+      user.save(done);
+    }
+  ], function finish(err, user) {
+    if (err) return next(err);
+
+    _this.emit(EVENTS.ASSET_TAG_USED_BY_USER, {
+      assetTagName: assetTag.name
+    });
+
+    return next(null, user);
+  });
+};
+
+/**
+ * @param {object} options
  * @param {array} [populate] - array of keys to populate
  * @param {function} next - callback
  */
