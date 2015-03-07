@@ -45,7 +45,10 @@ EventOrchestrator.prototype.registerHandlers = function() {
         logger.info('Module \'' + eventGroup.module + '\' listening to \'' + event.name + '\' event - ' + event.handlers.length + ' handlers');
 
         module.on(event.name, function() {
-          handler.apply(null, arguments, function(err) {
+          logger.debug('starting handling event : \'' + event.name + '\'');
+          
+          var args = Array.prototype.slice.call(arguments);
+          args.push(function(err) {
             if (err) {
               logger.error('error during event : \'' + event.name + '\'');
               logger.error(err);
@@ -53,6 +56,8 @@ EventOrchestrator.prototype.registerHandlers = function() {
               logger.debug('finished handling event : \'' + event.name + '\'');
             }
           });
+
+          handler.apply(null, args);
         });
       });
     });

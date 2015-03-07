@@ -79,10 +79,8 @@ AssetTagService.prototype.getOrCreateByName = function getOrCreateByName(options
 
       assetTag.save(done);
     }
-  ], function(err, a) {
-    console.log(arguments);
-
-    next(err, a);
+  ], function(err, assetTag) {
+    next(err, assetTag);
   });
 };
 
