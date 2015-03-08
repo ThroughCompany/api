@@ -30,6 +30,21 @@ var projectSchema = baseSchema.extend({
   projectUsers: [{
     type: String,
     ref: 'ProjectUser'
+  }],
+  assetTags: [{
+    _id: false,
+    name: {
+      type: String,
+      trim: true
+    },
+    slug: {
+      type: String,
+      trim: true
+    },
+    description: {
+      type: String,
+      trim: true
+    }
   }]
 }, {
   collection: 'projects'

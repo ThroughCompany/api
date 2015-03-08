@@ -49,6 +49,24 @@ Controller.prototype.createProject = function createProject(req, res, next) {
   });
 };
 
+/** 
+ * @description Create asset tag
+ */
+Controller.prototype.createAssetTag = function(req, res, next) {
+  var projectId = req.params.id;
+  var name = req.body.name;
+  var description = req.body.description;
+
+  projectService.createAssetTag({
+    projectId: projectId,
+    name: name,
+    description: description
+  }, function(err, project) {
+    if (err) return next(err);
+    return res.status(201).json(project);
+  });
+};
+
 /* =========================================================================
  * Expose
  * ========================================================================= */

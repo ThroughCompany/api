@@ -49,6 +49,19 @@ AuthMiddleware.prototype.currentUserIdParamRequired = function currentUserIdPara
   };
 };
 
+//checks for id as URL param against current project id claims
+AuthMiddleware.prototype.currentUserProjectIdParamRequired = function currentUserProjectIdParamRequired(paramName) {
+  var param = paramName || 'id';
+
+  return function _currentUserProjectIdParamRequired(req, res, next) {
+    if (!req.claims || !req.params[param] || !req.claims.projectIds || !req.claims.projectIds.length || (!_.contains(req.claims.projectIds, req.params[param]) && !req.claims.admin)) { //allow admins to bypass
+      return next(new errors.ForbiddenError('Current user is not a project member'));
+    } else {
+      next();
+    }
+  };
+};
+
 //checks that current user is an system level admin
 AuthMiddleware.prototype.adminRequired = function adminRequired(req, res, next) {
   if (!req.claims || !req.claims.admin) {

@@ -13,6 +13,7 @@ var logger = require('modules/logger');
  * ========================================================================= */
 var EVENTS = [];
 var USER_EVENTS = require('modules/user/constants/events');
+var PROJECT_EVENTS = require('modules/project/constants/events');
 
 /* =========================================================================
  * User Events
@@ -32,6 +33,23 @@ userEvents.events.push(assetTagUsedByUserEvent);
 EVENTS.push(userEvents);
 
 /* =========================================================================
+ * Project Events
+ * ========================================================================= */
+var projectEvents = {
+  module: 'modules/project',
+  events: []
+};
+
+var assetTagUsedByProjectEvent = {
+  name: PROJECT_EVENTS.ASSET_TAG_USED_BY_PROJECT,
+  handlers: []
+};
+assetTagUsedByProjectEvent.handlers.push(require('./handlers/project/asset-tag-used-by-project'));
+projectEvents.events.push(assetTagUsedByProjectEvent);
+
+EVENTS.push(projectEvents);
+
+/* =========================================================================
  * Constructor
  * ========================================================================= */
 function EventOrchestrator() {}
@@ -46,7 +64,7 @@ EventOrchestrator.prototype.registerHandlers = function() {
 
         module.on(event.name, function() {
           logger.debug('starting handling event : \'' + event.name + '\'');
-          
+
           var args = Array.prototype.slice.call(arguments);
           args.push(function(err) {
             if (err) {

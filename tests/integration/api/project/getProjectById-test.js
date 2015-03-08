@@ -122,7 +122,7 @@ describe('api', function() {
               var errorMessage = testUtils.getServerErrorMessage(response);
 
               should.exist(errorMessage);
-              errorMessage.should.equal('Current user id does not match user id param');
+              errorMessage.should.equal('Current user is not a project member');
 
               done();
             });

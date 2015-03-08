@@ -125,7 +125,7 @@ AssetTagService.prototype.updateTagProjectUseCount = function updateTagProjectUs
 
   async.waterfall([
     function findTagByName_step(done) {
-      _.this.getByName({
+      _this.getByName({
         name: options.name
       }, done);
     },

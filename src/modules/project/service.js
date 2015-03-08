@@ -10,6 +10,7 @@ var errors = require('modules/error');
 var CommonService = require('modules/common');
 var userService = require('modules/user');
 var permissionService = require('modules/permission');
+var assetTagService = require('modules/asset-tag');
 
 //models
 var User = require('modules/user/data/model');
@@ -21,6 +22,7 @@ var validator = require('./validator');
 /* =========================================================================
  * Constants
  * ========================================================================= */
+var EVENTS = require('./constants/events');
 var ROLES = require('modules/role/constants/role-names');
 
 /* =========================================================================
@@ -149,6 +151,66 @@ ProjectService.prototype.update = function(options, next) {
     }
   ], function finish(err, results) {
     return next(err, results);
+  });
+};
+
+/**
+ * @param {object} options
+ * @param {string} projectId
+ * @param {string} name
+ * @param {object} updates
+ * @param {function} next - callback
+ */
+ProjectService.prototype.createAssetTag = function createAssetTag(options, next) {
+  if (!options) return next(new errors.InvalidArgumentError('options is required'));
+  if (!options.projectId) return next(new errors.InvalidArgumentError('Project Id is required'));
+  if (!options.name) return next(new errors.InvalidArgumentError('Name is required'));
+
+  var _this = this;
+  var project = null;
+  var assetTag = null;
+
+  async.waterfall([
+    function findProjectById_step(done) {
+      _this.getById({
+        projectId: options.projectId
+      }, done);
+    },
+    function findAssetTag_step(_project, done) {
+      if (!_project) return done(new errors.InvalidArgumentError('No project exists with the id ' + options.projectId));
+
+      project = _project;
+
+      assetTagService.getOrCreateByName({
+        name: options.name
+      }, done);
+    },
+    function addTagToProject_step(_assetTag, done) {
+
+      var existingAssetTag = _.find(project.assetTags, function(assetTag) {
+        return assetTag.slug === _assetTag.slug;
+      });
+
+      if (existingAssetTag) return done(new errors.InvalidArgumentError(options.name + ' tag already exists. Cannot have duplicate tags'));
+
+      assetTag = _assetTag;
+
+      project.assetTags.push({
+        name: assetTag.name,
+        slug: assetTag.slug,
+        description: options.description
+      });
+
+      project.save(done);
+    }
+  ], function finish(err, project) {
+    if (err) return next(err);
+
+    _this.emit(EVENTS.ASSET_TAG_USED_BY_PROJECT, {
+      assetTagName: assetTag.name
+    });
+
+    return next(null, project);
   });
 };
 

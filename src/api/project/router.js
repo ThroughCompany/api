@@ -47,7 +47,7 @@ var getProjectById = {
   action: function(req, res, next) {
     authMiddleware.authenticationRequired(req, res, function(err) {
       if (err) return next(err);
-      authMiddleware.currentUserIdParamRequired('id')(req, res, function(err) {
+      authMiddleware.currentUserProjectIdParamRequired('id')(req, res, function(err) {
         if (err) return next(err);
         controller.getProjectById(req, res, next);
       });
@@ -75,9 +75,34 @@ var createProject = {
   }
 };
 
+var createAssetTag = {
+  spec: {
+    path: '/projects/{id}/assettags',
+    summary: 'Add project asset tag',
+    method: 'POST',
+    parameters: [
+      swagger.params.path('id', 'project\'s id', 'string'),
+      swagger.params.body('tags', 'asset tag', 'string')
+    ],
+    nickname: 'createAssetTag',
+    type: 'User',
+    produces: ['application/json']
+  },
+  action: function(req, res, next) {
+    authMiddleware.authenticationRequired(req, res, function(err) {
+      if (err) return next(err);
+      authMiddleware.currentUserProjectIdParamRequired('id')(req, res, function(err) {
+        if (err) return next(err);
+        controller.createAssetTag(req, res, next);
+      });
+    });
+  }
+};
+
 swagger.addGet(getProjects);
 swagger.addGet(getProjectById);
 swagger.addPost(createProject);
+swagger.addPost(createAssetTag);
 
 /* =========================================================================
  *   Swagger declarations
