@@ -5,14 +5,22 @@ var gulp = require('gulp');
 var jshint = require('gulp-jshint');
 var mocha = require('gulp-mocha');
 
-var shell = require('shelljs');
+var sh = require('shelljs');
 var async = require('async');
 
+require('gulp-task-list')(gulp);
 /* =========================================================================
  * Default Task
  * ========================================================================= */
 gulp.task('default');
 
+/**
+ * List gulp tasks
+ */
+gulp.task('?', function(next) {
+  sh.exec('gulp task-list')
+  next();
+});
 /* =========================================================================
  * Tests
  * ========================================================================= */
@@ -32,7 +40,7 @@ gulp.task('test-int', function() {
  * Database
  * ========================================================================= */
 gulp.task('db-seed', function() {
-	shell.exec('node ./tools/scripts/db-seed');
+	sh.exec('node ./tools/scripts/db-seed');
 });
 
 /* =========================================================================
