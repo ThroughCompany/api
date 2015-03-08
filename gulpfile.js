@@ -43,6 +43,10 @@ gulp.task('db-seed', function() {
 	sh.exec('node ./tools/scripts/db-seed');
 });
 
+gulp.task('db-clean', function() {
+  sh.exec('node ./tools/scripts/db-clean');
+});
+
 /* =========================================================================
  * Jshint
  * ========================================================================= */

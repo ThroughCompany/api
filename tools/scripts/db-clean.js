@@ -6,11 +6,11 @@ var _ = require('underscore');
 
 var app = require('src');
 
-var dbSeed = require('../db-seed');
+var dbClean = require('../db-clean');
 
 /* =========================================================================
  * Run
  * ========================================================================= */
-dbSeed.run({}, function() {
+dbClean.run({}, function() {
   process.exit(0);
 });

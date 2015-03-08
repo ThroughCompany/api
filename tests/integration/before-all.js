@@ -12,7 +12,8 @@ var appConfig = require('src/config/app-config');
 
 var agent = require('tests/lib/agent');
 
-var dbSeed = require('tools/seed/seed-db');
+var dbSeed = require('tools/db-seed');
+var dbClean = require('tools/db-clean');
 
 /* =========================================================================
  * Before
@@ -26,22 +27,7 @@ before(function(next) {
 before(function(next) {
   console.log('\nDROPPING MONGO DB...');
 
-  var conn = mongoose.createConnection(appConfig.db);
-
-  conn.once('open', function() {
-    conn.db.collectionNames(function(err, names) {
-      if (err) return next(err);
-
-      // if no errors then we have a collection drop the database
-      conn.db.dropDatabase(function(err, result) {
-        if (err) return next(err);
-
-        console.log('MONGO DB DROPPED');
-
-        next(err);
-      });
-    });
-  });
+  dbClean.run({}, next);
 });
 
 before(function(next) {
