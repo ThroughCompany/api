@@ -17,13 +17,16 @@ var authUtil = require('modules/auth/util');
 
 //services
 var imageService = require('modules/image');
-var assetTagService = require('modules/asset-tag');
+var assetTagService = require('modules/assetTag');
 
 var validator = require('./validator');
 
 /* =========================================================================
  * Constants
  * ========================================================================= */
+var TAKE = 50;
+var MAX_TAKE = 200;
+
 var EVENTS = require('./constants/events');
 var REGEXES = require('modules/common/constants/regexes');
 var DEFAULTIMAGEURL = 'https://s3.amazonaws.com/throughcompany-assets/user-avatars/avatar';
@@ -246,6 +249,12 @@ UserService.prototype.getAll = function(options, next) {
   if (!options) return next(new errors.InvalidArgumentError('options is required'));
 
   var query = User.find({});
+
+  if (options.select) {
+    query.select(options.select);
+  }
+
+  query.limit(options.take && options.take <= MAX_TAKE ? options.take : TAKE);
 
   return query.exec(next);
 };

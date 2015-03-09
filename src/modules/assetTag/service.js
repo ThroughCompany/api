@@ -15,6 +15,8 @@ var AssetTag = require('./data/model');
 /* =========================================================================
  * Constants
  * ========================================================================= */
+var TAKE = 50;
+var MAX_TAKE = 200;
 
 /* =========================================================================
  * Constructor
@@ -42,6 +44,45 @@ AssetTagService.prototype.getByName = function(options, next) {
     if (!assetTag) return next(new errors.ObjectNotFoundError('Asset Tag not found'));
 
     next(null, assetTag);
+  });
+};
+
+/**
+ * @param {object} options
+ * @param {object} [options.name]
+ * @param {object} [options.select]
+ * @param {object} [options.take]
+ * @param {function} next - callback
+ */
+AssetTagService.prototype.getAll = function(options, next) {
+  if (!options) return next(new errors.InvalidArgumentError('options is required'));
+
+  var conditions = {};
+
+  console.log(options.select);
+
+  if (options.name) {
+    var nameRegex = new RegExp(options.name, 'ig');
+
+    conditions.name = {
+      $regex: nameRegex
+    };
+  }
+
+  var query = AssetTag.find(conditions);
+
+  if (options.select) {
+    query.select(options.select);
+  }
+
+  query.limit(options.take && options.take <= MAX_TAKE ? options.take : TAKE);
+
+  query.sort('projectUseCount');
+
+  query.exec(function(err, assetTags) {
+    if (err) return next(err);
+
+    next(null, assetTags);
   });
 };
 

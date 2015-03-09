@@ -26,7 +26,12 @@ function Controller() {}
  * @description Get all users
  */
 Controller.prototype.getUsers = function(req, res, next) {
-  userService.getAll({}, function(err, users) {
+  var select = req.fields ? req.fields.select : null;
+  var expands = req.expands;
+
+  userService.getAll({
+    select: select
+  }, function(err, users) {
     if (err) return next(err);
     return res.status(200).json(users);
   });

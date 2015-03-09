@@ -9,7 +9,7 @@ var async = require('async');
 var errors = require('modules/error');
 
 //services
-var assetTagService = require('modules/asset-tag');
+var assetTagService = require('modules/assetTag');
 
 /* =========================================================================
  * Event Handler

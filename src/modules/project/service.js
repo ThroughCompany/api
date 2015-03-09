@@ -10,12 +10,12 @@ var errors = require('modules/error');
 var CommonService = require('modules/common');
 var userService = require('modules/user');
 var permissionService = require('modules/permission');
-var assetTagService = require('modules/asset-tag');
+var assetTagService = require('modules/assetTag');
 
 //models
 var User = require('modules/user/data/model');
 var Project = require('./data/model');
-var ProjectUser = require('modules/project-user/data/model');
+var ProjectUser = require('modules/projectUser/data/model');
 
 var validator = require('./validator');
 
