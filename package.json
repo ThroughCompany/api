@@ -25,8 +25,8 @@
     "gridfs-stream": "0.5.1",
     "gulp": "3.8.11",
     "gulp-jshint": "1.9.0",
-    "gulp-task-list": "0.0.1",
     "gulp-mocha": "2.0.0",
+    "gulp-task-list": "0.0.1",
     "jshint-stylish": "1.0.0",
     "jwt-simple": "0.2.0",
     "moment": "2.8.x",
@@ -45,7 +45,7 @@
     "swagger-node-express": "2.1.0",
     "underscore": "1.7.0",
     "winston": "0.8.x",
-    "yargs": "2.1.1"
+    "yargs": "^2.1.1"
   },
   "devDependencies": {
     "should": "3.1.4",

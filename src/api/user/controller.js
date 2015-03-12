@@ -150,9 +150,9 @@ Controller.prototype.createAssetTag = function(req, res, next) {
     userId: userId,
     name: name,
     description: description
-  }, function(err, user) {
+  }, function(err, assetTag) {
     if (err) return next(err);
-    return res.status(201).json(user);
+    return res.status(201).json(assetTag);
   });
 };
 

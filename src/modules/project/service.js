@@ -57,11 +57,16 @@ ProjectService.prototype.create = function(options, next) {
         userId: options.createdByUserId
       }, done);
     },
-    function createProject_step(_user, done) {
+    function generateProjectSlu_step(_user, done) {
       user = _user;
+
+      generateProjectSlug(options.name, done);
+    },
+    function createProject_step(slug, done) {
 
       var project = new Project();
       project.name = options.name;
+      project.slug = slug
       project.shortDescription = options.shortDescription;
       project.description = options.description;
 
@@ -224,7 +229,11 @@ ProjectService.prototype.getById = function(options, next) {
   if (!options.projectId) return next(new errors.InvalidArgumentError('Project Id is required'));
 
   var query = Project.findOne({
-    _id: options.projectId
+    $or: [{
+      _id: options.projectId
+    }, {
+      slug: options.projectId
+    }]
   });
 
   return query.exec(function(err, project) {
@@ -283,6 +292,33 @@ ProjectService.prototype.getByUserId = function(options, next) {
 /* =========================================================================
  * Private Helpers
  * ========================================================================= */
+function generateProjectSlug(projectName, next) {
+  var slug = projectName.trim().replace(/\s/gi, '-').replace(/('|\.)/gi, '').toLowerCase();
+
+  findUniqueProjectSlug(slug, 0, next);
+}
+
+function findUniqueProjectSlug(slug, attempts, next) {
+  var newSlug = attempts > 0 ? slug + attempts : slug;
+
+  findProjectBySlug(newSlug, function(err, venues) {
+    if (!venues || !venues.length) return next(null, newSlug); //slug is unique
+    else { //not unique, bump attempt count, try again
+      attempts = attempts + 1;
+      findUniqueProjectSlug(slug, attempts, next);
+    }
+  });
+}
+
+function findProjectBySlug(slug, next) {
+  var query = Project.find({
+    slug: slug
+  });
+
+  query.select('slug');
+
+  query.exec(next);
+}
 
 /* =========================================================================
  * Exports

@@ -27,6 +27,8 @@ var PERMISSON_NAMES;
 var steps = [];
 
 function dbSeed(options, next) {
+  console.log(options);
+  
   console.log('--------------------------------------------\nRUNNING DB SEED STEPS...\n--------------------------------------------');
 
   if (options.createAdmins === false) { //remove the create sys admins steps

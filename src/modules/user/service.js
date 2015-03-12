@@ -236,7 +236,7 @@ UserService.prototype.createAssetTag = function createAssetTag(options, next) {
       assetTagName: assetTag.name
     });
 
-    return next(null, user);
+    return next(null, assetTag);
   });
 };
 

@@ -206,7 +206,6 @@ describe('api', function() {
           }, done);
         });
 
-
         after(function(done) {
           Auth.remove({
             user: user._id

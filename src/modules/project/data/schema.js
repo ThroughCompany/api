@@ -18,6 +18,14 @@ var projectSchema = baseSchema.extend({
     trim: true,
     required: true
   },
+  slug: {
+    type: String,
+    trim: true,
+    required: true,
+    index: {
+      unique: true
+    }
+  },
   shortDescription: {
     type: String,
     trim: true,

@@ -39,104 +39,9 @@ describe('api', function() {
       describe('when user is not authenticated', function() {
         var email = 'testuser@test.com';
         var password = 'password';
-        var user = null;
-
-        it('should return a 401', function(done) {
-          agent
-            .get('/projects/123')
-            .end(function(err, response) {
-              should.not.exist(err);
-              should.exist(response);
-
-              var error = response.body;
-              should.exist(error);
-
-              var status = response.status;
-              status.should.equal(401);
-
-              done();
-            });
-        });
-      });
-
-      describe('when project does not belong to the user', function() {
-        var email = 'testuser@test.com';
-        var password = 'password';
-        var user = null;
-        var auth = null;
-
-        before(function(done) {
-          async.series([
-            function createUser_step(cb) {
-              userService.createUsingCredentials({
-                email: email,
-                password: password
-              }, function(err, _user) {
-                if (err) return cb(err);
-
-                user = _user;
-                cb();
-              });
-            },
-            function authenticateUser_step(cb) {
-              authService.authenticateCredentials({
-                email: email,
-                password: password
-              }, function(err, _auth) {
-                if (err) return cb(err);
-
-                auth = _auth;
-                cb();
-              });
-            }
-          ], done);
-        });
-
-        after(function(done) {
-          User.remove({
-            email: email
-          }, done);
-        });
-
-        after(function(done) {
-          Auth.remove({
-            user: user._id
-          }, done);
-        });
-
-        it('should return a 403', function(done) {
-
-          agent
-            .get('/projects/123')
-            .set('x-access-token', auth.token)
-            .end(function(err, response) {
-              should.not.exist(err);
-              should.exist(response);
-
-              var error = response.body;
-              should.exist(error);
-
-              var status = response.status;
-              status.should.equal(403);
-
-              var errorMessage = testUtils.getServerErrorMessage(response);
-
-              should.exist(errorMessage);
-              errorMessage.should.equal('Current user is not a project member');
-
-              done();
-            });
-        });
-      });
-
-      describe('when project belongs to the user', function() {
-        var email = 'testuser@test.com';
-        var password = 'password';
         var projectName = 'Project 1';
 
         var user = null;
-        var admin = null;
-        var auth = null;
         var project = null;
 
         before(function(done) {
@@ -149,27 +54,6 @@ describe('api', function() {
                 if (err) return cb(err);
 
                 user = _user;
-                cb();
-              });
-            },
-            function createAdmin_step(cb) {
-              adminService.create({
-                userId: user._id
-              }, function(err, _admin) {
-                if (err) return cb(err);
-
-                admin = _admin;
-                cb();
-              });
-            },
-            function authenticateUser_step(cb) {
-              authService.authenticateCredentials({
-                email: email,
-                password: password
-              }, function(err, _auth) {
-                if (err) return cb(err);
-
-                auth = _auth;
                 cb();
               });
             },
@@ -195,12 +79,6 @@ describe('api', function() {
         });
 
         after(function(done) {
-          Admin.remove({
-            user: user._id
-          }, done);
-        });
-
-        after(function(done) {
           Auth.remove({
             user: user._id
           }, done);
@@ -216,7 +94,6 @@ describe('api', function() {
 
           agent
             .get('/projects/' + project._id)
-            .set('x-access-token', auth.token)
             .end(function(err, response) {
               should.not.exist(err);
               should.exist(response);

@@ -59,6 +59,8 @@ EventOrchestrator.prototype.registerHandlers = function() {
     var module = require(eventGroup.module);
 
     _.each(eventGroup.events, function(event) {
+      logger.info('REGISTER EVENT - ' + event.name);
+
       _.each(event.handlers, function(handler) {
         logger.info('Module \'' + eventGroup.module + '\' listening to \'' + event.name + '\' event - ' + event.handlers.length + ' handlers');
 
@@ -70,6 +72,7 @@ EventOrchestrator.prototype.registerHandlers = function() {
             if (err) {
               logger.error('error during event : \'' + event.name + '\'');
               logger.error(err);
+              logger.error(err.stack);
             } else {
               logger.debug('finished handling event : \'' + event.name + '\'');
             }

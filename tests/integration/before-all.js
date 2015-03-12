@@ -6,6 +6,7 @@ process.env.NODE_ENV = 'test';
 var async = require('async');
 var _ = require('underscore');
 var mongoose = require('mongoose');
+var childProcess = require('child_process');
 
 var app = require('src');
 var appConfig = require('src/config/app-config');
@@ -13,7 +14,6 @@ var appConfig = require('src/config/app-config');
 var agent = require('tests/lib/agent');
 
 var dbSeed = require('tools/db-seed');
-var dbClean = require('tools/db-clean');
 
 /* =========================================================================
  * Before
@@ -25,19 +25,23 @@ before(function(next) {
 });
 
 before(function(next) {
-  console.log('\nDROPPING MONGO DB...');
+  console.log('\nCLEANING MONGO DB...');
 
-  dbClean.run({}, next);
+  var dbClean = childProcess.fork('tools/scripts/db-clean');
+
+  dbClean.on('close', function(code) {
+    console.log('\nFINISHED CLEANING MONGO DB...');
+    next();
+  });
 });
 
 before(function(next) {
   console.log('\nLOADING SEED DATA...');
 
-  dbSeed.run({
-    createAdmins: false
-  }, function() {
+  var dbSeed = childProcess.fork('tools/scripts/db-seed', ['--createAdmins']);
 
-    console.log('SEED DATA LOADED');
+  dbSeed.on('close', function(code) {
+    console.log('\nFINISHED LOADING SEED DATA...');
     next();
   });
 });

@@ -22,13 +22,7 @@ var getProjects = {
     produces: ['application/json']
   },
   action: function(req, res, next) {
-    authMiddleware.authenticationRequired(req, res, function(err) {
-      if (err) return next(err);
-      authMiddleware.adminRequired(req, res, function(err) {
-        if (err) return next(err);
-        controller.getProjects(req, res, next);
-      });
-    });
+    controller.getProjects(req, res, next);
   }
 };
 
@@ -45,13 +39,7 @@ var getProjectById = {
     produces: ['application/json']
   },
   action: function(req, res, next) {
-    authMiddleware.authenticationRequired(req, res, function(err) {
-      if (err) return next(err);
-      authMiddleware.currentUserProjectIdParamRequired('id')(req, res, function(err) {
-        if (err) return next(err);
-        controller.getProjectById(req, res, next);
-      });
-    });
+    controller.getProjectById(req, res, next);
   }
 };
 
