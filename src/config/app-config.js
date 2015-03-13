@@ -4,9 +4,6 @@
 var _ = require('underscore');
 var packageConfig = require('../../package');
 
-var appSettings = require('../../appSettings');
-//var appSettings = {};
-
 /* =========================================================================
  * Force UTC timezone
  * ========================================================================= */
@@ -47,25 +44,22 @@ var defaults = {
     }
   },
   aws: {
-    accessKeyId: 'xxx',
-    secretAccessKey: 'xxx',
-    region: 'xxx',
+    accessKeyId: 'AKIAJSU5WNPJZHCJD2XA',
+    secretAccessKey: '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',
+    region: 'US Standard',
     s3: {
-      buckets: {}
+      buckets: {
+        api: {
+          name: 'throughcompany-api'
+        }
+      }
     }
   },
   log: {
     level: 'debug',
     console: true
-  },
-  px: {
-    userId: 'xxx',
-    apiKey: 'xxx',
-    apiSecret: 'xxx'
   }
 };
-
-defaults = _.extend(defaults, appSettings);
 
 /* =========================================================================
  * Production
