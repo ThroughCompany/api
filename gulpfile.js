@@ -32,7 +32,6 @@ gulp.task('test-int', function() {
   return gulp.src('tests/integration/**/**/**-test.js')
     .pipe(mocha({
       reporter: 'spec'
-      //timeout: 10000
     }));
 });
 

@@ -38,7 +38,7 @@ before(function(next) {
 before(function(next) {
   console.log('\nLOADING SEED DATA...');
 
-  var dbSeed = childProcess.fork('tools/scripts/db-seed', ['--createAdmins']);
+  var dbSeed = childProcess.fork('tools/scripts/db-seed', ['--createAdmins', 'false']);
 
   dbSeed.on('close', function(code) {
     console.log('\nFINISHED LOADING SEED DATA...');

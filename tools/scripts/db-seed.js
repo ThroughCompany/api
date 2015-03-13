@@ -9,13 +9,11 @@ var app = require('src');
 
 var dbSeed = require('../db-seed');
 
-console.log(argv);
-
 /* =========================================================================
  * Run
  * ========================================================================= */
 dbSeed.run({
-  createAdmins: argv.createAdmins
+  createAdmins: argv.createAdmins === 'false' ? false : true
 }, function() {
   process.exit(0);
 });
