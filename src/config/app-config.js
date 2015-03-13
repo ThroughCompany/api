@@ -68,7 +68,7 @@ var productionConfig = _.extend(_.clone(defaults), {
   db: process.env.MONGOLAB_URI,
   newrelic: {
     name: 'throughcompany-api-prod',
-    key: '462c7ca3a4079021f443e836d9b9357ef276ba42'
+    key: 'e7c5a21591fb5d706825572ef8cde21bb7cde86c'
   }
 });
 
@@ -79,7 +79,7 @@ var developmentConfig = _.extend(_.clone(defaults), {
   db: 'mongodb://dev-readwrite:QUZAmaf4ehuj@ds041651.mongolab.com:41651/heroku_app33783922',
   newrelic: {
     name: 'throughcompany-api-dev',
-    key: '462c7ca3a4079021f443e836d9b9357ef276ba42'
+    key: 'e7c5a21591fb5d706825572ef8cde21bb7cde86c'
   }
 });
 
