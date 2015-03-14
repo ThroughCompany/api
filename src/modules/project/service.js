@@ -67,7 +67,6 @@ ProjectService.prototype.create = function(options, next) {
       var project = new Project();
       project.name = options.name;
       project.slug = slug
-      project.shortDescription = options.shortDescription;
       project.description = options.description;
 
       project.save(done);
@@ -149,7 +148,6 @@ ProjectService.prototype.update = function(options, next) {
     },
     function updateProject(done) {
       project.name = updates.name ? updates.name : project.name;
-      project.shortDescription = updates.shortDescription ? updates.shortDescription : project.shortDescription;
       project.description = updates.description ? updates.description : project.description;
 
       project.save(done);

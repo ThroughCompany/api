@@ -26,11 +26,6 @@ var projectSchema = baseSchema.extend({
       unique: true
     }
   },
-  shortDescription: {
-    type: String,
-    trim: true,
-    required: true
-  },
   description: {
     type: String,
     trim: true
