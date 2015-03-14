@@ -50,6 +50,22 @@ Controller.prototype.createProject = function createProject(req, res, next) {
 };
 
 /** 
+ * @description Update user
+ */
+Controller.prototype.updateProjectById = function(req, res, next) {
+  var projectId = req.params.id;
+  var updates = req.body;
+
+  projectService.update({
+    projectId: projectId,
+    updates: updates
+  }, function(err, project) {
+    if (err) return next(err);
+    else return res.json(200, project);
+  });
+};
+
+/** 
  * @description Create asset tag
  */
 Controller.prototype.createAssetTag = function(req, res, next) {

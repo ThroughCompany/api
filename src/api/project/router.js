@@ -87,10 +87,34 @@ var createAssetTag = {
   }
 };
 
+var updateProjectById = {
+  spec: {
+    path: '/projects/{id}',
+    summary: 'Update a project by id',
+    method: 'PATCH',
+    parameters: [
+      swagger.params.path('id', 'project\s id', 'string')
+    ],
+    nickname: 'updateProjectById',
+    type: 'Project',
+    produces: ['application/json']
+  },
+  action: function(req, res, next) {
+    authMiddleware.authenticationRequired(req, res, function(err) {
+      if (err) return next(err);
+      authMiddleware.currentUserProjectIdParamRequired('id')(req, res, function(err) {
+        if (err) return next(err);
+        controller.updateProjectById(req, res, next);
+      });
+    });
+  }
+};
+
 swagger.addGet(getProjects);
 swagger.addGet(getProjectById);
 swagger.addPost(createProject);
 swagger.addPost(createAssetTag);
+swagger.addPatch(updateProjectById);
 
 /* =========================================================================
  *   Swagger declarations

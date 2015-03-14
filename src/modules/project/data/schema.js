@@ -30,6 +30,24 @@ var projectSchema = baseSchema.extend({
     type: String,
     trim: true
   },
+  wiki: {
+    type: String,
+    trim: true
+  },
+  location: {
+    type: String,
+    trim: true
+  },
+  social: {
+    facebook: {
+      type: String,
+      trim: true
+    },
+    linkedIn: {
+      type: String,
+      trim: true
+    }
+  },
   projectUsers: [{
     type: String,
     ref: 'ProjectUser'

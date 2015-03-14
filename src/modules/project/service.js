@@ -149,6 +149,13 @@ ProjectService.prototype.update = function(options, next) {
     function updateProject(done) {
       project.name = updates.name ? updates.name : project.name;
       project.description = updates.description ? updates.description : project.description;
+      project.wiki = updates.wiki ? updates.wiki : project.wiki;
+      project.location = updates.location ? updates.location : project.location;
+
+      if (updates.social) {
+        project.social.facebook = project.social.facebook ? updates.social.facebook : project.social.facebook;
+        project.social.linkedIn = project.social.linkedIn ? updates.social.linkedIn : project.social.linkedIn;
+      }
 
       project.save(done);
     }
