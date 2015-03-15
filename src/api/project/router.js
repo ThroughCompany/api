@@ -3,9 +3,11 @@
  * ========================================================================= */
 var express = require('express');
 var swagger = require('swagger-node-express');
+var multipart = require('connect-multiparty');
 
 //middleware
 var authMiddleware = require('src/middleware/authMiddleware');
+var multipartMiddleware = multipart();
 
 var controller = require('./controller');
 
@@ -110,10 +112,37 @@ var updateProjectById = {
   }
 };
 
+var uploadImage = {
+  spec: {
+    path: '/projects/{id}/images',
+    summary: 'Upload a user image',
+    method: 'POST',
+    parameters: [
+      swagger.params.path('id', 'project\'s id', 'string')
+    ],
+    nickname: 'uploadImage',
+    type: 'Project',
+    produces: ['application/json']
+  },
+  action: function(req, res, next) {
+    authMiddleware.authenticationRequired(req, res, function(err) {
+      if (err) return next(err);
+      authMiddleware.currentUserProjectIdParamRequired('id')(req, res, function(err) {
+        if (err) return next(err);
+        multipartMiddleware(req, res, function(err) {
+          if (err) return next(err);
+          controller.uploadImage(req, res, next);
+        });
+      });
+    });
+  }
+};
+
 swagger.addGet(getProjects);
 swagger.addGet(getProjectById);
 swagger.addPost(createProject);
 swagger.addPost(createAssetTag);
+swagger.addPost(uploadImage);
 swagger.addPatch(updateProjectById);
 
 /* =========================================================================

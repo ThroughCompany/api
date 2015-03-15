@@ -8,16 +8,14 @@ var async = require('async');
 //modules
 var errors = require('modules/error');
 var CommonService = require('modules/common');
+var imageService = require('modules/image');
+var assetTagService = require('modules/assetTag');
 
 //models
 var User = require('./data/model');
 var Auth = require('modules/auth/data/model');
 
 var authUtil = require('modules/auth/util');
-
-//services
-var imageService = require('modules/image');
-var assetTagService = require('modules/assetTag');
 
 var validator = require('./validator');
 
@@ -336,7 +334,7 @@ UserService.prototype.uploadImage = function(options, next) {
   if (!options.fileType) return next(new errors.InvalidArgumentError('File Type is required'));
   if (!options.imageType) return next(new errors.InvalidArgumentError('Image Type is required'));
 
-  var validUserImageTypes = [IMAGE_TYPES.PROFILE_PIC];
+  var validUserImageTypes = [IMAGE_TYPES.PROFILE_PIC_USER];
 
   if (!_.contains(validUserImageTypes, options.imageType)) return next(new errors.InvalidArgumentError(options.imageType + ' is not a valid image type'));
 
@@ -365,7 +363,7 @@ UserService.prototype.uploadImage = function(options, next) {
       var err = null;
 
       switch (options.imageType) {
-        case IMAGE_TYPES.PROFILE_PIC:
+        case IMAGE_TYPES.PROFILE_PIC_USER:
           user.profilePic = imageUrl;
           break
         default:

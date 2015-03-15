@@ -34,6 +34,10 @@ var projectSchema = baseSchema.extend({
     type: String,
     trim: true
   },
+  profilePic: {
+    type: String,
+    trim: true
+  },
   location: {
     type: String,
     trim: true

@@ -52,7 +52,8 @@ ImageService.prototype.upload = function(options, next) {
   async.waterfall([
     function uploadToAws_step(done) {
       switch (options.imageType) {
-        case IMAGE_TYPES.PROFILE_PIC:
+        case IMAGE_TYPES.PROFILE_PIC_USER:
+        case IMAGE_TYPES.PROFILE_PIC_PROJECT:
           awsApi.uploadProfilePic({
             filePath: options.filePath,
             fileName: options.fileName,

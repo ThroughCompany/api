@@ -6,6 +6,12 @@ var async = require('async');
 //services
 var authService = require('modules/auth');
 var projectService = require('modules/project');
+var imageService = require('modules/image');
+
+/* =========================================================================
+ * Constants
+ * ========================================================================= */
+var IMAGE_TYPE_SIZES = require('modules/image/constants/image-type-sizes');
 
 /* =========================================================================
  * Controller
@@ -80,6 +86,37 @@ Controller.prototype.createAssetTag = function(req, res, next) {
   }, function(err, project) {
     if (err) return next(err);
     return res.status(201).json(project);
+  });
+};
+
+/** 
+ * @description Upload a user image
+ */
+Controller.prototype.uploadImage = function(req, res, next) {
+  var projectId = req.params.id;
+  var imageType = req.query.imageType;
+  var files = req.files;
+
+  if (!files || !files.image) {
+    return cleanup(files, function(err) {
+      if (err) return next(err);
+      return next(new errors.InvalidArgumentError('Image is required'));
+    });
+  }
+
+  var image = files.image;
+
+  if (image.size > IMAGE_TYPE_SIZES.PROFILE_PIC) return next(new errors.InvalidArgumentError('file size cannot exceed ' + IMAGE_TYPE_SIZES.PROFILE_PIC + ' bytes'));
+
+  projectService.uploadImage({
+    projectId: projectId,
+    imageType: imageType,
+    fileName: image.name,
+    filePath: image.path,
+    fileType: image.type
+  }, function(err, project) {
+    if (err) return next(err);
+    return res.status(200).json(project);
   });
 };
 

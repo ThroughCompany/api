@@ -11,6 +11,7 @@ var CommonService = require('modules/common');
 var userService = require('modules/user');
 var permissionService = require('modules/permission');
 var assetTagService = require('modules/assetTag');
+var imageService = require('modules/image');
 
 //models
 var User = require('modules/user/data/model');
@@ -24,6 +25,8 @@ var validator = require('./validator');
  * ========================================================================= */
 var EVENTS = require('./constants/events');
 var ROLES = require('modules/role/constants/role-names');
+var DEFAULTIMAGEURL = 'https://s3.amazonaws.com/throughcompany-assets/project-avatars/avatar';
+var IMAGE_TYPES = require('modules/image/constants/image-types');
 
 /* =========================================================================
  * Constructor
@@ -67,6 +70,7 @@ ProjectService.prototype.create = function(options, next) {
       var project = new Project();
       project.name = options.name;
       project.slug = slug
+      project.profilePic = DEFAULTIMAGEURL + randomNum(1, 4) + '.jpg';
       project.description = options.description;
 
       project.save(done);
@@ -294,9 +298,71 @@ ProjectService.prototype.getByUserId = function(options, next) {
   ], next);
 };
 
+ProjectService.prototype.uploadImage = function(options, next) {
+  if (!options) return next(new errors.InvalidArgumentError('options is required'));
+  if (!options.projectId) return next(new errors.InvalidArgumentError('Project Id is required'));
+  if (!options.fileName) return next(new errors.InvalidArgumentError('File Name is required'));
+  if (!options.filePath) return next(new errors.InvalidArgumentError('File Path is required'));
+  if (!options.fileType) return next(new errors.InvalidArgumentError('File Type is required'));
+  if (!options.imageType) return next(new errors.InvalidArgumentError('Image Type is required'));
+
+  var validUserImageTypes = [IMAGE_TYPES.PROFILE_PIC_PROJECT];
+
+  if (!_.contains(validUserImageTypes, options.imageType)) return next(new errors.InvalidArgumentError(options.imageType + ' is not a valid image type'));
+
+  var _this = this;
+  var project = null;
+
+  async.waterfall([
+    function getProjectById_step(done) {
+      _this.getById({
+        projectId: options.projectId
+      }, done);
+    },
+    function uploadImage_step(_project, done) {
+      if (!_project) return done(new errors.InvalidArgumentError('No project exists with the id ' + options.projectId));
+
+      project = _project;
+
+      console.log('got here');
+
+      imageService.upload({
+        imageType: options.imageType,
+        fileName: options.fileName,
+        filePath: options.filePath,
+        fileType: options.fileType
+      }, done);
+    },
+    function addImageToProject_step(imageUrl, done) {
+      var err = null;
+      
+      console.log('got here');
+
+      switch (options.imageType) {
+        case IMAGE_TYPES.PROFILE_PIC_PROJECT:
+          project.profilePic = imageUrl;
+          break
+        default:
+          err = new errors.InvalidArgumentError('Invalid image type');
+          break;
+      }
+
+      if (err) {
+        return done(err);
+      } else {
+        project.save(done);
+      }
+    }
+  ], next);
+};
+
 /* =========================================================================
  * Private Helpers
  * ========================================================================= */
+function randomNum(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
 function generateProjectSlug(projectName, next) {
   var slug = projectName.trim().replace(/\s/gi, '-').replace(/('|\.)/gi, '').toLowerCase();
 
