@@ -67,7 +67,7 @@ Controller.prototype.updateProjectById = function(req, res, next) {
     updates: updates
   }, function(err, project) {
     if (err) return next(err);
-    else return res.json(200, project);
+    else return res.status(200).json(project);
   });
 };
 
@@ -117,6 +117,20 @@ Controller.prototype.uploadImage = function(req, res, next) {
   }, function(err, project) {
     if (err) return next(err);
     return res.status(200).json(project);
+  });
+};
+
+/** 
+ * @description Get project users
+ */
+Controller.prototype.getProjectUsers = function(req, res, next) {
+  var projectId = req.params.id;
+
+  projectService.getUsers({
+    projectId: projectId
+  }, function(err, users) {
+    if (err) return next(err);
+    return res.status(200).json(users);
   });
 };
 

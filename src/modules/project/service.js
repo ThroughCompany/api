@@ -157,8 +157,8 @@ ProjectService.prototype.update = function(options, next) {
       project.location = updates.location ? updates.location : project.location;
 
       if (updates.social) {
-        project.social.facebook = project.social.facebook ? updates.social.facebook : project.social.facebook;
-        project.social.linkedIn = project.social.linkedIn ? updates.social.linkedIn : project.social.linkedIn;
+        project.social.facebook = updates.social.facebook ? updates.social.facebook : project.social.facebook;
+        project.social.linkedIn = updates.social.linkedIn ? updates.social.linkedIn : project.social.linkedIn;
       }
 
       project.save(done);
@@ -298,6 +298,26 @@ ProjectService.prototype.getByUserId = function(options, next) {
   ], next);
 };
 
+ProjectService.prototype.getUsers = function getUsers(options, next) {
+  if (!options) return next(new errors.InvalidArgumentError('options is required'));
+  if (!options.projectId) return next(new errors.InvalidArgumentError('Project Id is required'));
+
+  async.waterfall([
+    function findProjectUsers_step(done) {
+      ProjectUser.find({
+        project: options.projectId
+      }, done);
+    },
+    function getUsers_step(projectUsers, done) {
+      User.find({
+        _id: {
+          $in: _.pluck(projectUsers, 'user')
+        }
+      }, done);
+    }
+  ], next);
+};
+
 ProjectService.prototype.uploadImage = function(options, next) {
   if (!options) return next(new errors.InvalidArgumentError('options is required'));
   if (!options.projectId) return next(new errors.InvalidArgumentError('Project Id is required'));
@@ -335,7 +355,7 @@ ProjectService.prototype.uploadImage = function(options, next) {
     },
     function addImageToProject_step(imageUrl, done) {
       var err = null;
-      
+
       console.log('got here');
 
       switch (options.imageType) {

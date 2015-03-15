@@ -138,12 +138,30 @@ var uploadImage = {
   }
 };
 
+var getProjectUsers = {
+  spec: {
+    path: '/projects/{id}/users',
+    summary: 'Get a project\'s users',
+    method: 'GET',
+    parameters: [
+      swagger.params.path('id', 'project\'s id', 'string')
+    ],
+    nickname: 'getProjectUsers',
+    type: 'User',
+    produces: ['application/json']
+  },
+  action: function(req, res, next) {
+    controller.getProjectUsers(req, res, next);
+  }
+};
+
 swagger.addGet(getProjects);
 swagger.addGet(getProjectById);
 swagger.addPost(createProject);
 swagger.addPost(createAssetTag);
 swagger.addPost(uploadImage);
 swagger.addPatch(updateProjectById);
+swagger.addGet(getProjectUsers);
 
 /* =========================================================================
  *   Swagger declarations
