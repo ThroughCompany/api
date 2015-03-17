@@ -29,6 +29,9 @@ var defaults = {
     name: 'xxxxxxxxxx',
     key: 'xxxxxxxxxx'
   },
+  blitline: {
+    key: '4Q3VLBn5cU01BUgROW2X9Yw'
+  },
   port: PORT,
   apiVersion: packageConfig.version,
   tokenKey: TOKENKEY,
