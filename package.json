@@ -13,7 +13,7 @@
   },
   "dependencies": {
     "async": "0.9.x",
-    "aws-sdk": "2.1.14",
+    "aws-sdk": "2.1.17",
     "bcrypt-nodejs": "0.0.3",
     "body-parser": "1.10.x",
     "compression": "1.2.x",
