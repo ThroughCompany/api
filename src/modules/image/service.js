@@ -12,6 +12,7 @@ var CommonService = require('modules/common');
 
 //lib
 var awsApi = require('lib/aws-api');
+var blitlineApi = require('lib/blitline-api');
 
 /* =========================================================================
  * Constants

@@ -43,13 +43,13 @@ AwsApi.prototype.uploadProfilePic = function upload(options, next) {
 
   options.bucket = BUCKETS.PROFILE_PICS;
 
-  uploadImage(options, next);
+  uploadFile(options, next);
 };
 
 /* =========================================================================
  * Private Helpers
  * ========================================================================= */
-function uploadImage(options, next) {
+function uploadFile(options, next) {
   if (!options) return next(new errors.InternalServiceError('options is required'));
   if (!options.bucket) return next(new errors.InternalServiceError('options.bucket is required'));
   if (!options.filePath) return next(new errors.InternalServiceError('options.filePath is required'));
@@ -80,7 +80,7 @@ function uploadImage(options, next) {
 
         var url = 'https://s3.amazonaws.com' + '/' + options.bucket + '/' + path;
 
-        //return just the url to the image on AWS
+        //return just the url to the file on AWS
         done(null, url);
       });
     }

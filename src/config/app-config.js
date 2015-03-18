@@ -30,6 +30,8 @@ var defaults = {
     key: 'xxxxxxxxxx'
   },
   blitline: {
+    api: 'http://api.blitline.com/job',
+    version: '1.21',
     key: '4Q3VLBn5cU01BUgROW2X9Yw'
   },
   port: PORT,
