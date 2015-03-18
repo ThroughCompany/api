@@ -3,17 +3,16 @@
  * ========================================================================= */
 var util = require('util');
 var path = require('path');
-var config = require('app/config');
 var async = require('async');
 
 var _ = require('underscore');
 
 //modules
-var partialResponse = require('modules/partial-response');
+var partialResponse = require('modules/partialResponse');
 var logger = require('modules/logger');
 
 //models
-//var City = require(path.join(config.paths.models, 'city'));
+var ProjectUser = require('modules/projectUser/data/model');
 
 //services
 var PopulateService = partialResponse.service;
@@ -26,17 +25,17 @@ function ProjectPopulateService() {
 }
 util.inherits(ProjectPopulateService, PopulateService);
 
-var userPopulateService = new ProjectPopulateService();
+var projectPopulateService = new ProjectPopulateService();
 
 /* =========================================================================
  * Populates
  * ========================================================================= */
-// venuePopulateService.addPopulate({
-//   key: 'location.city',
-//   model: City
-// });
+projectPopulateService.addPopulate({
+  key: 'projectUsers',
+  model: ProjectUser
+});
 
 /* =========================================================================
  * Expose
  * ========================================================================= */
-module.exports = ProjectPopulateService;
+module.exports = projectPopulateService;

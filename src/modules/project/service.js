@@ -12,6 +12,10 @@ var userService = require('modules/user');
 var permissionService = require('modules/permission');
 var assetTagService = require('modules/assetTag');
 var imageService = require('modules/image');
+var projectPopulateService = require('./populate/service');
+
+console.log('projectPopulateService');
+console.log(projectPopulateService);
 
 //models
 var User = require('modules/user/data/model');
@@ -19,6 +23,8 @@ var Project = require('./data/model');
 var ProjectUser = require('modules/projectUser/data/model');
 
 var validator = require('./validator');
+
+var partialResponseParser = require('modules/partialResponse/parser');
 
 /* =========================================================================
  * Constants
@@ -230,27 +236,64 @@ ProjectService.prototype.createAssetTag = function createAssetTag(options, next)
 
 /**
  * @param {object} options
- * @param {string} projectId
+ * @param {string} options.projectId
+ * @param {string} options.fields
  * @param {function} next - callback
  */
 ProjectService.prototype.getById = function(options, next) {
   if (!options) return next(new errors.InvalidArgumentError('options is required'));
   if (!options.projectId) return next(new errors.InvalidArgumentError('Project Id is required'));
 
-  var query = Project.findOne({
-    $or: [{
-      _id: options.projectId
-    }, {
-      slug: options.projectId
-    }]
-  });
+  var _this = this;
+  var fields = null;
+  var expands = null;
 
-  return query.exec(function(err, project) {
-    if (err) return next(err);
-    if (!project) return next(new errors.ObjectNotFoundError('Project not found'));
+  async.waterfall([
+    function parseFieldsAndExpands(done) {
+      if (options.fields) {
+        partialResponseParser.parse({
+          fields: options.fields
+        }, function(err, results) {
+          if (err) return done(err);
 
-    next(null, project);
-  });
+          fields = results.fields;
+          expands = results.expands;
+
+          return done();
+        });
+      } else {
+        return done(null);
+      }
+    },
+    function getProjectById_step(done) {
+      var query = Project.findOne({
+        $or: [{
+          _id: options.projectId
+        }, {
+          slug: options.projectId
+        }]
+      });
+
+      if (fields) {
+        query.select(fields.select);
+      }
+
+      query.exec(function(err, project) {
+        if (err) return done(err);
+        if (!project) return done(new errors.ObjectNotFoundError('Project not found'));
+
+        return done(null, project);
+      });
+    },
+    function populate_step(project, done) {
+      if (!expands) return done(null, project);
+
+      projectPopulateService.populate({
+        docs: project,
+        expands: expands
+      }, done);
+    }
+  ], next);
 };
 
 /**
@@ -267,7 +310,7 @@ ProjectService.prototype.getAll = function(options, next) {
 
 /**
  * @param {object} options
- * @param {object} options.userId
+ * @param {string} options.userId
  * @param {function} next - callback
  */
 ProjectService.prototype.getByUserId = function(options, next) {

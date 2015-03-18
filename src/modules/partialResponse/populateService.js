@@ -39,7 +39,7 @@ PopulateService.prototype.populate = function populate(options, next) {
   var populateFunctions = [];
 
   _.each(options.expands.nodes, function(field) {
-    var name = field.memberName.toLowerCase();
+    var name = field.memberName;
 
     var foundPopulateFn = _this.populates[name];
 

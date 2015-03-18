@@ -34,7 +34,8 @@ var getProjectById = {
     summary: 'Get a project by id',
     method: 'GET',
     parameters: [
-      swagger.params.path('id', 'project\'s id', 'string')
+      swagger.params.path('id', 'project\'s id', 'string'),
+      swagger.params.query('fields', 'csv of fields to select', 'string')
     ],
     nickname: 'getProjects',
     type: 'Project',

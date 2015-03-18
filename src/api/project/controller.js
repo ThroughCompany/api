@@ -33,10 +33,16 @@ Controller.prototype.getProjects = function getProjects(req, res, next) {
  */
 Controller.prototype.getProjectById = function getProjectById(req, res, next) {
   var projectId = req.params.id;
+  var fields = req.query.fields;
 
-  projectService.getById({
-    projectId: projectId
-  }, function(err, project) {
+  async.waterfall([
+    function getProjectById_step(done) {
+      projectService.getById({
+        projectId: projectId,
+        fields: fields
+      }, done);
+    }
+  ], function(err, project) {
     if (err) return next(err);
     return res.status(200).json(project);
   });
