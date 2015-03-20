@@ -37,10 +37,10 @@ AuthMiddleware.prototype.authenticationRequired = function authenticationRequire
 
 //authorization middleware =================================================================
 //checks for id as URL param against current user id claim
-AuthMiddleware.prototype.currentUserIdParamRequired = function currentUserIdParamRequired(paramName) {
+AuthMiddleware.prototype.currentUserIdQueryParamRequired = function currentUserIdQueryParamRequired(paramName) {
   var param = paramName || 'id';
 
-  return function _currentUserIdParamRequired(req, res, next) {
+  return function _currentUserIdQueryParamRequired(req, res, next) {
     if (!req.claims || !req.params[param] || (req.params[param] !== req.claims.userId && !req.claims.admin)) { //allow admins to bypass
       return next(new errors.ForbiddenError('Current user id does not match user id param'));
     } else {
@@ -49,8 +49,20 @@ AuthMiddleware.prototype.currentUserIdParamRequired = function currentUserIdPara
   };
 };
 
+AuthMiddleware.prototype.currentUserIdBodyParamRequired = function currentUserIdBodyParamRequired(paramName) {
+  var param = paramName || 'id';
+
+  return function _currentUserIdQueryBodyRequired(req, res, next) {
+    if (!req.claims || !req.body[param] || (req.body[param] !== req.claims.userId && !req.claims.admin)) { //allow admins to bypass
+      return next(new errors.ForbiddenError('Current user id does not match user id body param'));
+    } else {
+      next();
+    }
+  };
+};
+
 //checks for id as URL param against current project id claims
-AuthMiddleware.prototype.currentUserProjectIdParamRequired = function currentUserProjectIdParamRequired(paramName) {
+AuthMiddleware.prototype.currentUserProjectIdQueryParamRequired = function currentUserProjectIdQueryParamRequired(paramName) {
   var param = paramName || 'id';
 
   return function _currentUserProjectIdParamRequired(req, res, next) {

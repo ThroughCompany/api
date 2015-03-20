@@ -57,7 +57,7 @@ var getUserById = {
   action: function(req, res, next) {
     authMiddleware.authenticationRequired(req, res, function(err) {
       if (err) return next(err);
-      authMiddleware.currentUserIdParamRequired('id')(req, res, function(err) {
+      authMiddleware.currentUserIdQueryParamRequired('id')(req, res, function(err) {
         if (err) return next(err);
         controller.getUserById(req, res, next);
       });
@@ -80,7 +80,7 @@ var getUserClaimsById = {
   action: function(req, res, next) {
     authMiddleware.authenticationRequired(req, res, function(err) {
       if (err) return next(err);
-      authMiddleware.currentUserIdParamRequired('id')(req, res, function(err) {
+      authMiddleware.currentUserIdQueryParamRequired('id')(req, res, function(err) {
         if (err) return next(err);
         controller.getUserClaimsById(req, res, next);
       });
@@ -121,7 +121,7 @@ var getUserProjectsById = {
   action: function(req, res, next) {
     authMiddleware.authenticationRequired(req, res, function(err) {
       if (err) return next(err);
-      authMiddleware.currentUserIdParamRequired('id')(req, res, function(err) {
+      authMiddleware.currentUserIdQueryParamRequired('id')(req, res, function(err) {
         if (err) return next(err);
         controller.getUserProjectsById(req, res, next);
       });
@@ -144,7 +144,7 @@ var updateUserById = {
   action: function(req, res, next) {
     authMiddleware.authenticationRequired(req, res, function(err) {
       if (err) return next(err);
-      authMiddleware.currentUserIdParamRequired('id')(req, res, function(err) {
+      authMiddleware.currentUserIdQueryParamRequired('id')(req, res, function(err) {
         if (err) return next(err);
         controller.updateUserById(req, res, next);
       });
@@ -167,7 +167,7 @@ var uploadImage = {
   action: function(req, res, next) {
     authMiddleware.authenticationRequired(req, res, function(err) {
       if (err) return next(err);
-      authMiddleware.currentUserIdParamRequired('id')(req, res, function(err) {
+      authMiddleware.currentUserIdQueryParamRequired('id')(req, res, function(err) {
         if (err) return next(err);
         multipartMiddleware(req, res, function(err) {
           if (err) return next(err);
@@ -194,7 +194,7 @@ var createAssetTag = {
   action: function(req, res, next) {
     authMiddleware.authenticationRequired(req, res, function(err) {
       if (err) return next(err);
-      authMiddleware.currentUserIdParamRequired('id')(req, res, function(err) {
+      authMiddleware.currentUserIdQueryParamRequired('id')(req, res, function(err) {
         if (err) return next(err);
         controller.createAssetTag(req, res, next);
       });

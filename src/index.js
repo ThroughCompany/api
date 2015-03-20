@@ -34,10 +34,9 @@ function App() {}
  * init - main entry point for the entire app
  * - loads app files
  * - starts Mongo DB
- * - starts Kue.js and Redis
  *
  * @param {Object} options
- * @param {Boolean} options.http - turns on the HTTP server, and job server
+ * @param {Boolean} options.http - turns on the HTTP server
  * @param {Function} next - callback function
  *
  */
