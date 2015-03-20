@@ -8,6 +8,7 @@ var baseSchema = require('modules/common/data/base-schema');
 /* =========================================================================
  * Constants
  * ========================================================================= */
+var STATUSES = require('../constants/statuses');
 
 /* =========================================================================
  * Schema
@@ -17,9 +18,26 @@ var applicationSchema = baseSchema.extend({
     type: String,
     ref: 'Project',
     required: true
+  },
+  user: {
+    type: String,
+    ref: 'User',
+    required: true
+  },
+  status: {
+    type: String,
+    required: true,
+    enum: _.values(STATUSES)
   }
 }, {
   collection: 'applications'
+});
+
+applicationSchema.index({
+  project: 1,
+  user: 1
+}, {
+  unique: true
 });
 
 /* =========================================================================

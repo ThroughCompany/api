@@ -34,7 +34,7 @@ before(function(done) {
 });
 
 describe('api', function() {
-  describe('user', function() {
+  describe('project', function() {
     describe('GET - /projects/{id}', function() {
       describe('when user is not authenticated', function() {
         var email = 'testuser@test.com';

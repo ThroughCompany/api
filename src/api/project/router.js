@@ -82,7 +82,7 @@ var createAssetTag = {
   action: function(req, res, next) {
     authMiddleware.authenticationRequired(req, res, function(err) {
       if (err) return next(err);
-      authMiddleware.currentUserProjectIdParamRequired('id')(req, res, function(err) {
+      authMiddleware.currentUserProjectIdQueryParamRequired('id')(req, res, function(err) {
         if (err) return next(err);
         controller.createAssetTag(req, res, next);
       });
@@ -105,7 +105,7 @@ var updateProjectById = {
   action: function(req, res, next) {
     authMiddleware.authenticationRequired(req, res, function(err) {
       if (err) return next(err);
-      authMiddleware.currentUserProjectIdParamRequired('id')(req, res, function(err) {
+      authMiddleware.currentUserProjectIdQueryParamRequired('id')(req, res, function(err) {
         if (err) return next(err);
         controller.updateProjectById(req, res, next);
       });
@@ -156,6 +156,30 @@ var getProjectUsers = {
   }
 };
 
+var createApplication = {
+  spec: {
+    path: '/projects/{id}/applications',
+    summary: 'Apply to a project',
+    method: 'POST',
+    parameters: [
+      swagger.params.path('id', 'project\'s id', 'string'),
+      swagger.params.body('userId', 'user\'s id', 'string')
+    ],
+    nickname: 'createApplication',
+    type: 'User',
+    produces: ['application/json']
+  },
+  action: function(req, res, next) {
+    authMiddleware.authenticationRequired(req, res, function(err) {
+      if (err) return next(err);
+      authMiddleware.currentUserIdBodyParamRequired('userId')(req, res, function(err) {
+        if (err) return next(err);
+        controller.createApplication(req, res, next);
+      });
+    });
+  }
+};
+
 swagger.addGet(getProjects);
 swagger.addGet(getProjectById);
 swagger.addPost(createProject);
@@ -163,6 +187,7 @@ swagger.addPost(createAssetTag);
 swagger.addPost(uploadImage);
 swagger.addPatch(updateProjectById);
 swagger.addGet(getProjectUsers);
+swagger.addPost(createApplication);
 
 /* =========================================================================
  *   Swagger declarations

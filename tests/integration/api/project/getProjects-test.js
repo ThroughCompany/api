@@ -34,7 +34,7 @@ before(function(done) {
 });
 
 describe('api', function() {
-  describe('user', function() {
+  describe('project', function() {
     describe('GET - /projects', function() {
       describe('when user is not logged in', function() {
         var email = 'testuser@test.com';

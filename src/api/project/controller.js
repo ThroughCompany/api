@@ -6,6 +6,7 @@ var async = require('async');
 //services
 var authService = require('modules/auth');
 var projectService = require('modules/project');
+var projectApplicationService = require('modules/projectApplication');
 var imageService = require('modules/image');
 
 /* =========================================================================
@@ -137,6 +138,19 @@ Controller.prototype.getProjectUsers = function(req, res, next) {
   }, function(err, users) {
     if (err) return next(err);
     return res.status(200).json(users);
+  });
+};
+
+Controller.prototype.createApplication = function(req, res, next) {
+  var projectId = req.params.id;
+  var userId = req.body.userId;
+
+  projectApplicationService.create({
+    projectId: projectId,
+    userId: userId
+  }, function(err, project) {
+    if (err) return next(err);
+    return res.status(200).json(project);
   });
 };
 

@@ -200,7 +200,7 @@ describe('api', function() {
         });
       });
 
-      describe('asdfadf when all required data is passed', function() {
+      describe('when all required data is passed', function() {
         var email = 'testuser@test.com';
         var password = 'password';
         var user = null;
@@ -259,7 +259,7 @@ describe('api', function() {
           }, done);
         });
 
-        it('should return create a new asset tag', function(done) {
+        it('should return create a new asset tag and bump the tags user count', function(done) {
 
           agent
             .post('/users/' + user._id + '/assettags')
