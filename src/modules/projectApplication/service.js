@@ -54,7 +54,7 @@ ProjectApplicationService.prototype.create = function create(options, next) {
         function getProjectById_step(cb) {
           projectService.getById({
             projectId: options.projectId
-              //fields: 'projectUsers(), projectApplications()'
+              //fields: 'projectUsers(), projectApplications()' //TODO: get this working and get rid of extra project user and application calls
           }, cb);
         },
         function getProjectUsersById_step(cb) {
@@ -115,8 +115,6 @@ ProjectApplicationService.prototype.create = function create(options, next) {
 
       project.projectApplications.push(projectApplication._id);
 
-      console.log(project);
-
       project.save(function(err) {
         if (err) return done(err);
         return done(null);
@@ -126,7 +124,7 @@ ProjectApplicationService.prototype.create = function create(options, next) {
       user.projectApplications.push(projectApplication._id);
       user.save(function(err) {
         if (err) return done(err);
-        return done(null, project);
+        return done(null, projectApplication);
       });
     }
   ], next);

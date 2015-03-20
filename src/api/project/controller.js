@@ -148,9 +148,9 @@ Controller.prototype.createApplication = function(req, res, next) {
   projectApplicationService.create({
     projectId: projectId,
     userId: userId
-  }, function(err, project) {
+  }, function(err, projectApplication) {
     if (err) return next(err);
-    return res.status(200).json(project);
+    return res.status(201).json(projectApplication);
   });
 };
 
