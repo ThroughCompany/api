@@ -14,9 +14,6 @@ var assetTagService = require('modules/assetTag');
 var imageService = require('modules/image');
 var projectPopulateService = require('./populate/service');
 
-console.log('projectPopulateService');
-console.log(projectPopulateService);
-
 //models
 var User = require('modules/user/data/model');
 var Project = require('./data/model');
@@ -288,6 +285,8 @@ ProjectService.prototype.getById = function(options, next) {
     function populate_step(project, done) {
       if (!expands) return done(null, project);
 
+      console.log(project);
+
       projectPopulateService.populate({
         docs: project,
         expands: expands
@@ -387,8 +386,6 @@ ProjectService.prototype.uploadImage = function(options, next) {
 
       project = _project;
 
-      console.log('got here');
-
       imageService.upload({
         imageType: options.imageType,
         fileName: options.fileName,
@@ -398,8 +395,6 @@ ProjectService.prototype.uploadImage = function(options, next) {
     },
     function addImageToProject_step(imageUrl, done) {
       var err = null;
-
-      console.log('got here');
 
       switch (options.imageType) {
         case IMAGE_TYPES.PROFILE_PIC_PROJECT:

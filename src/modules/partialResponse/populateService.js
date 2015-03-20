@@ -112,7 +112,11 @@ function populateCollection(options, next) {
     var val = getProperty(currentObj, options.key);
 
     if (val) {
-      idsToPopulate.push(val);
+      if (_.isArray(val)) {
+        idsToPopulate = idsToPopulate.concat(val);
+      } else {
+        idsToPopulate.push(val);
+      }
     } else {
       errorMsg = 'property ' + options.key + ' is not valid';
 
@@ -144,15 +148,29 @@ function populateCollection(options, next) {
 
         _.each(objects, function(object, index) {
 
-          var obj = object;
-          var foundObj = foundObjs[getProperty(obj, options.key)];
+          var propertyValue = getProperty(object, options.key);
+          var foundObj;
+
+          if (_.isArray(propertyValue)) {
+            //TODO: need to handle an array of just strings AND an array of objects
+            //current handles only an array of strings
+
+            foundObj = [];
+
+            _.each(propertyValue, function(val) {
+              var found = foundObjs[val];
+              if (found) foundObj.push(found);
+            });
+          } else {
+            foundObj = foundObjs[getProperty(object, options.key)];
+          }
 
           if (object) {
-            obj = (obj && obj.toJSON) ? obj.toJSON() : obj;
+            object = (object && object.toJSON) ? object.toJSON() : object;
             foundObj = (foundObj && foundObj.toJSON) ? foundObj.toJSON() : foundObj;
-            setProperty(obj, options.key, foundObj);
+            setProperty(object, options.key, foundObj);
           }
-          objects[index] = obj;
+          objects[index] = object;
         });
 
         done();
@@ -177,6 +195,25 @@ function getProperty(obj, propertyName) {
 
     for (var i = 0; i < parts.length; i++) {
       var currentPart = parts[i];
+
+      //TODO: need to deal with getting array property
+      // if (_.isArray(currentPart)) {
+      //   _.each(currentPart, function(subPart) {
+      //     if (subPart[currentPart]) {
+      //       subObj = subObj[currentPart];
+      //     } else {
+      //       subObj = null;
+      //       break;
+      //     }
+      //   });
+      // } else {
+      //   if (subObj[currentPart]) {
+      //     subObj = subObj[currentPart];
+      //   } else {
+      //     subObj = null;
+      //     break;
+      //   }
+      // }
 
       if (subObj[currentPart]) {
         subObj = subObj[currentPart];

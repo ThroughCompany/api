@@ -59,8 +59,6 @@ AssetTagService.prototype.getAll = function(options, next) {
 
   var conditions = {};
 
-  console.log(options.select);
-
   if (options.name) {
     var nameRegex = new RegExp(options.name, 'ig');
 

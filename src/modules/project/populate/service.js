@@ -13,6 +13,7 @@ var logger = require('modules/logger');
 
 //models
 var ProjectUser = require('modules/projectUser/data/model');
+var Application = require('modules/projectApplication/data/model');
 
 //services
 var PopulateService = partialResponse.service;
@@ -33,6 +34,10 @@ var projectPopulateService = new ProjectPopulateService();
 projectPopulateService.addPopulate({
   key: 'projectUsers',
   model: ProjectUser
+});
+projectPopulateService.addPopulate({
+  key: 'applications',
+  model: Application
 });
 
 /* =========================================================================
