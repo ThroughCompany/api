@@ -55,13 +55,7 @@ var getUserById = {
     produces: ['application/json']
   },
   action: function(req, res, next) {
-    authMiddleware.authenticationRequired(req, res, function(err) {
-      if (err) return next(err);
-      authMiddleware.currentUserIdQueryParamRequired('id')(req, res, function(err) {
-        if (err) return next(err);
-        controller.getUserById(req, res, next);
-      });
-    });
+    controller.getUserById(req, res, next);
   }
 };
 
@@ -119,13 +113,7 @@ var getUserProjectsById = {
     produces: ['application/json']
   },
   action: function(req, res, next) {
-    authMiddleware.authenticationRequired(req, res, function(err) {
-      if (err) return next(err);
-      authMiddleware.currentUserIdQueryParamRequired('id')(req, res, function(err) {
-        if (err) return next(err);
-        controller.getUserProjectsById(req, res, next);
-      });
-    });
+    controller.getUserProjectsById(req, res, next);
   }
 };
 
