@@ -38,6 +38,10 @@ var projectSchema = baseSchema.extend({
     type: String,
     trim: true
   },
+  bannerPic: {
+    type: String,
+    trim: true
+  },
   location: {
     type: String,
     trim: true

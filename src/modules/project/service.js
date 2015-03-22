@@ -368,7 +368,7 @@ ProjectService.prototype.uploadImage = function(options, next) {
   if (!options.fileType) return next(new errors.InvalidArgumentError('File Type is required'));
   if (!options.imageType) return next(new errors.InvalidArgumentError('Image Type is required'));
 
-  var validUserImageTypes = [IMAGE_TYPES.PROFILE_PIC_PROJECT];
+  var validUserImageTypes = [IMAGE_TYPES.PROFILE_PIC_PROJECT, IMAGE_TYPES.BANNER_PIC_PROJECT];
 
   if (!_.contains(validUserImageTypes, options.imageType)) return next(new errors.InvalidArgumentError(options.imageType + ' is not a valid image type'));
 
@@ -399,6 +399,9 @@ ProjectService.prototype.uploadImage = function(options, next) {
       switch (options.imageType) {
         case IMAGE_TYPES.PROFILE_PIC_PROJECT:
           project.profilePic = imageUrl;
+          break
+        case IMAGE_TYPES.BANNER_PIC_PROJECT:
+          project.bannerPic = imageUrl;
           break
         default:
           err = new errors.InvalidArgumentError('Invalid image type');

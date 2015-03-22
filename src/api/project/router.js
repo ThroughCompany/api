@@ -128,7 +128,7 @@ var uploadImage = {
   action: function(req, res, next) {
     authMiddleware.authenticationRequired(req, res, function(err) {
       if (err) return next(err);
-      authMiddleware.currentUserProjectIdParamRequired('id')(req, res, function(err) {
+      authMiddleware.currentUserProjectIdQueryParamRequired('id')(req, res, function(err) {
         if (err) return next(err);
         multipartMiddleware(req, res, function(err) {
           if (err) return next(err);

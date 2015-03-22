@@ -48,6 +48,8 @@ function dbClean(options, next) {
 steps.push(function loadDependencies_step(done) {
   appConfig = require('src/config/app-config');
 
+  if (appConfig.ENV === 'development' || appConfig.ENV === 'production') throw new Error('\n\n DELETING ' + appConfig.ENV + ' - BE CAREFUL!!!!! \n\n');
+
   Auth = require('modules/auth/data/model');
   Admin = require('modules/admin/data/model');
   User = require('modules/user/data/model');
@@ -59,8 +61,6 @@ steps.push(function loadDependencies_step(done) {
   adminService = require('modules/admin');
 
   logger = require('modules/logger');
-
-
 
   mongoose = require('mongoose');
 

@@ -20,7 +20,9 @@ AWS.config.update({
  * Constants
  * ========================================================================= */
 var BUCKETS = {
-  PROFILE_PICS: 'throughcompany-profilepics',
+  USER_PROFILE_PICS: 'throughcompany-images/users/profile-pictures',
+  PROJECT_PROFILE_PICS: 'throughcompany-images/projects/profile-pictures',
+  PROJECT_BANNER_PICS: 'throughcompany-images/projects/banner-pictures',
 };
 
 /* =========================================================================
@@ -38,10 +40,26 @@ function AwsApi() {}
  * @param {function} next - callback
  * @returns {string} url - image url
  */
-AwsApi.prototype.uploadProfilePic = function upload(options, next) {
+AwsApi.prototype.uploadUserProfilePic = function upload(options, next) {
   if (!options) return next(new errors.InvalidArgumentError('options is required'));
 
-  options.bucket = BUCKETS.PROFILE_PICS;
+  options.bucket = BUCKETS.USER_PROFILE_PICS;
+
+  uploadFile(options, next);
+};
+
+AwsApi.prototype.uploadProjectProfilePic = function upload(options, next) {
+  if (!options) return next(new errors.InvalidArgumentError('options is required'));
+
+  options.bucket = BUCKETS.PROJECT_PROFILE_PICS;
+
+  uploadFile(options, next);
+};
+
+AwsApi.prototype.uploadProjectBannerPic = function upload(options, next) {
+  if (!options) return next(new errors.InvalidArgumentError('options is required'));
+
+  options.bucket = BUCKETS.PROJECT_BANNER_PICS;
 
   uploadFile(options, next);
 };
