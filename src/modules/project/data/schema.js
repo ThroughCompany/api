@@ -4,6 +4,7 @@
 var _ = require('underscore');
 
 var baseSchema = require('modules/common/data/base-schema');
+var wikiPageSchema = require('./wikiPageSchema');
 
 /* =========================================================================
  * Constants
@@ -31,8 +32,7 @@ var projectSchema = baseSchema.extend({
     trim: true
   },
   wiki: {
-    type: String,
-    trim: true
+    pages: [wikiPageSchema]
   },
   profilePic: {
     type: String,

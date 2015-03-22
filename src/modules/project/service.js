@@ -72,9 +72,15 @@ ProjectService.prototype.create = function(options, next) {
 
       var project = new Project();
       project.name = options.name;
+      project.created = new Date();
+      project.modified = project.created;
       project.slug = slug
       project.profilePic = DEFAULTIMAGEURL + randomNum(1, 4) + '.jpg';
       project.description = options.description;
+      project.wiki.pages.push({
+        title: 'Start',
+        text: 'Wiki for ' + options.name + '...'
+      });
 
       project.save(done);
     },
@@ -156,7 +162,6 @@ ProjectService.prototype.update = function(options, next) {
     function updateProject(done) {
       project.name = updates.name ? updates.name : project.name;
       project.description = updates.description ? updates.description : project.description;
-      project.wiki = updates.wiki ? updates.wiki : project.wiki;
       project.location = updates.location ? updates.location : project.location;
 
       if (updates.social) {
@@ -226,6 +231,84 @@ ProjectService.prototype.createAssetTag = function createAssetTag(options, next)
     _this.emit(EVENTS.ASSET_TAG_USED_BY_PROJECT, {
       assetTagName: assetTag.name
     });
+
+    return next(null, project);
+  });
+};
+
+/**
+ * @param {object} options
+ * @param {string} projectId
+ * @param {string} title
+ * @param {object} text
+ * @param {function} next - callback
+ */
+ProjectService.prototype.createWikiPage = function createWikiPage(options, next) {
+  if (!options) return next(new errors.InvalidArgumentError('options is required'));
+  if (!options.projectId) return next(new errors.InvalidArgumentError('Project Id is required'));
+  if (!options.title) return next(new errors.InvalidArgumentError('Title is required'));
+  //if (!options.text) return next(new errors.InvalidArgumentError('Text is required'));
+
+  var _this = this;
+  var project = null;
+
+  async.waterfall([
+    function findProjectById_step(done) {
+      _this.getById({
+        projectId: options.projectId
+      }, done);
+    },
+    function createNewPage_step(_project, done) {
+      if (!_project) return done(new errors.InvalidArgumentError('No project exists with the id ' + options.projectId));
+
+      project = _project;
+      project.wiki.pages.push({
+        title: options.title,
+        text: options.text,
+        created: new Date(),
+        modified: new Date()
+      });
+      project.save(done);
+    }
+  ], function finish(err, project) {
+    if (err) return next(err);
+
+    return next(null, project);
+  });
+};
+
+ProjectService.prototype.updateWikiPage = function updateWikiPage(options, next) {
+  if (!options) return next(new errors.InvalidArgumentError('options is required'));
+  if (!options.projectId) return next(new errors.InvalidArgumentError('Project Id is required'));
+  if (!options.pageId) return next(new errors.InvalidArgumentError('Page Id is required'));
+
+  var _this = this;
+  var project = null;
+
+  async.waterfall([
+    function findProjectById_step(done) {
+      _this.getById({
+        projectId: options.projectId
+      }, done);
+    },
+    function createNewPage_step(_project, done) {
+      if (!_project) return done(new errors.InvalidArgumentError('No project exists with the id ' + options.projectId));
+
+      project = _project;
+
+      var page = _.find(project.wiki.pages, function(page) {
+        return page._id === options.pageId;
+      });
+
+      if (!page) return done(new errors.ObjectNotFoundError('Page not found'));
+
+      page.title = options.title !== undefined ? options.title : page.title;
+      page.text = options.text !== undefined ? options.text : page.text;
+
+      project.save(done);
+    }
+  ], function finish(err, project) {
+    if (err) return next(err);
 
     return next(null, project);
   });

@@ -69,6 +69,8 @@ UserService.prototype.createUsingCredentials = function createUsingCredentials(o
       var user = new User();
       user.email = options.email;
       user.active = true;
+      user.created = new Date();
+      user.modified = user.created;
       user.profilePic = DEFAULTIMAGEURL + randomNum(1, 4) + '.jpg';
 
       user.save(function(err, newUser) {

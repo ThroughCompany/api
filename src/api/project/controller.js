@@ -155,6 +155,38 @@ Controller.prototype.createApplication = function(req, res, next) {
   });
 };
 
+Controller.prototype.createWikiPage = function(req, res, next) {
+  var projectId = req.params.id;
+  var title = req.body.title;
+  var text = req.body.text;
+
+  projectService.createWikiPage({
+    projectId: projectId,
+    title: title,
+    text: text
+  }, function(err, project) {
+    if (err) return next(err);
+    return res.status(201).json(project);
+  });
+};
+
+Controller.prototype.updateWikiPage = function(req, res, next) {
+  var projectId = req.params.id;
+  var pageId = req.params.pageId;
+  var title = req.body.title;
+  var text = req.body.text;
+
+  projectService.updateWikiPage({
+    projectId: projectId,
+    pageId: pageId,
+    title: title,
+    text: text
+  }, function(err, project) {
+    if (err) return next(err);
+    return res.status(200).json(project);
+  });
+};
+
 /* =========================================================================
  * Expose
  * ========================================================================= */

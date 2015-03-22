@@ -180,6 +180,56 @@ var createApplication = {
   }
 };
 
+var createWikiPage = {
+  spec: {
+    path: '/projects/{id}/wiki/pages',
+    summary: 'Creat a new wiki page',
+    method: 'POST',
+    parameters: [
+      swagger.params.path('id', 'project\'s id', 'string'),
+      swagger.params.body('title', 'page\'s title', 'string'),
+      swagger.params.body('text', 'page\'s text', 'string')
+    ],
+    nickname: 'createWikiPage',
+    type: 'Project',
+    produces: ['application/json']
+  },
+  action: function(req, res, next) {
+    authMiddleware.authenticationRequired(req, res, function(err) {
+      if (err) return next(err);
+      authMiddleware.currentUserProjectIdQueryParamRequired('id')(req, res, function(err) {
+        if (err) return next(err);
+        controller.createWikiPage(req, res, next);
+      });
+    });
+  }
+};
+
+var updateWikiPage = {
+  spec: {
+    path: '/projects/{id}/wiki/pages/{pageId}',
+    summary: 'Update a new wiki page',
+    method: 'PATCH',
+    parameters: [
+      swagger.params.path('id', 'project\'s id', 'string'),
+      swagger.params.body('title', 'page\'s title', 'string'),
+      swagger.params.body('text', 'page\'s text', 'string')
+    ],
+    nickname: 'updateWikiPage',
+    type: 'Project',
+    produces: ['application/json']
+  },
+  action: function(req, res, next) {
+    authMiddleware.authenticationRequired(req, res, function(err) {
+      if (err) return next(err);
+      authMiddleware.currentUserProjectIdQueryParamRequired('id')(req, res, function(err) {
+        if (err) return next(err);
+        controller.updateWikiPage(req, res, next);
+      });
+    });
+  }
+};
+
 swagger.addGet(getProjects);
 swagger.addGet(getProjectById);
 swagger.addPost(createProject);
@@ -188,6 +238,8 @@ swagger.addPost(uploadImage);
 swagger.addPatch(updateProjectById);
 swagger.addGet(getProjectUsers);
 swagger.addPost(createApplication);
+swagger.addPost(createWikiPage);
+swagger.addPatch(updateWikiPage);
 
 /* =========================================================================
  *   Swagger declarations
