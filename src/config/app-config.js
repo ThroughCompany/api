@@ -70,7 +70,7 @@ var defaults = {
  * Production
  * ========================================================================= */
 var productionConfig = _.extend(_.clone(defaults), {
-  db: process.env.MONGOLAB_URI,
+  db: 'mongodb://prod-readwrite:K3prutHu2waw@ds037407.mongolab.com:37407/heroku_app35223430',
   newrelic: {
     name: 'throughcompany-api-prod',
     key: 'e7c5a21591fb5d706825572ef8cde21bb7cde86c'
