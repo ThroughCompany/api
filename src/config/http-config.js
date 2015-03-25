@@ -94,7 +94,8 @@ function loadRoutes(app) {
   app.get('/', function(req, res) {
     var data = {
       name: 'through company ' + appConfig.ENV + ' API',
-      version: appConfig.apiVersion
+      version: appConfig.apiVersion,
+      environment: appConfig.ENV
     };
 
     if (appConfig.ENV_DEV) {
