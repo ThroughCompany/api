@@ -90,9 +90,9 @@ Controller.prototype.createAssetTag = function(req, res, next) {
     projectId: projectId,
     name: name,
     description: description
-  }, function(err, project) {
+  }, function(err, assetTag) {
     if (err) return next(err);
-    return res.status(201).json(project);
+    return res.status(201).json(assetTag);
   });
 };
 

@@ -232,7 +232,7 @@ ProjectService.prototype.createAssetTag = function createAssetTag(options, next)
       assetTagName: assetTag.name
     });
 
-    return next(null, project);
+    return next(null, assetTag);
   });
 };
 
@@ -247,7 +247,6 @@ ProjectService.prototype.createWikiPage = function createWikiPage(options, next)
   if (!options) return next(new errors.InvalidArgumentError('options is required'));
   if (!options.projectId) return next(new errors.InvalidArgumentError('Project Id is required'));
   if (!options.title) return next(new errors.InvalidArgumentError('Title is required'));
-  //if (!options.text) return next(new errors.InvalidArgumentError('Text is required'));
 
   var _this = this;
   var project = null;

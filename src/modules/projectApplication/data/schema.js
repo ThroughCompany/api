@@ -30,7 +30,7 @@ var applicationSchema = baseSchema.extend({
     enum: _.values(STATUSES)
   }
 }, {
-  collection: 'applications'
+  collection: 'projectapplications'
 });
 
 applicationSchema.index({
