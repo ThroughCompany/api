@@ -16,10 +16,6 @@ function Middleware(err, req, res, next) {
   logger.error(error);
 
   // if err is a DB error then get more detail
-  if (err.name === 'MongoError') {
-    error = errors.handleDbError(err);
-  }
-  // if err is a DB error then get more detail
   if (err.name === 'ValidationError') {
     error = errors.handleMongooseValidationError(err);
   }

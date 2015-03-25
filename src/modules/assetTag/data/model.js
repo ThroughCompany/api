@@ -1,34 +1,15 @@
 /* =========================================================================
  * Dependencies
  * ========================================================================= */
-var baseSchema = require('modules/common/data/base-schema');
+var mongoose = require('mongoose');
+
+var assetTagSchema = require('./schema');
 
 /* =========================================================================
- * Schema
+ * Private Helpers
  * ========================================================================= */
-var projectUserSchema = baseSchema.extend({
-  project: {
-    type: String,
-    ref: 'Project',
-  },
-  user: {
-    type: String,
-    ref: 'User',
-  },
-  permissions: [{
-    type: String,
-    ref: 'Permission'
-  }]
-});
-
-projectUserSchema.index({
-  project: 1,
-  user: 1
-}, {
-  unique: true
-});
 
 /* =========================================================================
  * Exports
  * ========================================================================= */
-module.exports = projectUserSchema;
+module.exports = mongoose.model('AssetTag', assetTagSchema);

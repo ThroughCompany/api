@@ -4,9 +4,6 @@
 var _ = require('underscore');
 var packageConfig = require('../../package');
 
-var appSettings = require('../../appSettings');
-//var appSettings = {};
-
 /* =========================================================================
  * Force UTC timezone
  * ========================================================================= */
@@ -32,6 +29,11 @@ var defaults = {
     name: 'xxxxxxxxxx',
     key: 'xxxxxxxxxx'
   },
+  blitline: {
+    api: 'http://api.blitline.com/job',
+    version: '1.21',
+    key: '4Q3VLBn5cU01BUgROW2X9Yw'
+  },
   port: PORT,
   apiVersion: packageConfig.version,
   tokenKey: TOKENKEY,
@@ -47,25 +49,22 @@ var defaults = {
     }
   },
   aws: {
-    accessKeyId: 'xxx',
-    secretAccessKey: 'xxx',
-    region: 'xxx',
+    accessKeyId: 'AKIAJSU5WNPJZHCJD2XA',
+    secretAccessKey: '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',
+    region: 'US Standard',
     s3: {
-      buckets: {}
+      buckets: {
+        api: {
+          name: 'throughcompany-api'
+        }
+      }
     }
   },
   log: {
     level: 'debug',
     console: true
-  },
-  px: {
-    userId: 'xxx',
-    apiKey: 'xxx',
-    apiSecret: 'xxx'
   }
 };
-
-defaults = _.extend(defaults, appSettings);
 
 /* =========================================================================
  * Production
@@ -74,7 +73,7 @@ var productionConfig = _.extend(_.clone(defaults), {
   db: process.env.MONGOLAB_URI,
   newrelic: {
     name: 'throughcompany-api-prod',
-    key: '462c7ca3a4079021f443e836d9b9357ef276ba42'
+    key: 'e7c5a21591fb5d706825572ef8cde21bb7cde86c'
   }
 });
 
@@ -85,7 +84,7 @@ var developmentConfig = _.extend(_.clone(defaults), {
   db: 'mongodb://dev-readwrite:QUZAmaf4ehuj@ds041651.mongolab.com:41651/heroku_app33783922',
   newrelic: {
     name: 'throughcompany-api-dev',
-    key: '462c7ca3a4079021f443e836d9b9357ef276ba42'
+    key: 'e7c5a21591fb5d706825572ef8cde21bb7cde86c'
   }
 });
 

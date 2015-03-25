@@ -5,8 +5,13 @@
 /* =========================================================================
  * Dependencies
  * ========================================================================= */
+if (process.env.NEWRELIC) {
+  var newrelic = require('newrelic');
+}
+
 var async = require('async');
 var _ = require('underscore');
+var fs = require('fs');
 
 var appConfig = require('src/config/app-config');
 var httpConfig = require('src/config/http-config');
@@ -29,10 +34,9 @@ function App() {}
  * init - main entry point for the entire app
  * - loads app files
  * - starts Mongo DB
- * - starts Kue.js and Redis
  *
  * @param {Object} options
- * @param {Boolean} options.http - turns on the HTTP server, and job server
+ * @param {Boolean} options.http - turns on the HTTP server
  * @param {Function} next - callback function
  *
  */
@@ -51,16 +55,28 @@ App.prototype.init = function init(options, next) {
   console.log('-running in ' + appConfig.ENV + ' mode \r');
   console.log('-running initialize steps... \r');
 
-  if (process.env.NEWRELIC) {
-    steps.push(function startNewRelic_step(done) {
-      var newrelic = require('newrelic');
-
-      done();
-    });
-  }
-
   steps.push(function connectMongo_step(done) {
     mongoConfig.init(done);
+  });
+
+  steps.push(function loadModules_step(done) {
+    var modules = fs.readdirSync('src/modules');
+
+    _.each(modules, function(module) {
+      console.log('Loading module : ' + module + '...');
+
+      require('src/modules/' + module);
+    });
+
+    done();
+  });
+
+  steps.push(function loadEvents_step(done) {
+    var eventOrchestrator = require('src/events/event-orchestrator');
+
+    eventOrchestrator.registerHandlers();
+
+    done();
   });
 
   if (options.http) {

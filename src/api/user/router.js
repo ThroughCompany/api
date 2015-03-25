@@ -7,6 +7,7 @@ var multipart = require('connect-multiparty');
 
 //middleware
 var authMiddleware = require('src/middleware/authMiddleware');
+var partialResponseMiddleware = require('src/middleware/partialResponseMiddleware');
 var multipartMiddleware = multipart();
 
 var controller = require('./controller');
@@ -19,6 +20,10 @@ var getUsers = {
     path: '/users',
     summary: 'Get a list of users',
     method: 'GET',
+    parameters: [
+      swagger.params.query('fields', 'csv of fields to select', 'string'),
+      swagger.params.query('take', 'number of results to take', 'int')
+    ],
     nickname: 'getUsers',
     type: 'User',
     produces: ['application/json']
@@ -28,7 +33,10 @@ var getUsers = {
       if (err) return next(err);
       authMiddleware.adminRequired(req, res, function(err) {
         if (err) return next(err);
-        controller.getUsers(req, res, next);
+        partialResponseMiddleware(req, res, function(err) {
+          if (err) return next(err);
+          controller.getUsers(req, res, next);
+        });
       });
     });
   }
@@ -47,13 +55,7 @@ var getUserById = {
     produces: ['application/json']
   },
   action: function(req, res, next) {
-    authMiddleware.authenticationRequired(req, res, function(err) {
-      if (err) return next(err);
-      authMiddleware.currentUserIdParamRequired('id')(req, res, function(err) {
-        if (err) return next(err);
-        controller.getUserById(req, res, next);
-      });
-    });
+    controller.getUserById(req, res, next);
   }
 };
 
@@ -72,7 +74,7 @@ var getUserClaimsById = {
   action: function(req, res, next) {
     authMiddleware.authenticationRequired(req, res, function(err) {
       if (err) return next(err);
-      authMiddleware.currentUserIdParamRequired('id')(req, res, function(err) {
+      authMiddleware.currentUserIdQueryParamRequired('id')(req, res, function(err) {
         if (err) return next(err);
         controller.getUserClaimsById(req, res, next);
       });
@@ -111,13 +113,7 @@ var getUserProjectsById = {
     produces: ['application/json']
   },
   action: function(req, res, next) {
-    authMiddleware.authenticationRequired(req, res, function(err) {
-      if (err) return next(err);
-      authMiddleware.currentUserIdParamRequired('id')(req, res, function(err) {
-        if (err) return next(err);
-        controller.getUserProjectsById(req, res, next);
-      });
-    });
+    controller.getUserProjectsById(req, res, next);
   }
 };
 
@@ -136,7 +132,7 @@ var updateUserById = {
   action: function(req, res, next) {
     authMiddleware.authenticationRequired(req, res, function(err) {
       if (err) return next(err);
-      authMiddleware.currentUserIdParamRequired('id')(req, res, function(err) {
+      authMiddleware.currentUserIdQueryParamRequired('id')(req, res, function(err) {
         if (err) return next(err);
         controller.updateUserById(req, res, next);
       });
@@ -159,12 +155,36 @@ var uploadImage = {
   action: function(req, res, next) {
     authMiddleware.authenticationRequired(req, res, function(err) {
       if (err) return next(err);
-      authMiddleware.currentUserIdParamRequired('id')(req, res, function(err) {
+      authMiddleware.currentUserIdQueryParamRequired('id')(req, res, function(err) {
         if (err) return next(err);
         multipartMiddleware(req, res, function(err) {
           if (err) return next(err);
           controller.uploadImage(req, res, next);
         });
+      });
+    });
+  }
+};
+
+var createAssetTag = {
+  spec: {
+    path: '/users/{id}/assettags',
+    summary: 'Add user asset tag',
+    method: 'POST',
+    parameters: [
+      swagger.params.path('id', 'user\'s id', 'string'),
+      swagger.params.body('tags', 'asset tag', 'string')
+    ],
+    nickname: 'createAssetTag',
+    type: 'User',
+    produces: ['application/json']
+  },
+  action: function(req, res, next) {
+    authMiddleware.authenticationRequired(req, res, function(err) {
+      if (err) return next(err);
+      authMiddleware.currentUserIdQueryParamRequired('id')(req, res, function(err) {
+        if (err) return next(err);
+        controller.createAssetTag(req, res, next);
       });
     });
   }
@@ -177,6 +197,7 @@ swagger.addPost(createUser);
 swagger.addGet(getUserProjectsById);
 swagger.addPatch(updateUserById);
 swagger.addPost(uploadImage);
+swagger.addPost(createAssetTag);
 
 /* =========================================================================
  *   Swagger declarations

@@ -12,7 +12,7 @@ var CommonService = require('modules/common');
 
 //lib
 var awsApi = require('lib/aws-api');
-var pxApi = require('lib/px-api');
+var blitlineApi = require('lib/blitline-api');
 
 /* =========================================================================
  * Constants
@@ -48,25 +48,34 @@ ImageService.prototype.upload = function(options, next) {
   if (!_.contains(_.values(IMAGE_TYPES), options.imageType)) return next(new errors.InvalidArgumentError(options.imageType + ' is not a valid image type'));
   if (!_.contains(_.values(ALLOWED_FILE_TYPES), options.fileType)) return next(new errors.InvalidArgumentError(options.fileType + ' is not a valid file type'));
 
+  console.log(options);
+
   var _this = this;
 
   async.waterfall([
     function uploadToAws_step(done) {
       switch (options.imageType) {
-        case IMAGE_TYPES.PROFILE_PIC:
-          awsApi.uploadProfilePic({
+        case IMAGE_TYPES.PROFILE_PIC_USER:
+          awsApi.uploadUserProfilePic({
+            filePath: options.filePath,
+            fileName: options.fileName,
+            fileType: options.fileType
+          }, done);
+        case IMAGE_TYPES.PROFILE_PIC_PROJECT:
+          awsApi.uploadProjectProfilePic({
+            filePath: options.filePath,
+            fileName: options.fileName,
+            fileType: options.fileType
+          }, done);
+        case IMAGE_TYPES.BANNER_PIC_PROJECT:
+          awsApi.uploadProjectBannerPic({
             filePath: options.filePath,
             fileName: options.fileName,
             fileType: options.fileType
           }, done);
           break;
       }
-    },
-    // function uploadTxPx_step(imageUrl, done) {
-    //   pxApi.uploadImage({
-    //     imageUrl: imageUrl
-    //   }, done);
-    // }
+    }
   ], next);
 };
 

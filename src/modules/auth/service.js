@@ -15,7 +15,7 @@ var logger = require('modules/logger');
 var userService = require('modules/user');
 var adminService = require('modules/admin');
 var projectService = require('modules/project');
-var projectUserService = require('modules/project-user');
+var projectUserService = require('modules/projectUser');
 var permissionService = require('modules/permission');
 
 //lib

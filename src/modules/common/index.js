@@ -1,3 +1,3 @@
-var userService = require('./service');
+var commonService = require('./service');
 
-module.exports = userService;
+module.exports = commonService;

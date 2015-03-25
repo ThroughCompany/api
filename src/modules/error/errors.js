@@ -94,22 +94,6 @@ var ValidationError = function(msg) {
 util.inherits(ValidationError, AbstractError);
 ValidationError.prototype.name = 'Data validation Error';
 
-/**
- * Handle mongoose error codes and throw proper error
- * @param  {MongoError} err mongoose error
- * @return {Error}     [description]
- */
-var handleDbError = function(err) {
-  switch (err.code) {
-    // duplicate key
-    case 11000:
-      return new DuplicateKeyError(err.err);
-      break;
-    default:
-      return new DatabaseError(err);
-      break;
-  }
-};
 
 /**
  * Handle mongoose error codes and throw proper error
@@ -163,7 +147,6 @@ module.exports = {
   ValidationError: ValidationError,
 
   // Error Handlers
-  handleDbError: handleDbError,
   handleMongooseValidationError: handleMongooseValidationError,
 
   AbstractError: AbstractError

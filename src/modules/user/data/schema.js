@@ -44,6 +44,10 @@ var userSchema = baseSchema.extend({
     type: String,
     ref: 'ProjectUser'
   }],
+  projectApplications: [{
+    type: String,
+    ref: 'ProjectApplication'
+  }],
   facebook: {
     id: {
       type: String,
@@ -74,7 +78,22 @@ var userSchema = baseSchema.extend({
       type: String,
       trim: true
     }
-  }
+  },
+  assetTags: [{
+    _id: false,
+    name: {
+      type: String,
+      trim: true
+    },
+    slug: {
+      type: String,
+      trim: true
+    },
+    description: {
+      type: String,
+      trim: true
+    }
+  }]
 });
 
 /* =========================================================================

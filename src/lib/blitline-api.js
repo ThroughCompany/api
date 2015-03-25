@@ -4,66 +4,64 @@
 var fs = require('fs');
 var async = require('async');
 var uuid = require('node-uuid');
+var http = require('http');
 
 var appConfig = require('src/config/app-config');
-
-var px = require('6px')({
-  userId: appConfig.px.userId,
-  apiKey: appConfig.px.apiKey,
-  apiSecret: appConfig.px.apiSecret
-});
 
 //modules
 var errors = require('modules/error');
 
 /* =========================================================================
+ * Constants
+ * ========================================================================= */
+
+/* =========================================================================
  * Consructor
  * ========================================================================= */
-function PxApi() {}
+function BlitlineApi() {}
 
 /**
  * @description Upload a file to the proflie pic bucket
  *
  * @param {object} options
- * @param {string} options.imageUrl
+ * @param {string} options.filePath
+ * @param {string} options.fileName
+ * @param {string} options.fileType
  * @param {function} next - callback
  * @returns {string} url - image url
  */
-PxApi.prototype.uploadImage = function uploadImage(options, next) {
+BlitlineApi.prototype.uploadImage = function upload(options, next) {
   if (!options) return next(new errors.InvalidArgumentError('options is required'));
-  if (!options.imageUrl) return next(new errors.InvalidArgumentError('Image Url is required'));
+  if (!options.imageUrl) return next(new errors.InvalidArgumentError('options.imageUrl is required'));
 
-  px.on('connection', function() {
-    var image = px({
-      taxi: options.imageUrl
+  var postData = {
+    application_id: appConfig.blitline.key,
+    host: appConfig.blitline.api,
+    path: options.imageUrl,
+    method: 'POST',
+    v: appConfig.blitline.version,
+    functions: []
+  };
+
+  var request = http.request(options, function(response) {
+    var data = '';
+
+    response.on('data', function(chunk) {
+      data += chunk;
     });
 
-    var output = image.output({
-        taxi: 'unsplashed_taxi'
-      })
-      .url('6px')
-      .filter({
-        sepia: 70
-      })
-      .resize({
-        height: 200,
-        width: 200
-      });
-
-    image.save().then(function(response) {
-      console.log('RESPONSE FROM PX');
-      console.log(response);
-    }, function(response) {
-      console.log('RESPONSE FROM PX');
-      console.log(response);
-    });
-
-    image.getInfo().then(function(res) {
-      console.log('Res', res);
-    }, function(err) {
-      console.log('Err', err);
+    response.on('end', function() {
+      return next(null, data);
     });
   });
+
+  request.on('error', function(err) {
+    return next(err);
+  });
+
+  request.write(postData);
+
+  request.end();
 };
 
 /* =========================================================================
@@ -73,4 +71,4 @@ PxApi.prototype.uploadImage = function uploadImage(options, next) {
 /* =========================================================================
  * Export
  * ========================================================================= */
-module.exports = new PxApi();
+module.exports = new BlitlineApi();

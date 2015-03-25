@@ -8,6 +8,8 @@ var async = require('async');
 //modules
 var errors = require('modules/error');
 var CommonService = require('modules/common');
+var imageService = require('modules/image');
+var assetTagService = require('modules/assetTag');
 
 //models
 var User = require('./data/model');
@@ -15,18 +17,22 @@ var Auth = require('modules/auth/data/model');
 
 var authUtil = require('modules/auth/util');
 
-//services
-var imageService = require('modules/image');
-
 var validator = require('./validator');
 
 /* =========================================================================
  * Constants
  * ========================================================================= */
+var TAKE = 50;
+var MAX_TAKE = 200;
+
+var EVENTS = require('./constants/events');
 var REGEXES = require('modules/common/constants/regexes');
 var DEFAULTIMAGEURL = 'https://s3.amazonaws.com/throughcompany-assets/user-avatars/avatar';
 var IMAGE_TYPES = require('modules/image/constants/image-types');
 
+/* =========================================================================
+ * Constructor
+ * ========================================================================= */
 var UserService = function() {
   CommonService.call(this, User);
 };
@@ -38,7 +44,7 @@ util.inherits(UserService, CommonService);
  * @param {string} password
  * @param {function} next - callback
  */
-UserService.prototype.createUsingCredentials = function(options, next) {
+UserService.prototype.createUsingCredentials = function createUsingCredentials(options, next) {
   if (!options) return next(new errors.InvalidArgumentError('options is required'));
 
   var _this = this;
@@ -63,6 +69,8 @@ UserService.prototype.createUsingCredentials = function(options, next) {
       var user = new User();
       user.email = options.email;
       user.active = true;
+      user.created = new Date();
+      user.modified = user.created;
       user.profilePic = DEFAULTIMAGEURL + randomNum(1, 4) + '.jpg';
 
       user.save(function(err, newUser) {
@@ -89,7 +97,7 @@ UserService.prototype.createUsingCredentials = function(options, next) {
  * @param {string} facebookUsername - facebook username
  * @param {function} next - callback
  */
-UserService.prototype.createUsingFacebook = function(options, next) {
+UserService.prototype.createUsingFacebook = function createUsingFacebook(options, next) {
   if (!options) return next(new errors.InvalidArgumentError('options is required'));
   if (!options.email) return next(new errors.InvalidArgumentError('Email is required'));
   if (!options.facebookId) return next(new errors.InvalidArgumentError('Facebook Id is required'));
@@ -130,7 +138,7 @@ UserService.prototype.createUsingFacebook = function(options, next) {
  * @param {object} updates
  * @param {function} next - callback
  */
-UserService.prototype.update = function(options, next) {
+UserService.prototype.update = function update(options, next) {
   if (!options.userId) return next(new errors.InvalidArgumentError('User Id is required'));
   if (!options.updates) return next(new errors.InvalidArgumentError('Updates is required'));
 
@@ -174,7 +182,66 @@ UserService.prototype.update = function(options, next) {
 
 /**
  * @param {object} options
- * @param {object} findOptions - hash of mongoose query params
+ * @param {string} userId
+ * @param {string} name
+ * @param {object} updates
+ * @param {function} next - callback
+ */
+UserService.prototype.createAssetTag = function createAssetTag(options, next) {
+  if (!options) return next(new errors.InvalidArgumentError('options is required'));
+  if (!options.userId) return next(new errors.InvalidArgumentError('User Id is required'));
+  if (!options.name) return next(new errors.InvalidArgumentError('Name is required'));
+
+  var _this = this;
+  var user = null;
+  var assetTag = null;
+
+  async.waterfall([
+    function findUserById_step(done) {
+      _this.getById({
+        userId: options.userId
+      }, done);
+    },
+    function findAssetTag_step(_user, done) {
+      if (!_user) return done(new errors.InvalidArgumentError('No user exists with the id ' + options.userId));
+
+      user = _user;
+
+      assetTagService.getOrCreateByName({
+        name: options.name
+      }, done);
+    },
+    function addTagToUser_step(_assetTag, done) {
+
+      var existingAssetTag = _.find(user.assetTags, function(assetTag) {
+        return assetTag.slug === _assetTag.slug;
+      });
+
+      if (existingAssetTag) return done(new errors.InvalidArgumentError(options.name + ' tag already exists. Cannot have duplicate tags'));
+
+      assetTag = _assetTag;
+
+      user.assetTags.push({
+        name: assetTag.name,
+        slug: assetTag.slug,
+        description: options.description
+      });
+
+      user.save(done);
+    }
+  ], function finish(err, user) {
+    if (err) return next(err);
+
+    _this.emit(EVENTS.ASSET_TAG_USED_BY_USER, {
+      assetTagName: assetTag.name
+    });
+
+    return next(null, assetTag);
+  });
+};
+
+/**
+ * @param {object} options
  * @param {array} [populate] - array of keys to populate
  * @param {function} next - callback
  */
@@ -182,6 +249,12 @@ UserService.prototype.getAll = function(options, next) {
   if (!options) return next(new errors.InvalidArgumentError('options is required'));
 
   var query = User.find({});
+
+  if (options.select) {
+    query.select(options.select);
+  }
+
+  query.limit(options.take && options.take <= MAX_TAKE ? options.take : TAKE);
 
   return query.exec(next);
 };
@@ -263,7 +336,7 @@ UserService.prototype.uploadImage = function(options, next) {
   if (!options.fileType) return next(new errors.InvalidArgumentError('File Type is required'));
   if (!options.imageType) return next(new errors.InvalidArgumentError('Image Type is required'));
 
-  var validUserImageTypes = [IMAGE_TYPES.PROFILE_PIC];
+  var validUserImageTypes = [IMAGE_TYPES.PROFILE_PIC_USER];
 
   if (!_.contains(validUserImageTypes, options.imageType)) return next(new errors.InvalidArgumentError(options.imageType + ' is not a valid image type'));
 
@@ -292,7 +365,7 @@ UserService.prototype.uploadImage = function(options, next) {
       var err = null;
 
       switch (options.imageType) {
-        case IMAGE_TYPES.PROFILE_PIC:
+        case IMAGE_TYPES.PROFILE_PIC_USER:
           user.profilePic = imageUrl;
           break
         default:

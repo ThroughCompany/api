@@ -1,9 +1,9 @@
-"use strict";
-
 /* =========================================================================
  * Dependencies
  * ========================================================================= */
+var util = require('util');
 var _ = require('underscore');
+var events = require('events');
 
 /* =========================================================================
  * Constructor
@@ -11,8 +11,11 @@ var _ = require('underscore');
 function CommonService(model) {
   if (!model) throw new Error('model is required.');
 
+  events.EventEmitter.call(this);
+
   this.Model = model;
 }
+util.inherits(CommonService, events.EventEmitter);
 
 /* =========================================================================
  * Expose

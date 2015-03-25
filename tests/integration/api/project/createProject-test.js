@@ -21,7 +21,7 @@ var User = require('modules/user/data/model');
 var Admin = require('modules/admin/data/model');
 var Auth = require('modules/auth/data/model');
 var Project = require('modules/project/data/model');
-var ProjectUser = require('modules/project-user/data/model');
+var ProjectUser = require('modules/projectUser/data/model');
 var Permission = require('modules/permission/data/model');
 
 var PERMISSIONS_NAMES = require('modules/permission/constants/permission-names');
@@ -39,7 +39,7 @@ before(function(done) {
 });
 
 describe('api', function() {
-  describe('user', function() {
+  describe('project', function() {
     describe('POST - /projects', function() {
       describe('when user is not authenticated', function() {
         var email = 'testuser@test.com';

@@ -26,7 +26,12 @@ function Controller() {}
  * @description Get all users
  */
 Controller.prototype.getUsers = function(req, res, next) {
-  userService.getAll({}, function(err, users) {
+  var select = req.fields ? req.fields.select : null;
+  var expands = req.expands;
+
+  userService.getAll({
+    select: select
+  }, function(err, users) {
     if (err) return next(err);
     return res.status(200).json(users);
   });
@@ -127,9 +132,27 @@ Controller.prototype.uploadImage = function(req, res, next) {
     fileName: image.name,
     filePath: image.path,
     fileType: image.type
-  }, function(err, users) {
+  }, function(err, user) {
     if (err) return next(err);
-    return res.status(200).json(users);
+    return res.status(200).json(user);
+  });
+};
+
+/** 
+ * @description Create asset tag
+ */
+Controller.prototype.createAssetTag = function(req, res, next) {
+  var userId = req.params.id;
+  var name = req.body.name;
+  var description = req.body.description;
+
+  userService.createAssetTag({
+    userId: userId,
+    name: name,
+    description: description
+  }, function(err, assetTag) {
+    if (err) return next(err);
+    return res.status(201).json(assetTag);
   });
 };
 

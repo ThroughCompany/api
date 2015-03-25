@@ -2,14 +2,13 @@
  * Dependencies
  * ========================================================================= */
 var util = require('util');
-var config = require('app/config');
 var path = require('path');
-var Errors = require(path.join(config.paths.config, 'error'));
 var _ = require('underscore');
 var async = require('async');
 
 //modules
 var logger = require('modules/logger');
+var errors = require('modules/error');
 
 /* =========================================================================
  * Constructor
@@ -21,8 +20,7 @@ function PopulateService() {
 }
 
 PopulateService.prototype.populate = function populate(options, next) {
-  if (!options) return next(new Errors.InvalidArgumentError('options is required'));
-  //if (!options.doc && !options.docs) return next(new Errors.InvalidArgumentError('options.doc or options.docs is required'));
+  if (!options) return next(new errors.InvalidArgumentError('options is required'));
   if (!options.doc && !options.docs) return next(null, null);
   if (options.docs) options.doc = options.docs;
 
@@ -41,7 +39,7 @@ PopulateService.prototype.populate = function populate(options, next) {
   var populateFunctions = [];
 
   _.each(options.expands.nodes, function(field) {
-    var name = field.memberName.toLowerCase();
+    var name = field.memberName;
 
     var foundPopulateFn = _this.populates[name];
 
@@ -114,7 +112,11 @@ function populateCollection(options, next) {
     var val = getProperty(currentObj, options.key);
 
     if (val) {
-      idsToPopulate.push(val);
+      if (_.isArray(val)) {
+        idsToPopulate = idsToPopulate.concat(val);
+      } else {
+        idsToPopulate.push(val);
+      }
     } else {
       errorMsg = 'property ' + options.key + ' is not valid';
 
@@ -123,7 +125,7 @@ function populateCollection(options, next) {
   }
 
   if (!idsToPopulate) {
-    return next(new Errors.InvalidArgumentError(errorMsg));
+    return next(new errors.InvalidArgumentError(errorMsg));
   }
 
   async.waterfall([
@@ -146,15 +148,29 @@ function populateCollection(options, next) {
 
         _.each(objects, function(object, index) {
 
-          var obj = object;
-          var foundObj = foundObjs[getProperty(obj, options.key)];
+          var propertyValue = getProperty(object, options.key);
+          var foundObj;
+
+          if (_.isArray(propertyValue)) {
+            //TODO: need to handle an array of just strings AND an array of objects
+            //current handles only an array of strings
+
+            foundObj = [];
+
+            _.each(propertyValue, function(val) {
+              var found = foundObjs[val];
+              if (found) foundObj.push(found);
+            });
+          } else {
+            foundObj = foundObjs[getProperty(object, options.key)];
+          }
 
           if (object) {
-            obj = (obj && obj.toJSON) ? obj.toJSON() : obj;
+            object = (object && object.toJSON) ? object.toJSON() : object;
             foundObj = (foundObj && foundObj.toJSON) ? foundObj.toJSON() : foundObj;
-            setProperty(obj, options.key, foundObj);
+            setProperty(object, options.key, foundObj);
           }
-          objects[index] = obj;
+          objects[index] = object;
         });
 
         done();
@@ -179,6 +195,25 @@ function getProperty(obj, propertyName) {
 
     for (var i = 0; i < parts.length; i++) {
       var currentPart = parts[i];
+
+      //TODO: need to deal with getting array property
+      // if (_.isArray(currentPart)) {
+      //   _.each(currentPart, function(subPart) {
+      //     if (subPart[currentPart]) {
+      //       subObj = subObj[currentPart];
+      //     } else {
+      //       subObj = null;
+      //       break;
+      //     }
+      //   });
+      // } else {
+      //   if (subObj[currentPart]) {
+      //     subObj = subObj[currentPart];
+      //   } else {
+      //     subObj = null;
+      //     break;
+      //   }
+      // }
 
       if (subObj[currentPart]) {
         subObj = subObj[currentPart];

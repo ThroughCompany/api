@@ -20,7 +20,9 @@ AWS.config.update({
  * Constants
  * ========================================================================= */
 var BUCKETS = {
-  PROFILE_PICS: 'throughcompany-profilepics',
+  USER_PROFILE_PICS: 'throughcompany-images/users/profile-pictures',
+  PROJECT_PROFILE_PICS: 'throughcompany-images/projects/profile-pictures',
+  PROJECT_BANNER_PICS: 'throughcompany-images/projects/banner-pictures',
 };
 
 /* =========================================================================
@@ -38,18 +40,34 @@ function AwsApi() {}
  * @param {function} next - callback
  * @returns {string} url - image url
  */
-AwsApi.prototype.uploadProfilePic = function upload(options, next) {
+AwsApi.prototype.uploadUserProfilePic = function upload(options, next) {
   if (!options) return next(new errors.InvalidArgumentError('options is required'));
 
-  options.bucket = BUCKETS.PROFILE_PICS;
+  options.bucket = BUCKETS.USER_PROFILE_PICS;
 
-  uploadImage(options, next);
+  uploadFile(options, next);
+};
+
+AwsApi.prototype.uploadProjectProfilePic = function upload(options, next) {
+  if (!options) return next(new errors.InvalidArgumentError('options is required'));
+
+  options.bucket = BUCKETS.PROJECT_PROFILE_PICS;
+
+  uploadFile(options, next);
+};
+
+AwsApi.prototype.uploadProjectBannerPic = function upload(options, next) {
+  if (!options) return next(new errors.InvalidArgumentError('options is required'));
+
+  options.bucket = BUCKETS.PROJECT_BANNER_PICS;
+
+  uploadFile(options, next);
 };
 
 /* =========================================================================
  * Private Helpers
  * ========================================================================= */
-function uploadImage(options, next) {
+function uploadFile(options, next) {
   if (!options) return next(new errors.InternalServiceError('options is required'));
   if (!options.bucket) return next(new errors.InternalServiceError('options.bucket is required'));
   if (!options.filePath) return next(new errors.InternalServiceError('options.filePath is required'));
@@ -80,7 +98,7 @@ function uploadImage(options, next) {
 
         var url = 'https://s3.amazonaws.com' + '/' + options.bucket + '/' + path;
 
-        //return just the url to the image on AWS
+        //return just the url to the file on AWS
         done(null, url);
       });
     }

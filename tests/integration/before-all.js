@@ -6,13 +6,14 @@ process.env.NODE_ENV = 'test';
 var async = require('async');
 var _ = require('underscore');
 var mongoose = require('mongoose');
+var childProcess = require('child_process');
 
 var app = require('src');
 var appConfig = require('src/config/app-config');
 
 var agent = require('tests/lib/agent');
 
-var dbSeed = require('tools/seed/seed-db');
+var dbSeed = require('tools/db-seed');
 
 /* =========================================================================
  * Before
@@ -24,34 +25,23 @@ before(function(next) {
 });
 
 before(function(next) {
-  console.log('\nDROPPING MONGO DB...');
+  console.log('\nCLEANING MONGO DB...');
 
-  var conn = mongoose.createConnection(appConfig.db);
+  var dbClean = childProcess.fork('tools/scripts/db-clean');
 
-  conn.once('open', function() {
-    conn.db.collectionNames(function(err, names) {
-      if (err) return next(err);
-
-      // if no errors then we have a collection drop the database
-      conn.db.dropDatabase(function(err, result) {
-        if (err) return next(err);
-
-        console.log('MONGO DB DROPPED');
-
-        next(err);
-      });
-    });
+  dbClean.on('close', function(code) {
+    console.log('\nFINISHED CLEANING MONGO DB...');
+    next();
   });
 });
 
 before(function(next) {
   console.log('\nLOADING SEED DATA...');
 
-  dbSeed.run({
-    createAdmins: false
-  }, function() {
+  var dbSeed = childProcess.fork('tools/scripts/db-seed', ['--createAdmins', 'false']);
 
-    console.log('SEED DATA LOADED');
+  dbSeed.on('close', function(code) {
+    console.log('\nFINISHED LOADING SEED DATA...');
     next();
   });
 });
