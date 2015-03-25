@@ -3,7 +3,7 @@ Through Company Api
 
 ##Prod
 
-not setup yet
+[![wercker status](https://app.wercker.com/status/addd0bf3f4863cf47658d1704fd2c1b3/m/master "wercker status")](https://app.wercker.com/project/bykey/addd0bf3f4863cf47658d1704fd2c1b3)
 
 ##Dev
 
