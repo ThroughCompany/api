@@ -93,13 +93,17 @@ function uploadFile(options, next) {
       }, done);
     },
     function cleanupFileFromDisk_step(result, done) {
-      fs.unlink(options.filePath, function(err) {
-        if (err) return next(err);
+      var url = 'https://s3.amazonaws.com' + '/' + options.bucket + '/' + path;
 
-        var url = 'https://s3.amazonaws.com' + '/' + options.bucket + '/' + path;
+      fs.exists(options.filePath, function(exists) {
+        if (!exists) return next(null, url);
 
-        //return just the url to the file on AWS
-        done(null, url);
+        fs.unlink(options.filePath, function(err) {
+          if (err) return next(err);
+
+          //return just the url to the file on AWS
+          done(null, url);
+        });
       });
     }
   ], next);
