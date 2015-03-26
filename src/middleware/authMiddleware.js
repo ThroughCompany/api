@@ -36,7 +36,7 @@ AuthMiddleware.prototype.authenticationRequired = function authenticationRequire
 };
 
 //authorization middleware =================================================================
-//checks for id as URL param against current user id claim
+//verifies the user id matches the auth token info - param
 AuthMiddleware.prototype.currentUserIdQueryParamRequired = function currentUserIdQueryParamRequired(paramName) {
   var param = paramName || 'id';
 
@@ -49,28 +49,63 @@ AuthMiddleware.prototype.currentUserIdQueryParamRequired = function currentUserI
   };
 };
 
+//verifies the user id matches the auth token info - body
 AuthMiddleware.prototype.currentUserIdBodyParamRequired = function currentUserIdBodyParamRequired(paramName) {
   var param = paramName || 'id';
 
   return function _currentUserIdQueryBodyRequired(req, res, next) {
-    if (!req.claims || !req.body[param] || (req.body[param] !== req.claims.userId && !req.claims.admin)) { //allow admins to bypass
+    if (req.claims.admin) return next(); //allow admins to bypass
+
+    if (!req.claims || !req.body[param] || req.body[param] !== req.claims.userId) {
       return next(new errors.ForbiddenError('Current user id does not match user id body param'));
-    } else {
-      next();
     }
+    return next();
   };
 };
 
-//checks for id as URL param against current project id claims
+//verifies the user is a project member - param
 AuthMiddleware.prototype.currentUserProjectIdQueryParamRequired = function currentUserProjectIdQueryParamRequired(paramName) {
   var param = paramName || 'id';
 
   return function _currentUserProjectIdParamRequired(req, res, next) {
-    if (!req.claims || !req.params[param] || !req.claims.projectIds || !req.claims.projectIds.length || (!_.contains(req.claims.projectIds, req.params[param]) && !req.claims.admin)) { //allow admins to bypass
-      return next(new errors.ForbiddenError('Current user is not a project member'));
-    } else {
-      next();
+    if (req.claims.admin) return next(); //allow admins to bypass
+    if (!req.claims || !req.params[param] || !req.claims.projectIds || !req.claims.projectIds.length || !_.contains(req.claims.projectIds, req.params[param])) {
+      return next(new errors.ForbiddenError('Access Denied'));
     }
+    return next();
+  };
+};
+
+//verifies the user is a project member with a certain permission - param
+AuthMiddleware.prototype.currentProjectPermissionParamRequired = function(permissionName, projectIdParamName) {
+  projectIdParamName = projectIdParamName || 'id';
+
+  return function _currentProjectPermissionParamRequired(req, res, next) {
+    var projectId;
+
+    if (req.claims.admin) return next(); //allow admins to bypass
+
+    if (!req.claims || !req.params) {
+      return next(new errors.ForbiddenError('Access Denied'));
+    }
+
+    projectId = req.params[projectIdParamName];
+
+    if (!req.claims.projectIds || !req.claims.projectIds.length || !_.contains(req.claims.projectIds, req.params[param]) || !req.claims.projectPermissions[projectId]) {
+      return next(new errors.ForbiddenError('Access Denied'));
+    }
+
+    var projectPermissions = req.claims.projectPermissions[projectId];
+
+    var foundPermission = _.find(projectPermissions, function(permission) {
+      return permission.name === permissionName;
+    });
+
+    if (!foundPermission) {
+      return next(new errors.ForbiddenError('Access Denied'));
+    }
+
+    return next();
   };
 };
 
@@ -82,32 +117,6 @@ AuthMiddleware.prototype.adminRequired = function adminRequired(req, res, next) 
     next();
   }
 };
-
-// //checks for id as URL param against current company ids claim
-// AuthMiddleware.prototype.currentCompanyIdParamRequired = function(paramName) {
-//   var param = paramName || 'id';
-
-//   return function currentCompanyIdParamRequired(req, res, next) {
-//     if (!req.user || !req.claims || !req.params[param] || !_.contains(req.claims.companyIds, req.params[param])) {
-//       return next(new errors.ForbiddenError());
-//     } else {
-//       next();
-//     }
-//   };
-// };
-
-// //checks for company admin claim using company id as URL param 
-// AuthMiddleware.prototype.currentCompanyClaimRequiredBody = function(claim, companyIdBodyPropertyName) {
-//   companyIdBodyPropertyName = companyIdBodyPropertyName || 'id';
-
-//   return function currentCompanyClaimRequiredBody(req, res, next) {
-//     if (!req.user || !req.claims || !req.params || !req.params[companyIdBodyPropertyName] || !req.claims[claim + '-' + req.params[companyIdBodyPropertyName]]) {
-//       return next(new errors.ForbiddenError('User does not have the claim ' + claim));
-//     } else {
-//       next();
-//     }
-//   };
-// };
 
 // public api ===============================================================================
 module.exports = new AuthMiddleware();
