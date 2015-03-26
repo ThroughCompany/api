@@ -1,46 +1,35 @@
-// "use strict";
+/* =========================================================================
+ * Dependencies
+ * ========================================================================= */
+var appConfig = require('src/config/app-config');
+var _ = require('underscore');
+var async = require('async');
 
-// /* =========================================================================
-//  * Dependencies
-//  * ========================================================================= */
-// var nodemailer = require('nodemailer');
+//modules
+var errors = require('modules/error');
 
-// var appConfig = require('src/config/app-config');
+//lib
+var mailGunApi = require('lib/mailgun-api');
 
-// var smtpTransport = nodemailer.createTransport('SMTP', {
-//   host: appConfig.smtp.credentials.host,
-//   port: appConfig.smtp.credentials.port,
-//   auth: {
-//     user: appConfig.smtp.credentials.user,
-//     pass: appConfig.smtp.credentials.password
-//   }
-// });
+/* =========================================================================
+ * Constructor
+ * ========================================================================= */
+function MessageService() {}
 
-// /* =========================================================================
-//  * Constructor
-//  * ========================================================================= */
-// function EmailService() {}
+MessageService.prototype.sendEmail = function(options, next) {
+  if (!options) return next(new errors.InvalidArgumentError('options is required'));
+  if (!options.text || !_.isString(options.text)) return next(new errors.InvalidArgumentError('options.text is required'));
+  if (!options.from || !_.isString(options.from)) return next(new errors.InvalidArgumentError('options.from is required'));
+  if (!options.to || (!_.isString(options.to) && !_.isArray(options.to))) return next(new errors.InvalidArgumentError('options.to is required'));
 
-// EmailService.prototype.sendEmail = function(options) {
-//   if (!options) throw new Error('options argument is required.');
-//   if (!options.from) throw new Error('options.from argument is required.');
-//   if (!options.to) throw new Error('options.to argument is required.');
-//   if (!options.body) throw new Error('options.body argument is required.');
-//   options.callback = options.callback || function() {};
+  to = _.isArray(options.to) ? _.filter(options.to, function(toEmail) {
+    return toEmail != undefined && toEmail != null && toEmail != '';
+  }) : options.to;
 
-//   var mailOptions = {
-//     from: options.from,
-//     to: options.to,
-//     subject: options.subject,
-//     html: options.body
-//   };
+  
+};
 
-//   smtpTransport.sendMail(mailOptions, options.callback);
-
-//   return;
-// };
-
-// /* =========================================================================
-//  * Expose
-//  * ========================================================================= */
-// module.exports = new EmailService();
+/* =========================================================================
+ * Expose
+ * ========================================================================= */
+module.exports = new MessageService();
