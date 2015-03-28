@@ -112,6 +112,8 @@ describe('api', function() {
               should.exist(user);
               user.email.should.equal(email);
 
+              user.userName.should.equal('testuser');
+
               //user.created.should.be.lessThan(Date.now());
               //user.modified.should.be.lessThan(new Date());
 

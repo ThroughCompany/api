@@ -63,7 +63,7 @@ ProjectService.prototype.create = function(options, next) {
         userId: options.createdByUserId
       }, done);
     },
-    function generateProjectSlu_step(_user, done) {
+    function generateProjectSlug_step(_user, done) {
       user = _user;
 
       generateProjectSlug(options.name, done);

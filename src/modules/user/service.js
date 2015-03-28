@@ -48,6 +48,7 @@ UserService.prototype.createUsingCredentials = function createUsingCredentials(o
   if (!options) return next(new errors.InvalidArgumentError('options is required'));
 
   var _this = this;
+  var userName;
 
   async.waterfall([
     function validateData_step(done) {
@@ -60,14 +61,20 @@ UserService.prototype.createUsingCredentials = function createUsingCredentials(o
         email: options.email
       }, done);
     },
-    function generatePasswordHash(foundUser, done) {
+    function generateUserName_step(foundUser, done) {
       if (foundUser) return done(new errors.InvalidArgumentError('A user with the email ' + options.email + ' already exists'));
+
+      generateUserName(options.email, done);
+    },
+    function generatePasswordHash(_userName, done) {
+      userName = _userName;
 
       authUtil.generatePasswordHashAndSalt(options.password, done);
     },
     function createNewUser(hash, done) {
       var user = new User();
       user.email = options.email;
+      user.userName = userName;
       user.active = true;
       user.created = new Date();
       user.modified = user.created;
@@ -114,11 +121,16 @@ UserService.prototype.createUsingFacebook = function createUsingFacebook(options
         email: options.email
       }, done);
     },
-    function createNewUser(foundUser, done) {
+    function generateUserName_step(foundUser, done) {
       if (foundUser) return done(new errors.InvalidArgumentError('A user with the email ' + options.email + ' already exists'));
+
+      generateUserName(options.email, done);
+    },
+    function createNewUser(userName, done) {
 
       var user = new User();
       user.email = options.email.toLowerCase();
+      user.userName = userName;
       user.active = true;
       user.created = Date.now();
       user.facebook.id = options.facebookId;
@@ -387,6 +399,35 @@ UserService.prototype.uploadImage = function(options, next) {
  * ========================================================================= */
 function randomNum(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function generateUserName(userEmail, next) {
+  userEmail = userEmail.indexOf('@') > 0 ? userEmail.split('@')[0] : userEmail;
+  var userName = userEmail.trim().replace(/\s/gi, '-').replace(/('|\.)/gi, '').toLowerCase();
+
+  findUniqueUserName(userName, 0, next);
+}
+
+function findUniqueUserName(userName, attempts, next) {
+  var newUserName = attempts > 0 ? userName + attempts : userName;
+
+  findUserByUserName(newUserName, function(err, users) {
+    if (!users || !users.length) return next(null, newUserName); //name is unique
+    else { //not unique, bump attempt count, try again
+      attempts = attempts + 1;
+      findUniqueUserName(userName, attempts, next);
+    }
+  });
+}
+
+function findUserByUserName(userName, next) {
+  var query = User.find({
+    userName: userName
+  });
+
+  query.select('userName');
+
+  query.exec(next);
 }
 
 /* =========================================================================

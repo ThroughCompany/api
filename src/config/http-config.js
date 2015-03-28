@@ -145,7 +145,7 @@ function forceSSL(req, res, next) {
   if (req.headers['x-forwarded-proto'] !== 'https') {
     res.redirect(301, 'https://' + req.get('host') + req.url);
   } else {
-    res.header("Strict-Transport-Security", "max-age=31536000");
+    res.header('Strict-Transport-Security', 'max-age=31536000');
     next();
   }
 }
