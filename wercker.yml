@@ -19,6 +19,6 @@ deploy:
 
     after-steps:
         - sherzberg/slack-notify:
-            subdomain: wercker
+            subdomain: $SLACK_DOMAIN
             token: $SLACK_TOKEN
             channel: $SLACK_CHANNEL

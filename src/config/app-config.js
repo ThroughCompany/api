@@ -14,7 +14,6 @@ process.env.TZ = 'UTC';
  * ========================================================================= */
 var PORT = process.env.PORT || 3001;
 var SYSTEMEMAIL = 'support@throughcompany.com';
-var TOKENKEY = 'C0mp@nyFl00R';
 var NAME = 'Through Company API';
 
 /* =========================================================================
@@ -25,29 +24,29 @@ var defaults = {
     name: NAME,
     systemEmail: SYSTEMEMAIL
   },
+  auth: {
+    jsonWebToken: '!Thr0ugh*C0mp@any!'
+  },
+  mailgun: {
+    api: 'api.mailgun.net',
+    key: 'key-3wk0o8uzj8ojudi9vql1hre3z2z3l060',
+    domain: 'sandbox75137.mailgun.org'
+  },
+  mailchimp: {
+    api: 'us10.api.mailchimp.com',
+    key: '758742a3dd8f60d35e2d71d1bbb9ded7-us10'
+  },
   newrelic: {
     name: 'xxxxxxxxxx',
     key: 'xxxxxxxxxx'
   },
   blitline: {
-    api: 'http://api.blitline.com/job',
+    api: 'api.blitline.com',
     version: '1.21',
     key: '4Q3VLBn5cU01BUgROW2X9Yw'
   },
   port: PORT,
   apiVersion: packageConfig.version,
-  tokenKey: TOKENKEY,
-  smtp: {
-    from: {
-      email: SYSTEMEMAIL
-    },
-    credentials: {
-      host: 'smtp.mailgun.org',
-      port: '587',
-      user: 'postmaster@sandbox75137.mailgun.org',
-      password: 'xxx'
-    }
-  },
   aws: {
     accessKeyId: 'AKIAJSU5WNPJZHCJD2XA',
     secretAccessKey: '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',
@@ -74,7 +73,12 @@ var productionConfig = _.extend(_.clone(defaults), {
   newrelic: {
     name: 'throughcompany-api-prod',
     key: 'e7c5a21591fb5d706825572ef8cde21bb7cde86c'
-  }
+  },
+  mailgun: {
+    api: 'api.mailgun.net/v2',
+    key: 'key-3wk0o8uzj8ojudi9vql1hre3z2z3l060',
+    domain: 'throughcompany.com'
+  },
 });
 
 /* =========================================================================

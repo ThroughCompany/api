@@ -21,6 +21,14 @@ var userSchema = baseSchema.extend({
       unique: true
     }
   },
+  userName: {
+    type: String,
+    trim: true,
+    required: true,
+    index: {
+      unique: true
+    }
+  },
   firstName: {
     type: String,
     default: '',

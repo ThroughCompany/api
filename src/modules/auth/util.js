@@ -59,7 +59,7 @@ AuthUtil.prototype.generateAuthToken = function(options, next) {
   var token = jwt.encode({
     iss: options.user._id,
     exp: expires
-  }, appConfig.tokenKey);
+  }, appConfig.auth.jsonWebToken);
 
   return next(null, {
     token: token,
@@ -73,7 +73,7 @@ AuthUtil.prototype.decodeToken = function(token, next) {
   var decodedToken;
 
   try {
-    decodedToken = jwt.decode(token, appConfig.tokenKey);
+    decodedToken = jwt.decode(token, appConfig.auth.jsonWebToken);
   } catch (err) {
     return next(new error.UnauthorizedError('Error decoding access token'));
   }

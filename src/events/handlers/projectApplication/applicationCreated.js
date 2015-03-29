@@ -1,26 +1,27 @@
 /* =========================================================================
  * Dependencies
  * ========================================================================= */
+var util = require('util');
 var _ = require('underscore');
+var async = require('async');
 
-var baseSchema = require('modules/common/data/base-schema');
+//modules
+var errors = require('modules/error');
+var logger = require('modules/logger');
+
+//services
+var projectApplicationService = require('modules/projectApplication');
 
 /* =========================================================================
- * Schema
+ * Event Handler
  * ========================================================================= */
-var authSchema = baseSchema.extend({
-  user: {
-    type: String,
-    ref: 'User',
-    required: true
-  },
-  hash: {
-    type: String,
-    trim: true
-  }
-});
+function eventHandler(options, next) {
+  if (!options) return next(new errors.InvalidArgumentError('options is required'));
+
+  logger.warn('NOT IMPLEMENTED');
+}
 
 /* =========================================================================
  * Exports
  * ========================================================================= */
-module.exports = authSchema;
+module.exports = eventHandler;

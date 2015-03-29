@@ -2,6 +2,7 @@
  * Dependencies
  * ========================================================================= */
 var async = require('async');
+var fs = require('fs');
 
 //services
 var authService = require('modules/auth');
@@ -155,6 +156,19 @@ Controller.prototype.createApplication = function(req, res, next) {
   });
 };
 
+Controller.prototype.acceptApplication = function(req, res, next) {
+  var projectId = req.params.id;
+  var userId = req.body.userId;
+
+  projectApplicationService.accept({
+    projectId: projectId,
+    userId: userId
+  }, function(err, projectApplication) {
+    if (err) return next(err);
+    return res.status(200).json(projectApplication);
+  });
+};
+
 Controller.prototype.createWikiPage = function(req, res, next) {
   var projectId = req.params.id;
   var title = req.body.title;
@@ -186,6 +200,23 @@ Controller.prototype.updateWikiPage = function(req, res, next) {
     return res.status(200).json(project);
   });
 };
+
+/* =========================================================================
+ * Private Helpers
+ * ========================================================================= */
+/** 
+ * @description Delete a set of files
+ *
+ * @param {array} filePaths - array of file paths
+ * @param {function} next - callback
+ */
+function cleanup(filePaths, next) {
+  if (!filePaths || !filePaths.length) return next();
+
+  async.each(filePaths, function(filePath, done) {
+    fs.unlink(filePath, done);
+  }, next);
+}
 
 /* =========================================================================
  * Expose
