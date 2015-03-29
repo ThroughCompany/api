@@ -282,7 +282,11 @@ UserService.prototype.getById = function(options, next) {
   if (!options.userId) return next(new errors.InvalidArgumentError('User Id is required'));
 
   var query = User.findOne({
-    _id: options.userId
+    $or: [{
+      _id: options.userId
+    }, {
+      userName: options.userId
+    }]
   });
 
   query.exec(function(err, user) {
