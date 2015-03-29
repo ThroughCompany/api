@@ -32,6 +32,10 @@ var defaults = {
     key: 'key-3wk0o8uzj8ojudi9vql1hre3z2z3l060',
     domain: 'sandbox75137.mailgun.org'
   },
+  mailchimp: {
+    api: 'us10.api.mailchimp.com',
+    key: '758742a3dd8f60d35e2d71d1bbb9ded7-us10'
+  },
   newrelic: {
     name: 'xxxxxxxxxx',
     key: 'xxxxxxxxxx'
