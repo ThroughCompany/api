@@ -21,6 +21,7 @@ var validator = require('./validator');
  * Constants
  * ========================================================================= */
 var STATUSES = require('./constants/statuses');
+var EVENTS = require('./constants/events');
 
 /* =========================================================================
  * Constructor
@@ -78,14 +79,6 @@ ProjectApplicationService.prototype.create = function create(options, next) {
       });
     },
     function getUserById_step(done) {
-      // console.log(_project);
-
-      // console.log('PROJECT APPLICATIONS');
-      // console.log(project.projectApplications);
-      // //console.log(_.pluck(project.projectApplications, 'user'));
-      // console.log('USER ID');
-      // console.log(options.userId);
-
       if (_.contains(_.pluck(projectUsers, 'user'), options.userId)) {
         return done(new errors.InvalidArgumentError('User ' + options.userId + ' is already a member of this project'));
       }
@@ -127,7 +120,15 @@ ProjectApplicationService.prototype.create = function create(options, next) {
         return done(null, projectApplication);
       });
     }
-  ], next);
+  ], function(err, projectApplication) {
+    if (err) return next(err);
+
+    _this.emit(EVENTS.APPLICATION_CREATED, {
+      projectId: project._id
+    });
+
+    return next(null, projectApplication);
+  });
 };
 
 /* =========================================================================

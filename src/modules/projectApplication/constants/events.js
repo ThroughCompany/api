@@ -1,0 +1,3 @@
+module.exports = {
+  APPLICATION_CREATED: 'APPLICATION_CREATED'
+};
