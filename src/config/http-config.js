@@ -33,10 +33,12 @@ function init(next) {
 
   var app = express();
 
+  if (process.env.SSL) {
+    app.use(forceSSL);
+  }
+
   if (appConfig.ENV_PROD) {
     app.set('json spaces', 0); //remove any whitespace from JSON, minimize response sizes
-
-    app.use(forceSSL);
   } else {
     app.set('json spaces', 2); //make JSON more readable
     app.set('showStackError', true);
