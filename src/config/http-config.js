@@ -33,7 +33,7 @@ function init(next) {
 
   var app = express();
 
-  if (process.env.SSL) {
+  if (appConfig.ssl) {
     app.use(forceSSL);
   }
 
