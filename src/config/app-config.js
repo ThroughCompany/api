@@ -62,7 +62,8 @@ var defaults = {
   log: {
     level: 'debug',
     console: true
-  }
+  },
+  ssl: process.env.SSL
 };
 
 /* =========================================================================
