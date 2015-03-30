@@ -164,10 +164,10 @@ ProjectService.prototype.update = function(options, next) {
       project.description = updates.description ? updates.description : project.description;
       project.location = updates.location ? updates.location : project.location;
 
-      if (updates.social) {
-        project.social.facebook = updates.social.facebook ? updates.social.facebook : project.social.facebook;
-        project.social.linkedIn = updates.social.linkedIn ? updates.social.linkedIn : project.social.linkedIn;
-      }
+      // if (updates.social) {
+      //   project.social.facebook = updates.social.facebook ? updates.social.facebook : project.social.facebook;
+      //   project.social.linkedIn = updates.social.linkedIn ? updates.social.linkedIn : project.social.linkedIn;
+      // }
 
       project.save(done);
     }

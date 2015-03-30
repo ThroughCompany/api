@@ -179,11 +179,11 @@ UserService.prototype.update = function update(options, next) {
       user.facebook.id = updates.facebook && updates.facebook.id ? updates.facebook.id : user.facebook.id;
       user.facebook.username = updates.facebook && updates.facebook.username ? updates.facebook.username : user.facebook.username;
 
-      if (updates.social) {
-        user.social.facebook = updates.social.facebook ? updates.social.facebook : user.social.facebook;
-        user.social.gitHub = updates.social.gitHub ? updates.social.gitHub : user.social.gitHub;
-        user.social.linkedIn = updates.social.linkedIn ? updates.social.linkedIn : user.social.linkedIn;
-      }
+      // if (updates.social) {
+      //   user.social.facebook = updates.social.facebook ? updates.social.facebook : user.social.facebook;
+      //   user.social.gitHub = updates.social.gitHub ? updates.social.gitHub : user.social.gitHub;
+      //   user.social.linkedIn = updates.social.linkedIn ? updates.social.linkedIn : user.social.linkedIn;
+      // }
 
       user.save(done);
     }

@@ -8,6 +8,7 @@ var baseSchema = require('modules/common/data/base-schema');
 /* =========================================================================
  * Constants
  * ========================================================================= */
+var LINK_TYPES = require('modules/common/constants/linkTypes');
 
 /* =========================================================================
  * Schema
@@ -73,33 +74,36 @@ var userSchema = baseSchema.extend({
     type: String,
     trim: true
   },
-  social: {
-    facebook: {
+  socialLinks: [{
+    _id: false,
+    name: {
       type: String,
-      trim: true
+      trim: true,
+      required: true,
+      enum: _.values(LINK_TYPES)
     },
-    gitHub: {
+    link: {
       type: String,
-      trim: true
-    },
-    linkedIn: {
-      type: String,
-      trim: true
+      trim: true,
+      required: true
     }
-  },
+  }],
   assetTags: [{
     _id: false,
     name: {
       type: String,
-      trim: true
+      trim: true,
+      required: true
     },
     slug: {
       type: String,
-      trim: true
+      trim: true,
+      required: true
     },
     description: {
       type: String,
-      trim: true
+      trim: true,
+      required: true
     }
   }]
 });

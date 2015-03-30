@@ -9,6 +9,7 @@ var wikiPageSchema = require('./wikiPageSchema');
 /* =========================================================================
  * Constants
  * ========================================================================= */
+var LINK_TYPES = require('modules/common/constants/linkTypes');
 
 /* =========================================================================
  * Schema
@@ -46,16 +47,20 @@ var projectSchema = baseSchema.extend({
     type: String,
     trim: true
   },
-  social: {
-    facebook: {
+  socialLinks: [{
+    _id: false,
+    name: {
       type: String,
-      trim: true
+      trim: true,
+      required: true,
+      enum: _.values(LINK_TYPES)
     },
-    linkedIn: {
+    link: {
       type: String,
-      trim: true
+      trim: true,
+      required: true
     }
-  },
+  }],
   projectUsers: [{
     type: String,
     ref: 'ProjectUser'
@@ -68,11 +73,13 @@ var projectSchema = baseSchema.extend({
     _id: false,
     name: {
       type: String,
-      trim: true
+      trim: true,
+      required: true
     },
     slug: {
       type: String,
-      trim: true
+      trim: true,
+      required: true
     },
     description: {
       type: String,
