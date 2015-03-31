@@ -19,9 +19,11 @@ function Controller() {}
  */
 Controller.prototype.subscribe = function(req, res, next) {
   var email = req.body.email;
+  var list = req.body.list;
 
   mailchimpApi.subscribe({
-    email: email
+    email: email,
+    list: list
   }, function(err, response) {
     if (err) return next(err);
     return res.status(200).json(response);

@@ -14,6 +14,13 @@ var errors = require('modules/error');
 /* =========================================================================
  * Constants
  * ========================================================================= */
+var MassChallengeSubscribeListId = '407d0fa0f4';
+var ProjectNeedSubscribeListId = 'e046829080';
+
+var validLists = {
+  'massChallenge': MassChallengeSubscribeListId,
+  'prejectNeed': ProjectNeedSubscribeListId
+};
 
 /* =========================================================================
  * Consructor
@@ -31,17 +38,17 @@ function MailChimpApi() {}
  * @param {function} next - callback
  * @returns {string}
  */
-MailChimpApi.prototype.subscribe = function MailChimpApi(options, next) {
+MailChimpApi.prototype.subscribe = function subscribe(options, next) {
   if (!options) return next(new errors.InvalidArgumentError('options is required'));
   if (!options.email) return next(new errors.InvalidArgumentError('options.email is required'));
+  if (!options.list) return next(new errors.InvalidArgumentError('options.list is required'));
+  if (!validLists[options.list]) return next(new errors.InvalidArgumentError('invalid list'));
 
   var postData = JSON.stringify({
     apikey: appConfig.mailchimp.key,
-    id: '407d0fa0f4',
+    id: validLists[options.list],
     email_address: options.email
   });
-
-  console.log(postData);
 
   var postOptions = {
     hostname: appConfig.mailchimp.api,
@@ -78,7 +85,7 @@ MailChimpApi.prototype.subscribe = function MailChimpApi(options, next) {
 
   request.end();
 
-  return;
+  return
 };
 
 /* =========================================================================
