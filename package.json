@@ -21,6 +21,7 @@
     "cors": "2.4.x",
     "express": "4.10.x",
     "express-validator": "2.3.0",
+    "fast-json-patch": "^0.5.2",
     "fb": "0.7.0",
     "gridfs-stream": "0.5.1",
     "gulp": "3.8.11",

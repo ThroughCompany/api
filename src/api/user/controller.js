@@ -75,7 +75,7 @@ Controller.prototype.updateUserById = function(req, res, next) {
     updates: updates
   }, function(err, user) {
     if (err) return next(err);
-    else return res.json(200, user);
+    else return res.status(200).json(user);
   });
 };
 

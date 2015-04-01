@@ -4,12 +4,14 @@
 var util = require('util');
 var _ = require('underscore');
 var async = require('async');
+var jsonPatch = require('fast-json-patch');
 
 //modules
 var errors = require('modules/error');
 var CommonService = require('modules/common');
 var imageService = require('modules/image');
 var assetTagService = require('modules/assetTag');
+var logger = require('modules/logger');
 
 //models
 var User = require('./data/model');
@@ -152,10 +154,9 @@ UserService.prototype.createUsingFacebook = function createUsingFacebook(options
  */
 UserService.prototype.update = function update(options, next) {
   if (!options.userId) return next(new errors.InvalidArgumentError('User Id is required'));
-  if (!options.updates) return next(new errors.InvalidArgumentError('Updates is required'));
+  if (!options.updates || _.isEmpty(options.updates)) return next(new errors.InvalidArgumentError('updates is required'));
 
   var _this = this;
-  var updates = options.updates;
   var user = null;
 
   async.waterfall([
@@ -169,26 +170,43 @@ UserService.prototype.update = function update(options, next) {
 
       user = _user;
 
-      validator.validateUpdate(user, options, done);
+      validator.validateUpdate(user, options.updates, done);
     },
     function updateUser(done) {
-      user.firstName = updates.firstName ? updates.firstName : user.firstName;
-      user.lastName = updates.lastName ? updates.lastName : user.lastName;
-      user.location = updates.location ? updates.location : user.location;
 
-      user.facebook.id = updates.facebook && updates.facebook.id ? updates.facebook.id : user.facebook.id;
-      user.facebook.username = updates.facebook && updates.facebook.username ? updates.facebook.username : user.facebook.username;
+      var userClone = _.clone(user.toJSON());
 
-      // if (updates.social) {
-      //   user.social.facebook = updates.social.facebook ? updates.social.facebook : user.social.facebook;
-      //   user.social.gitHub = updates.social.gitHub ? updates.social.gitHub : user.social.gitHub;
-      //   user.social.linkedIn = updates.social.linkedIn ? updates.social.linkedIn : user.social.linkedIn;
-      // }
+      var observer = jsonPatch.observe(userClone);
+
+      _.extend(userClone, options.updates);
+
+      var patches = jsonPatch.generate(observer);
+
+      try {
+        var patchErrors = jsonPatch.validate(patches, user);
+
+        if (patchErrors) {
+          console.log('PATCH ERRORS');
+          return done(patchErrors);
+        }
+
+        console.log('APPLYING PATCHES');
+        console.log(patches);
+
+        jsonPatch.apply(user, patches);
+      } catch (err) {
+        logger.error(err);
+
+        return done(new errors.InvalidArgumentError('error applying patches'));
+      }
+
+      console.log('AFTER PATCHES');
+      console.log(user);
 
       user.save(done);
     }
-  ], function finish(err, results) {
-    return next(err, results);
+  ], function(err, user) {
+    return next(err, user); //don't remove, callback needed because mongoose saves returns 3rd arg
   });
 };
 

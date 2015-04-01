@@ -72,7 +72,7 @@ AuthService.prototype.authenticateCredentials = function authenticateCredentials
     },
     function generateAuthToken_step(done) {
       authUtil.generateAuthToken({
-        user: _user
+        userId: _user._id
       }, done);
     }
   ], function finish(err, results) {
@@ -151,7 +151,7 @@ AuthService.prototype.authenticateFacebook = function authenticateFacebook(optio
       _user = user;
 
       authUtil.generateAuthToken({
-        user: _user
+        userId: _user._id
       }, done);
     }
   ], function finish(err, results) {

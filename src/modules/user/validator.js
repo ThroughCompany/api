@@ -30,7 +30,6 @@ Validator.prototype.validateUpdate = function(user, data, next) {
  * Private Helpers
  * ========================================================================= */
 function baseValidate(user, data, next) {
-
   if (data.email && !REGEXES.email.test(data.email)) return next(new errors.InvalidArgumentError(data.email + ' is not a valid email address'));
   if (data.password && data.password.length < 6) return next(new errors.InvalidArgumentError('Password must be at least 6 characters'));
 
