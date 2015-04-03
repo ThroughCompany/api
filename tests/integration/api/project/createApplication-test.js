@@ -6,6 +6,7 @@ require('tests/integration/before-all');
 var should = require('should');
 var async = require('async');
 var _ = require('underscore');
+var sinon = require('sinon');
 
 var app = require('src');
 var appConfig = require('src/config/app-config');
@@ -27,9 +28,12 @@ var ProjectApplication = require('modules/projectApplication/data/model');
 var Permission = require('modules/permission/data/model');
 
 var PERMISSIONS_NAMES = require('modules/permission/constants/permission-names');
-var PROJECT_APPLICATION_STATUES = require('modules/projectApplication/constants/statuses');
+var PROJECT_APPLICATION_STATUSES = require('modules/projectApplication/constants/statuses');
+
+var PROJECT_APPLICATION_EVENTS = require('modules/projectApplication/constants/events');
 
 var agent;
+var sandbox;
 
 /* =========================================================================
  * Before All
@@ -37,6 +41,7 @@ var agent;
 
 before(function(done) {
   agent = require('tests/lib/agent').getAgent();
+  sandbox = sinon.sandbox.create();
 
   done();
 });
@@ -44,6 +49,12 @@ before(function(done) {
 describe('api', function() {
   describe('project', function() {
     describe('POST - /projects/{id}/applications', function() {
+      after(function(next) {
+        sandbox.restore();
+
+        next();
+      });
+
       describe('when user is not authenticated', function() {
         var email = 'testuser@test.com';
         var password = 'password';
@@ -454,7 +465,14 @@ describe('api', function() {
         var auth2 = null;
         var project = null;
 
+        var createApplicationSpy;
+
         before(function(done) {
+
+          createApplicationSpy = sandbox.spy();
+
+          projectApplicationService.on(PROJECT_APPLICATION_EVENTS.APPLICATION_CREATED, createApplicationSpy);
+
           async.series([
             function createUser1_step(cb) {
               userService.createUsingCredentials({
@@ -553,9 +571,11 @@ describe('api', function() {
 
               var projectApplication = response.body;
               should.exist(projectApplication);
-              projectApplication.status.should.equal(PROJECT_APPLICATION_STATUES.PENDING);
+              projectApplication.status.should.equal(PROJECT_APPLICATION_STATUSES.PENDING);
               projectApplication.user.should.equal(user2._id);
               projectApplication.project.should.equal(project._id);
+
+              createApplicationSpy.callCount.should.equal(1);
 
               done();
             });

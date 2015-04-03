@@ -49,11 +49,16 @@ var projectSchema = baseSchema.extend({
   },
   socialLinks: [{
     _id: false,
-    name: {
+    type: {
       type: String,
       trim: true,
       required: true,
       enum: _.values(LINK_TYPES)
+    },
+    name: {
+      type: String,
+      trim: true,
+      required: true,
     },
     link: {
       type: String,

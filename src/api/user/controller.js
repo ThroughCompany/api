@@ -68,11 +68,11 @@ Controller.prototype.getUserById = function(req, res, next) {
  */
 Controller.prototype.updateUserById = function(req, res, next) {
   var userId = req.params.id;
-  var updates = req.body;
+  var patches = req.body;
 
   userService.update({
     userId: userId,
-    updates: updates
+    patches: patches
   }, function(err, user) {
     if (err) return next(err);
     else return res.status(200).json(user);

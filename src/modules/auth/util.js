@@ -7,10 +7,10 @@ var async = require('async');
 var jwt = require('jwt-simple');
 var bcrypt = require('bcrypt-nodejs');
 
+var appConfig = require('src/config/app-config');
+
 //modules
 var error = require('modules/error');
-
-var appConfig = require('src/config/app-config');
 
 function AuthUtil() {}
 

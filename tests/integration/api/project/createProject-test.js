@@ -138,106 +138,213 @@ describe('api', function() {
       });
 
       describe('when valid data is passed', function() {
-        var email = 'testuser@test.com';
-        var password = 'password';
-        var user = null;
-        var auth = null;
+        describe('and user does not already have projects', function() {
+          var email = 'testuser@test.com';
+          var password = 'password';
+          var user = null;
+          var auth = null;
 
-        var projectName = 'Project FOOBAR';
+          var projectName = 'Project FOOBAR';
 
-        before(function(done) {
-          async.series([
-            function createUser_step(cb) {
-              userService.createUsingCredentials({
-                email: email,
-                password: password
-              }, function(err, _user) {
-                if (err) return cb(err);
+          before(function(done) {
+            async.series([
+              function createUser_step(cb) {
+                userService.createUsingCredentials({
+                  email: email,
+                  password: password
+                }, function(err, _user) {
+                  if (err) return cb(err);
 
-                user = _user;
-                cb();
-              });
-            },
-            function authenticateUser_step(cb) {
-              authService.authenticateCredentials({
-                email: email,
-                password: password
-              }, function(err, _auth) {
-                if (err) return cb(err);
+                  user = _user;
+                  cb();
+                });
+              },
+              function authenticateUser_step(cb) {
+                authService.authenticateCredentials({
+                  email: email,
+                  password: password
+                }, function(err, _auth) {
+                  if (err) return cb(err);
 
-                auth = _auth;
-                cb();
-              });
-            }
-          ], done);
-        });
+                  auth = _auth;
+                  cb();
+                });
+              }
+            ], done);
+          });
 
-        after(function(done) {
-          User.remove({
-            email: email
-          }, done);
-        });
+          after(function(done) {
+            User.remove({
+              email: email
+            }, done);
+          });
 
-        after(function(done) {
-          Auth.remove({
-            user: user._id
-          }, done);
-        });
+          after(function(done) {
+            Auth.remove({
+              user: user._id
+            }, done);
+          });
 
-        after(function(done) {
-          Project.remove({
-            name: projectName
-          }, done);
-        });
+          after(function(done) {
+            Project.remove({
+              name: projectName
+            }, done);
+          });
 
-        it('should create a new project and create a new project user with permissions', function(done) {
+          it('should create a new project and create a new project user with permissions', function(done) {
 
-          agent
-            .post('/projects')
-            .set('x-access-token', auth.token)
-            .send({
-              name: projectName,
-              shortDescription: 'short description'
-            })
-            .end(function(err, response) {
-              should.not.exist(err);
-              should.exist(response);
+            agent
+              .post('/projects')
+              .set('x-access-token', auth.token)
+              .send({
+                name: projectName,
+                shortDescription: 'short description'
+              })
+              .end(function(err, response) {
+                should.not.exist(err);
+                should.exist(response);
 
-              var status = response.status;
-              status.should.equal(201);
+                var status = response.status;
+                status.should.equal(201);
 
-              var newProject = response.body;
-              should.exist(newProject);
+                var newProject = response.body;
+                should.exist(newProject);
 
-              newProject.name.should.equal(projectName);
-              newProject.projectUsers.length.should.equal(1);
+                newProject.name.should.equal(projectName);
+                newProject.projectUsers.length.should.equal(1);
 
-              var projectUserId = newProject.projectUsers[0];
+                var projectUserId = newProject.projectUsers[0];
 
-              ProjectUser.findById(projectUserId, function(err, projectUser) {
-                if (err) return next(err);
-
-                should.exist(projectUser);
-
-                projectUser.user.should.equal(user._id);
-
-                Permission.find({
-                  _id: {
-                    $in: projectUser.permissions
-                  }
-                }, function(err, permissions) {
+                ProjectUser.findById(projectUserId, function(err, projectUser) {
                   if (err) return next(err);
 
-                  var addUserPermissions = _.find(permissions, function(perm) {
-                    return perm.name === PERMISSIONS_NAMES.ADD_PROJECT_USERS;
-                  });
+                  should.exist(projectUser);
 
-                  should.exist(addUserPermissions);
+                  projectUser.user.should.equal(user._id);
+
+                  Permission.find({
+                    _id: {
+                      $in: projectUser.permissions
+                    }
+                  }, function(err, permissions) {
+                    if (err) return next(err);
+
+                    var addUserPermissions = _.find(permissions, function(perm) {
+                      return perm.name === PERMISSIONS_NAMES.ADD_PROJECT_USERS;
+                    });
+
+                    should.exist(addUserPermissions);
+
+                    done();
+                  });
+                });
+              });
+          });
+        });
+
+
+        describe('and user does not already have projects', function() {
+          var email = 'testuser@test.com';
+          var password = 'password';
+          var user = null;
+          var auth = null;
+
+          var project = null;
+
+          var projectName = 'Project FOOBAR';
+
+          before(function(done) {
+            async.series([
+              function createUser_step(cb) {
+                userService.createUsingCredentials({
+                  email: email,
+                  password: password
+                }, function(err, _user) {
+                  if (err) return cb(err);
+
+                  user = _user;
+                  cb();
+                });
+              },
+              function authenticateUser_step(cb) {
+                authService.authenticateCredentials({
+                  email: email,
+                  password: password
+                }, function(err, _auth) {
+                  if (err) return cb(err);
+
+                  auth = _auth;
+                  cb();
+                });
+              },
+              function create1rstProject_step(cb) {
+                projectService.create({
+                  createdByUserId: user._id,
+                  name: 'Blah'
+                }, function(err, _project) {
+                  if (err) return cb(err);
+
+                  project = _project;
+                  cb();
+                });
+              }
+            ], done);
+          });
+
+          after(function(done) {
+            User.remove({
+              email: email
+            }, done);
+          });
+
+          after(function(done) {
+            Auth.remove({
+              user: user._id
+            }, done);
+          });
+
+          after(function(done) {
+            Project.remove({
+              $or: [{
+                name: projectName
+              }, {
+                _id: project._id
+              }]
+            }, done);
+          });
+
+          it('should create a new project and create another new project user for the user', function(done) {
+
+            agent
+              .post('/projects')
+              .set('x-access-token', auth.token)
+              .send({
+                name: projectName,
+                shortDescription: 'short description'
+              })
+              .end(function(err, response) {
+                should.not.exist(err);
+                should.exist(response);
+
+                var status = response.status;
+                status.should.equal(201);
+
+                var newProject = response.body;
+                should.exist(newProject);
+
+                ProjectUser.find({
+                  user: user._id
+                }, function(err, projectUsers) {
+                  if (err) return next(err);
+
+                  should.exist(projectUsers);
+
+                  projectUsers.length.should.equal(2);
 
                   done();
                 });
               });
-            });
+          });
         });
       });
     });

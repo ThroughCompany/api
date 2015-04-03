@@ -41,7 +41,7 @@ util.inherits(ProjectService, CommonService);
 
 /**
  * @param {object} options
- * @param {string} createdBydUserId
+ * @param {string} createdByUserId
  * @param {string} name
  * @param {function} next - callback
  */
