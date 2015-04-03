@@ -21,7 +21,7 @@ var User = require('modules/user/data/model');
 var Admin = require('modules/admin/data/model');
 var Auth = require('modules/auth/data/model');
 var Project = require('modules/project/data/projectModel');
-var ProjectUser = require('modules/projectUser/data/model');
+var ProjectUser = require('modules/project/data/userModel');
 var Permission = require('modules/permission/data/model');
 
 var PERMISSIONS_NAMES = require('modules/permission/constants/permission-names');

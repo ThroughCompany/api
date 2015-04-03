@@ -13,8 +13,8 @@ var permissionService = require('modules/permission');
 
 //models
 var User = require('modules/user/data/model');
-var Project = require('./data/model');
-var ProjectUser = require('modules/projectUser/data/model');
+var Project = require('modules/project/data/projectModel');
+var ProjectUser = require('modules/project/data/userModel');
 
 /* =========================================================================
  * Constants

@@ -15,7 +15,6 @@ var logger = require('modules/logger');
 var userService = require('modules/user');
 var adminService = require('modules/admin');
 var projectService = require('modules/project');
-var projectUserService = require('modules/projectUser');
 var permissionService = require('modules/permission');
 
 //lib
@@ -234,7 +233,7 @@ AuthService.prototype.getUserClaims = function getUserClaims(options, next) {
       }, done);
     },
     projectUsers: function getProjectUsers_step(done) {
-      projectUserService.getByUserId({
+      projectService.getProjectUsersByUserId({
         userId: options.userId
       }, done);
     },

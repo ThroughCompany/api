@@ -107,8 +107,7 @@ var userSchema = baseSchema.extend({
     },
     description: {
       type: String,
-      trim: true,
-      required: true
+      trim: true
     }
   }]
 });

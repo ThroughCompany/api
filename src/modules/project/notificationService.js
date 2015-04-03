@@ -15,7 +15,7 @@ var projectApplicationService = require('modules/project/applicationService');
 //models
 var User = require('modules/user/data/model');
 var Project = require('./data/projectModel');
-var ProjectUser = require('modules/projectUser/data/model');
+var ProjectUser = require('modules/project/data/userModel');
 
 //libs
 var mailgunApi = require('lib/mailgun-api');

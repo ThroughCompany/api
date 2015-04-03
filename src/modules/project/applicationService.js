@@ -12,7 +12,7 @@ var userService = require('modules/user');
 
 //models
 var ProjectApplication = require('modules/project/data/applicationModel');
-var ProjectUser = require('modules/projectUser/data/model');
+var ProjectUser = require('modules/project/data/userModel');
 var Project = require('modules/project/data/projectModel');
 
 var applicationValidator = require('./validators/applicationValidator');

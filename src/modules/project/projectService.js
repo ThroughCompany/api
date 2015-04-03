@@ -14,11 +14,12 @@ var assetTagService = require('modules/assetTag');
 var imageService = require('modules/image');
 var projectPopulateService = require('./populate/service');
 var projectApplicationService = require('./applicationService');
+var projectUserService = require('./userService');
 
 //models
 var User = require('modules/user/data/model');
 var Project = require('./data/projectModel');
-var ProjectUser = require('modules/projectUser/data/model');
+var ProjectUser = require('modules/project/data/userModel');
 
 var projectValidator = require('./validators/projectValidator');
 
@@ -130,21 +131,6 @@ ProjectService.prototype.create = function(options, next) {
     if (err) return next(err);
 
     next(null, project);
-  });
-};
-
-ProjectService.prototype.createApplication = function(options, next) {
-  var _this = this;
-
-  projectApplicationService.create(options, function(err, projectApplication) {
-    if (err) return next(err);
-
-    _this.emit(EVENTS.APPLICATION_CREATED, {
-      projectId: projectApplication.project,
-      userId: projectApplication.user
-    });
-
-    next(null, projectApplication);
   });
 };
 
@@ -513,6 +499,37 @@ ProjectService.prototype.uploadImage = function(options, next) {
       }
     }
   ], next);
+};
+
+/* =========================================================================
+ * Project Applications
+ * ========================================================================= */
+ProjectService.prototype.createApplication = function(options, next) {
+  var _this = this;
+
+  projectApplicationService.create(options, function(err, projectApplication) {
+    if (err) return next(err);
+
+    _this.emit(EVENTS.APPLICATION_CREATED, {
+      projectId: projectApplication.project,
+      userId: projectApplication.user
+    });
+
+    next(null, projectApplication);
+  });
+};
+
+/* =========================================================================
+ * Project Users
+ * ========================================================================= */
+
+/**
+ * @param {object} options
+ * @param {object} options.userId
+ * @param {function} next - callback
+ */
+ProjectService.prototype.getProjectUsersByUserId = function getProjectUsersByUserId(options, next) {
+  projectUserService.getByUserId(options, next);
 };
 
 /* =========================================================================

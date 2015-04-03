@@ -12,7 +12,7 @@ var partialResponse = require('modules/partialResponse');
 var logger = require('modules/logger');
 
 //models
-var ProjectUser = require('modules/projectUser/data/model');
+var ProjectUser = require('modules/project/data/userModel');
 var ProjectApplication = require('modules/project/data/applicationModel');
 
 //services
