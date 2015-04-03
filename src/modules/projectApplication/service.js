@@ -124,8 +124,32 @@ ProjectApplicationService.prototype.create = function create(options, next) {
     if (err) return next(err);
 
     _this.emit(EVENTS.APPLICATION_CREATED, {
-      projectId: project._id
+      projectId: project._id,
+      userId: user._id
     });
+
+    return next(null, projectApplication);
+  });
+};
+
+/**
+ * @param {object} options
+ * @param {string} options.projectId
+ * @param {function} next - callback
+ */
+ProjectApplicationService.prototype.getById = function(options, next) {
+  if (!options) return next(new errors.InvalidArgumentError('options is required'));
+  if (!options.projectApplicationId) return next(new errors.InvalidArgumentError('Project Application Id is required'));
+
+  var _this = this;
+
+  var query = ProjectApplication.findOne({
+    _id: options.projectApplicationId
+  });
+
+  query.exec(function(err, projectApplication) {
+    if (err) return next(err);
+    if (!projectApplication) return next(new errors.ObjectNotFoundError('Project Application not found'));
 
     return next(null, projectApplication);
   });
