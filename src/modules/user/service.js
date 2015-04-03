@@ -195,8 +195,6 @@ UserService.prototype.update = function update(options, next) {
 
       patches = patchUtils.stripPatches(NON_UPDATEDABLE_USER_PROPERTIES, patches);
 
-      //TODO: limit the incoming patches
-
       console.log('USER');
       console.log(user);
 

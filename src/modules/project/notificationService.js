@@ -9,7 +9,6 @@ var async = require('async');
 var errors = require('modules/error');
 var logger = require('modules/logger');
 var userService = require('modules/user');
-var projectService = require('modules/project');
 var projectApplicationService = require('modules/project/applicationService');
 
 //models
@@ -46,13 +45,11 @@ ProjectNotificationService.prototype.sendApplicationCreateNotifications = functi
     },
     user: function findUserById_step(done) {
       userService.getById({
-        user: options.userId
+        userId: options.userId
       }, done);
     },
     project: function findProjectById_step(done) {
-      projectService.getById({
-        project: options.projectId
-      }, done);
+      Project.findById(options.projectId, done);
     }
   }, function(err, results) {
     if (err) return next(err);
@@ -61,7 +58,7 @@ ProjectNotificationService.prototype.sendApplicationCreateNotifications = functi
     var projectApplication = results.projectApplication;
     var user = results.user;
 
-
+    if (!project) return done(new errors.ObjectNotFoundError('Project not found'));
 
     next()
   });

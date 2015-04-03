@@ -19,10 +19,12 @@ function eventHandler(options, next) {
   if (!options) return next(new errors.InternalServiceError('options is required'));
   if (!options.projectId) return next(new errors.InternalServiceError('Project Id is required'));
   if (!options.userId) return next(new errors.InternalServiceError('User Id is required'));
+  if (!options.projectApplicationId) return next(new errors.InternalServiceError('Project Application Id is required'));
 
   projectNotificationService.sendApplicationCreateNotifications({
     projectId: options.projectId,
-    userId: options.userId
+    userId: options.userId,
+    projectApplicationId: options.projectApplicationId
   }, next);
 }
 

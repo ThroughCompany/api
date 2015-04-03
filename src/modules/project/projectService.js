@@ -511,6 +511,7 @@ ProjectService.prototype.createApplication = function(options, next) {
     if (err) return next(err);
 
     _this.emit(EVENTS.APPLICATION_CREATED, {
+      projectApplicationId: projectApplication._id,
       projectId: projectApplication.project,
       userId: projectApplication.user
     });
