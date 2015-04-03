@@ -24,7 +24,7 @@ gulp.task('?', function(next) {
 /* =========================================================================
  * Tests
  * ========================================================================= */
-gulp.task('test', ['test-int'], function() {
+gulp.task('test', ['test-int', 'test-unit'], function() {
   process.exit(0); //hacky shit because gulp doesn't exit - causes wercker to timeout
 });
 
@@ -35,11 +35,18 @@ gulp.task('test-int', function() {
     }));
 });
 
+gulp.task('test-unit', function() {
+  return gulp.src('tests/unit/**/**/**-test.js')
+    .pipe(mocha({
+      reporter: 'spec'
+    }));
+});
+
 /* =========================================================================
  * Database
  * ========================================================================= */
 gulp.task('db-seed', function() {
-	sh.exec('node ./tools/scripts/db-seed');
+  sh.exec('node ./tools/scripts/db-seed');
 });
 
 gulp.task('db-clean', function() {
