@@ -3,7 +3,7 @@
  * ========================================================================= */
 var mongoose = require('mongoose');
 
-var projectApplicationSchema = require('./schema');
+var projectApplicationSchema = require('./applicationSchema');
 
 /* =========================================================================
  * Private Helpers

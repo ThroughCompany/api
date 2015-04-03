@@ -14,7 +14,6 @@ var logger = require('modules/logger');
 var EVENTS = [];
 var USER_EVENTS = require('modules/user/constants/events');
 var PROJECT_EVENTS = require('modules/project/constants/events');
-var PROJECT_APPLICATION_EVENTS = require('modules/projectApplication/constants/events');
 
 /* =========================================================================
  * User Events
@@ -24,6 +23,7 @@ var userEvents = {
   events: []
 };
 
+//user event 1
 var assetTagUsedByUserEvent = {
   name: USER_EVENTS.ASSET_TAG_USED_BY_USER,
   handlers: []
@@ -41,6 +41,7 @@ var projectEvents = {
   events: []
 };
 
+//project event 1
 var assetTagUsedByProjectEvent = {
   name: PROJECT_EVENTS.ASSET_TAG_USED_BY_PROJECT,
   handlers: []
@@ -48,24 +49,15 @@ var assetTagUsedByProjectEvent = {
 assetTagUsedByProjectEvent.handlers.push(require('./handlers/project/assetTagUsedByProject'));
 projectEvents.events.push(assetTagUsedByProjectEvent);
 
-EVENTS.push(projectEvents);
-
-/* =========================================================================
- * Project Application Events
- * ========================================================================= */
-var projectApplicatonEvents = {
-  module: 'modules/projectApplication',
-  events: []
-};
-
+//project event 2
 var applicationCreated = {
-  name: PROJECT_APPLICATION_EVENTS.APPLICATION_CREATED,
+  name: PROJECT_EVENTS.APPLICATION_CREATED,
   handlers: []
 };
-applicationCreated.handlers.push(require('./handlers/projectApplication/applicationCreated'));
-projectApplicatonEvents.events.push(applicationCreated);
+applicationCreated.handlers.push(require('./handlers/project/applicationCreated'));
+projectEvents.events.push(applicationCreated);
 
-EVENTS.push(projectApplicatonEvents);
+EVENTS.push(projectEvents);
 
 /* =========================================================================
  * Constructor

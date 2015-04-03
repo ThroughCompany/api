@@ -10,7 +10,6 @@ var errors = require('modules/error');
 var logger = require('modules/logger');
 
 //services
-var projectApplicationService = require('modules/projectApplication');
 var projectNotificationService = require('modules/project/notificationService');
 
 /* =========================================================================

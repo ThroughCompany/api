@@ -17,20 +17,19 @@ var userService = require('modules/user');
 var adminService = require('modules/admin');
 var authService = require('modules/auth');
 var projectService = require('modules/project');
-var projectApplicationService = require('modules/projectApplication');
 
 var User = require('modules/user/data/model');
 var Admin = require('modules/admin/data/model');
 var Auth = require('modules/auth/data/model');
-var Project = require('modules/project/data/model');
+var Project = require('modules/project/data/projectModel');
 var ProjectUser = require('modules/projectUser/data/model');
-var ProjectApplication = require('modules/projectApplication/data/model');
+var ProjectApplication = require('modules/project/data/applicationModel');
 var Permission = require('modules/permission/data/model');
 
 var PERMISSIONS_NAMES = require('modules/permission/constants/permission-names');
-var PROJECT_APPLICATION_STATUSES = require('modules/projectApplication/constants/statuses');
+var PROJECT_APPLICATION_STATUSES = require('modules/project/constants/applicationStatuses');
 
-var PROJECT_APPLICATION_EVENTS = require('modules/projectApplication/constants/events');
+var PROJECT_EVENTS = require('modules/project/constants/events');
 
 var agent;
 var sandbox;
@@ -387,7 +386,7 @@ describe('api', function() {
               });
             },
             function createProjectApplication_step(cb) {
-              projectApplicationService.create({
+              projectService.createApplication({
                 projectId: project._id,
                 userId: user2._id
               }, function(err, _projectApplication) {
@@ -471,7 +470,7 @@ describe('api', function() {
 
           createApplicationSpy = sandbox.spy();
 
-          projectApplicationService.on(PROJECT_APPLICATION_EVENTS.APPLICATION_CREATED, createApplicationSpy);
+          projectService.on(PROJECT_EVENTS.APPLICATION_CREATED, createApplicationSpy);
 
           async.series([
             function createUser1_step(cb) {

@@ -10,11 +10,11 @@ var errors = require('modules/error');
 var logger = require('modules/logger');
 var userService = require('modules/user');
 var projectService = require('modules/project');
-var projectApplicationService = require('modules/projectApplication');
+var projectApplicationService = require('modules/project/applicationService');
 
 //models
 var User = require('modules/user/data/model');
-var Project = require('./data/model');
+var Project = require('./data/projectModel');
 var ProjectUser = require('modules/projectUser/data/model');
 
 //libs
@@ -61,7 +61,7 @@ ProjectNotificationService.prototype.sendApplicationCreateNotifications = functi
     var projectApplication = results.projectApplication;
     var user = results.user;
 
-    
+
 
     next()
   });

@@ -13,13 +13,14 @@ var permissionService = require('modules/permission');
 var assetTagService = require('modules/assetTag');
 var imageService = require('modules/image');
 var projectPopulateService = require('./populate/service');
+var projectApplicationService = require('./applicationService');
 
 //models
 var User = require('modules/user/data/model');
-var Project = require('./data/model');
+var Project = require('./data/projectModel');
 var ProjectUser = require('modules/projectUser/data/model');
 
-var validator = require('./validator');
+var projectValidator = require('./validators/projectValidator');
 
 var partialResponseParser = require('modules/partialResponse/parser');
 
@@ -56,7 +57,7 @@ ProjectService.prototype.create = function(options, next) {
 
   async.waterfall([
     function validateData_step(done) {
-      validator.validateCreate(options, done);
+      projectValidator.validateCreate(options, done);
     },
     function findUserByUserId_step(done) {
       userService.getById({
@@ -132,6 +133,21 @@ ProjectService.prototype.create = function(options, next) {
   });
 };
 
+ProjectService.prototype.createApplication = function(options, next) {
+  var _this = this;
+
+  projectApplicationService.create(options, function(err, projectApplication) {
+    if (err) return next(err);
+
+    _this.emit(EVENTS.APPLICATION_CREATED, {
+      projectId: projectApplication.project,
+      userId: projectApplication.user
+    });
+
+    next(null, projectApplication);
+  });
+};
+
 /**
  * @param {object} options
  * @param {string} userId
@@ -157,7 +173,7 @@ ProjectService.prototype.update = function(options, next) {
 
       project = _project;
 
-      validator.validateUpdate(project, options, done);
+      projectValidator.validateUpdate(project, options, done);
     },
     function updateProject(done) {
       project.name = updates.name ? updates.name : project.name;
