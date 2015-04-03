@@ -60,7 +60,7 @@ ProjectNotificationService.prototype.sendApplicationCreateNotifications = functi
 
     if (!project) return done(new errors.ObjectNotFoundError('Project not found'));
 
-    next()
+    next();
   });
 };
 

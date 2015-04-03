@@ -35,16 +35,12 @@ var REGEXES = require('modules/common/constants/regexes');
 var DEFAULTIMAGEURL = 'https://s3.amazonaws.com/throughcompany-assets/user-avatars/avatar';
 var IMAGE_TYPES = require('modules/image/constants/image-types');
 
-var NON_UPDATEDABLE_USER_PROPERTIES = [
-  '_id',
-  'email',
-  'userName',
-  'projectUsers',
-  'projectApplications',
-  'assetTags',
-  //'facebook' - TODO: limit to only internal updating
-  'profilePic',
-  'active'
+var UPDATEDABLE_USER_PROPERTIES = [
+  'facebook',
+  'firstName',
+  'lastName',
+  'location',
+  'socialLinks'
 ];
 
 /* =========================================================================
@@ -193,13 +189,13 @@ UserService.prototype.update = function update(options, next) {
       if (options.updates && !options.patches) patches = patchUtils.generatePatches(options.updates);
       else patches = options.patches;
 
-      patches = patchUtils.stripPatches(NON_UPDATEDABLE_USER_PROPERTIES, patches);
+      patches = patchUtils.stripPatches(UPDATEDABLE_USER_PROPERTIES, patches);
 
       console.log('USER');
       console.log(user);
 
       console.log('PATCHES:');
-      console.log(patches);
+      console.log(patches); 
 
       var userClone = _.clone(user.toJSON());
 

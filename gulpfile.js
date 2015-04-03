@@ -9,6 +9,17 @@ var sh = require('shelljs');
 var async = require('async');
 
 require('gulp-task-list')(gulp);
+
+/* =========================================================================
+ * Constants
+ * ========================================================================= */
+var MOCHA_SETTINGS = {
+  reporter: 'spec',
+  growl: true,
+  useColors: true,
+  useInlineDiffs: true
+};
+
 /* =========================================================================
  * Default Task
  * ========================================================================= */
@@ -30,16 +41,12 @@ gulp.task('test', ['test-int', 'test-unit'], function() {
 
 gulp.task('test-int', function() {
   return gulp.src('tests/integration/**/**/**-test.js')
-    .pipe(mocha({
-      reporter: 'spec'
-    }));
+    .pipe(mocha(MOCHA_SETTINGS));
 });
 
 gulp.task('test-unit', function() {
   return gulp.src('tests/unit/**/**/**-test.js')
-    .pipe(mocha({
-      reporter: 'spec'
-    }));
+    .pipe(mocha(MOCHA_SETTINGS));
 });
 
 /* =========================================================================

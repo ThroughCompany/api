@@ -21,23 +21,49 @@ PatchUtils.prototype.generatePatches = function generatePatches(updates) {
 
 /**
  * @description
- * @param {array} properties - an array of properties to strip from a set of patches
+ * @param {array} allowedProperties - an array of whitelisted properties to limit patches
  */
-PatchUtils.prototype.stripPatches = function stripPatches(properties, patches) {
-  if (!properties || !patches) return null;
+PatchUtils.prototype.stripPatches = function stripPatches(allowedProperties, patches) {
+  if (!allowedProperties || !patches) return null;
+
+  var regexes = convertToRegexes(allowedProperties);
 
   _.each(patches, function(patch) {
-    var patchPath = patch.path;
-
-    if (properties.indexOf(patchPath) > -1 || properties.indexOf(patchPath.replace('/', '')) > -1) {
-      patch.invalid = true;
+    if (matchesRegex(patch.path, regexes)) {
+      patch.valid = true;
     }
   });
 
+  console.log(patches);
+
   return _.filter(patches, function(patch) {
-    return !patch.invalid;
+    return patch.valid;
   });
 };
+
+/* =========================================================================
+ * Private Helpers
+ * ========================================================================= */
+function convertToRegexes(allowedProperties) {
+  return allowedProperties.map(function(prop) {
+    return new RegExp('^\/{0,1}' + prop, 'i'); //checks if the path matches one of the whitelisted properties as either {path} or /{path}
+  });
+}
+
+function matchesRegex(path, regexes) {
+  var matches = false;
+
+  for (var i = 0; i < regexes.length; i++) {
+    var currentRegex = regexes[i];
+
+    if (currentRegex.test(path)) {
+      matches = true;
+      break;
+    }
+  }
+
+  return matches;
+}
 
 /* =========================================================================
  * Exports
