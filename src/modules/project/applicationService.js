@@ -8,20 +8,19 @@ var async = require('async');
 //modules
 var errors = require('modules/error');
 var CommonService = require('modules/common');
-var projectService = require('modules/project');
 var userService = require('modules/user');
 
 //models
-var ProjectApplication = require('modules/projectApplication/data/model');
-var ProjectUser = require('modules/projectUser/data/model');
+var ProjectApplication = require('modules/project/data/applicationModel');
+var ProjectUser = require('modules/project/data/userModel');
+var Project = require('modules/project/data/projectModel');
 
-var validator = require('./validator');
+var applicationValidator = require('./validators/applicationValidator');
 
 /* =========================================================================
  * Constants
  * ========================================================================= */
-var STATUSES = require('./constants/statuses');
-var EVENTS = require('./constants/events');
+var STATUSES = require('./constants/applicationStatuses');
 
 /* =========================================================================
  * Constructor
@@ -53,10 +52,7 @@ ProjectApplicationService.prototype.create = function create(options, next) {
     function getProjectByData_step(done) {
       async.parallel([
         function getProjectById_step(cb) {
-          projectService.getById({
-            projectId: options.projectId
-              //fields: 'projectUsers(), projectApplications()' //TODO: get this working and get rid of extra project user and application calls
-          }, cb);
+          Project.findById(options.projectId, cb);
         },
         function getProjectUsersById_step(cb) {
           ProjectUser.find({
@@ -72,6 +68,9 @@ ProjectApplicationService.prototype.create = function create(options, next) {
         if (err) return done(err);
 
         project = results[0];
+
+        if (!project) return done(new errors.ObjectNotFoundError('Project not found'));
+
         projectUsers = results[1];
         projectApplications = results[2];
 
@@ -120,12 +119,27 @@ ProjectApplicationService.prototype.create = function create(options, next) {
         return done(null, projectApplication);
       });
     }
-  ], function(err, projectApplication) {
-    if (err) return next(err);
+  ], next);
+};
 
-    _this.emit(EVENTS.APPLICATION_CREATED, {
-      projectId: project._id
-    });
+/**
+ * @param {object} options
+ * @param {string} options.projectId
+ * @param {function} next - callback
+ */
+ProjectApplicationService.prototype.getById = function(options, next) {
+  if (!options) return next(new errors.InvalidArgumentError('options is required'));
+  if (!options.projectApplicationId) return next(new errors.InvalidArgumentError('Project Application Id is required'));
+
+  var _this = this;
+
+  var query = ProjectApplication.findOne({
+    _id: options.projectApplicationId
+  });
+
+  query.exec(function(err, projectApplication) {
+    if (err) return next(err);
+    if (!projectApplication) return next(new errors.ObjectNotFoundError('Project Application not found'));
 
     return next(null, projectApplication);
   });

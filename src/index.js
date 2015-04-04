@@ -63,9 +63,11 @@ App.prototype.init = function init(options, next) {
     var modules = fs.readdirSync('src/modules');
 
     _.each(modules, function(module) {
-      console.log('Loading module : ' + module + '...');
 
-      require('src/modules/' + module);
+      if (module.substring(0, 1) !== '.') {
+        console.log('Loading module : ' + module + '...');
+        require('src/modules/' + module);
+      }
     });
 
     done();

@@ -13,13 +13,15 @@ var permissionService = require('modules/permission');
 var assetTagService = require('modules/assetTag');
 var imageService = require('modules/image');
 var projectPopulateService = require('./populate/service');
+var projectApplicationService = require('./applicationService');
+var projectUserService = require('./userService');
 
 //models
 var User = require('modules/user/data/model');
-var Project = require('./data/model');
-var ProjectUser = require('modules/projectUser/data/model');
+var Project = require('./data/projectModel');
+var ProjectUser = require('modules/project/data/userModel');
 
-var validator = require('./validator');
+var projectValidator = require('./validators/projectValidator');
 
 var partialResponseParser = require('modules/partialResponse/parser');
 
@@ -41,7 +43,7 @@ util.inherits(ProjectService, CommonService);
 
 /**
  * @param {object} options
- * @param {string} createdBydUserId
+ * @param {string} createdByUserId
  * @param {string} name
  * @param {function} next - callback
  */
@@ -56,7 +58,7 @@ ProjectService.prototype.create = function(options, next) {
 
   async.waterfall([
     function validateData_step(done) {
-      validator.validateCreate(options, done);
+      projectValidator.validateCreate(options, done);
     },
     function findUserByUserId_step(done) {
       userService.getById({
@@ -157,7 +159,7 @@ ProjectService.prototype.update = function(options, next) {
 
       project = _project;
 
-      validator.validateUpdate(project, options, done);
+      projectValidator.validateUpdate(project, options, done);
     },
     function updateProject(done) {
       project.name = updates.name ? updates.name : project.name;
@@ -481,10 +483,10 @@ ProjectService.prototype.uploadImage = function(options, next) {
       switch (options.imageType) {
         case IMAGE_TYPES.PROFILE_PIC_PROJECT:
           project.profilePic = imageUrl;
-          break
+          break;
         case IMAGE_TYPES.BANNER_PIC_PROJECT:
           project.bannerPic = imageUrl;
-          break
+          break;
         default:
           err = new errors.InvalidArgumentError('Invalid image type');
           break;
@@ -497,6 +499,38 @@ ProjectService.prototype.uploadImage = function(options, next) {
       }
     }
   ], next);
+};
+
+/* =========================================================================
+ * Project Applications
+ * ========================================================================= */
+ProjectService.prototype.createApplication = function(options, next) {
+  var _this = this;
+
+  projectApplicationService.create(options, function(err, projectApplication) {
+    if (err) return next(err);
+
+    _this.emit(EVENTS.APPLICATION_CREATED, {
+      projectApplicationId: projectApplication._id,
+      projectId: projectApplication.project,
+      userId: projectApplication.user
+    });
+
+    next(null, projectApplication);
+  });
+};
+
+/* =========================================================================
+ * Project Users
+ * ========================================================================= */
+
+/**
+ * @param {object} options
+ * @param {object} options.userId
+ * @param {function} next - callback
+ */
+ProjectService.prototype.getProjectUsersByUserId = function getProjectUsersByUserId(options, next) {
+  projectUserService.getByUserId(options, next);
 };
 
 /* =========================================================================

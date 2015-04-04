@@ -7,10 +7,10 @@ var async = require('async');
 var jwt = require('jwt-simple');
 var bcrypt = require('bcrypt-nodejs');
 
+var appConfig = require('src/config/app-config');
+
 //modules
 var error = require('modules/error');
-
-var appConfig = require('src/config/app-config');
 
 function AuthUtil() {}
 
@@ -52,12 +52,12 @@ AuthUtil.prototype.comparePasswordHashes = function(options, next) {
  */
 AuthUtil.prototype.generateAuthToken = function(options, next) {
   if (!options) return next(new error.InvalidArgumentError('options is required'));
-  if (!options.user) return next(new error.InvalidArgumentError('User is required'));
+  if (!options.userId) return next(new error.InvalidArgumentError('User Id is required'));
 
   var expires = (new Date()).setDate(new Date().getDate() + 7);
 
   var token = jwt.encode({
-    iss: options.user._id,
+    iss: options.userId,
     exp: expires
   }, appConfig.auth.jsonWebToken);
 

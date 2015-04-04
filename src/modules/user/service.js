@@ -4,16 +4,21 @@
 var util = require('util');
 var _ = require('underscore');
 var async = require('async');
+var jsonPatch = require('fast-json-patch');
 
 //modules
 var errors = require('modules/error');
 var CommonService = require('modules/common');
 var imageService = require('modules/image');
 var assetTagService = require('modules/assetTag');
+var logger = require('modules/logger');
 
 //models
 var User = require('./data/model');
 var Auth = require('modules/auth/data/model');
+
+//utils
+var patchUtils = require('utils/patchUtils');
 
 var authUtil = require('modules/auth/util');
 
@@ -29,6 +34,14 @@ var EVENTS = require('./constants/events');
 var REGEXES = require('modules/common/constants/regexes');
 var DEFAULTIMAGEURL = 'https://s3.amazonaws.com/throughcompany-assets/user-avatars/avatar';
 var IMAGE_TYPES = require('modules/image/constants/image-types');
+
+var UPDATEDABLE_USER_PROPERTIES = [
+  'facebook',
+  'firstName',
+  'lastName',
+  'location',
+  'socialLinks'
+];
 
 /* =========================================================================
  * Constructor
@@ -147,16 +160,20 @@ UserService.prototype.createUsingFacebook = function createUsingFacebook(options
 /**
  * @param {object} options
  * @param {string} userId
- * @param {object} updates
+ * @param {object} [updates] - a hash of changes to apply to the user
+ * @param {array} [patches] - an array of JSON patches to apply to the user
  * @param {function} next - callback
  */
 UserService.prototype.update = function update(options, next) {
   if (!options.userId) return next(new errors.InvalidArgumentError('User Id is required'));
-  if (!options.updates) return next(new errors.InvalidArgumentError('Updates is required'));
+  if (!options.patches && !options.updates) return next(new errors.InvalidArgumentError('patches or updates is required'));
+  if (options.patches && _.isEmpty(options.patches)) return next(new errors.InvalidArgumentError('patches must contain values'));
+  if (options.updates && _.isEmpty(options.updates)) return next(new errors.InvalidArgumentError('updates must contain values'));
+  if (options.patches && !_.isArray(options.patches)) return next(new errors.InvalidArgumentError('patches must be an array'));
 
   var _this = this;
-  var updates = options.updates;
   var user = null;
+  var patches = null;
 
   async.waterfall([
     function findUserById(done) {
@@ -169,26 +186,53 @@ UserService.prototype.update = function update(options, next) {
 
       user = _user;
 
-      validator.validateUpdate(user, options, done);
+      if (options.updates && !options.patches) patches = patchUtils.generatePatches(options.updates);
+      else patches = options.patches;
+
+      patches = patchUtils.stripPatches(UPDATEDABLE_USER_PROPERTIES, patches);
+
+      console.log('USER');
+      console.log(user);
+
+      console.log('PATCHES:');
+      console.log(patches);
+
+      var userClone = _.clone(user.toJSON());
+
+      var patchErrors = jsonPatch.validate(patches, userClone);
+
+      if (patchErrors) {
+        console.log('PATCH ERRORS');
+        return done(patchErrors);
+      }
+
+      jsonPatch.apply(userClone, patches);
+
+      console.log('WITH PATCHES APPLIED:');
+      console.log(userClone);
+
+      validator.validateUpdate(user, userClone, done);
     },
     function updateUser(done) {
-      user.firstName = updates.firstName ? updates.firstName : user.firstName;
-      user.lastName = updates.lastName ? updates.lastName : user.lastName;
-      user.location = updates.location ? updates.location : user.location;
 
-      user.facebook.id = updates.facebook && updates.facebook.id ? updates.facebook.id : user.facebook.id;
-      user.facebook.username = updates.facebook && updates.facebook.username ? updates.facebook.username : user.facebook.username;
+      try {
+        console.log('APPLYING PATCHES:');
+        console.log(patches);
 
-      // if (updates.social) {
-      //   user.social.facebook = updates.social.facebook ? updates.social.facebook : user.social.facebook;
-      //   user.social.gitHub = updates.social.gitHub ? updates.social.gitHub : user.social.gitHub;
-      //   user.social.linkedIn = updates.social.linkedIn ? updates.social.linkedIn : user.social.linkedIn;
-      // }
+        jsonPatch.apply(user, patches);
+      } catch (err) {
+        logger.error(err);
+
+        return done(new errors.InvalidArgumentError('error applying patches'));
+      }
+
+      console.log('AFTER PATCHES:');
+      console.log(user);
 
       user.save(done);
     }
-  ], function finish(err, results) {
-    return next(err, results);
+  ], function(err, user) {
+    return next(err, user); //don't remove, callback needed because mongoose saves returns 3rd arg
   });
 };
 
@@ -383,7 +427,7 @@ UserService.prototype.uploadImage = function(options, next) {
       switch (options.imageType) {
         case IMAGE_TYPES.PROFILE_PIC_USER:
           user.profilePic = imageUrl;
-          break
+          break;
         default:
           err = new errors.InvalidArgumentError('Invalid image type');
           break;

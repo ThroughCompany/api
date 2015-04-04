@@ -7,7 +7,6 @@ var fs = require('fs');
 //services
 var authService = require('modules/auth');
 var projectService = require('modules/project');
-var projectApplicationService = require('modules/projectApplication');
 var imageService = require('modules/image');
 
 /* =========================================================================
@@ -147,7 +146,7 @@ Controller.prototype.createApplication = function(req, res, next) {
   var projectId = req.params.id;
   var userId = req.body.userId;
 
-  projectApplicationService.create({
+  projectService.createApplication({
     projectId: projectId,
     userId: userId
   }, function(err, projectApplication) {

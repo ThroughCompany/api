@@ -13,7 +13,7 @@ function FieldsCollection(fields) {
 
   _this.generateSelect = function() {
     _generateSelect(_this);
-  }
+  };
 
   _this.generateSelect();
 }

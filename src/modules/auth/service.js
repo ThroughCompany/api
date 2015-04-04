@@ -15,7 +15,6 @@ var logger = require('modules/logger');
 var userService = require('modules/user');
 var adminService = require('modules/admin');
 var projectService = require('modules/project');
-var projectUserService = require('modules/projectUser');
 var permissionService = require('modules/permission');
 
 //lib
@@ -72,7 +71,7 @@ AuthService.prototype.authenticateCredentials = function authenticateCredentials
     },
     function generateAuthToken_step(done) {
       authUtil.generateAuthToken({
-        user: _user
+        userId: _user._id
       }, done);
     }
   ], function finish(err, results) {
@@ -151,7 +150,7 @@ AuthService.prototype.authenticateFacebook = function authenticateFacebook(optio
       _user = user;
 
       authUtil.generateAuthToken({
-        user: _user
+        userId: _user._id
       }, done);
     }
   ], function finish(err, results) {
@@ -234,7 +233,7 @@ AuthService.prototype.getUserClaims = function getUserClaims(options, next) {
       }, done);
     },
     projectUsers: function getProjectUsers_step(done) {
-      projectUserService.getByUserId({
+      projectService.getProjectUsersByUserId({
         userId: options.userId
       }, done);
     },

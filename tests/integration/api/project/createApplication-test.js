@@ -6,6 +6,7 @@ require('tests/integration/before-all');
 var should = require('should');
 var async = require('async');
 var _ = require('underscore');
+var sinon = require('sinon');
 
 var app = require('src');
 var appConfig = require('src/config/app-config');
@@ -16,20 +17,21 @@ var userService = require('modules/user');
 var adminService = require('modules/admin');
 var authService = require('modules/auth');
 var projectService = require('modules/project');
-var projectApplicationService = require('modules/projectApplication');
 
 var User = require('modules/user/data/model');
 var Admin = require('modules/admin/data/model');
 var Auth = require('modules/auth/data/model');
-var Project = require('modules/project/data/model');
-var ProjectUser = require('modules/projectUser/data/model');
-var ProjectApplication = require('modules/projectApplication/data/model');
+var Project = require('modules/project/data/projectModel');
+var ProjectApplication = require('modules/project/data/applicationModel');
 var Permission = require('modules/permission/data/model');
 
 var PERMISSIONS_NAMES = require('modules/permission/constants/permission-names');
-var PROJECT_APPLICATION_STATUES = require('modules/projectApplication/constants/statuses');
+var PROJECT_APPLICATION_STATUSES = require('modules/project/constants/applicationStatuses');
+
+var PROJECT_EVENTS = require('modules/project/constants/events');
 
 var agent;
+var sandbox;
 
 /* =========================================================================
  * Before All
@@ -37,6 +39,7 @@ var agent;
 
 before(function(done) {
   agent = require('tests/lib/agent').getAgent();
+  sandbox = sinon.sandbox.create();
 
   done();
 });
@@ -44,6 +47,12 @@ before(function(done) {
 describe('api', function() {
   describe('project', function() {
     describe('POST - /projects/{id}/applications', function() {
+      after(function(next) {
+        sandbox.restore();
+
+        next();
+      });
+
       describe('when user is not authenticated', function() {
         var email = 'testuser@test.com';
         var password = 'password';
@@ -376,7 +385,7 @@ describe('api', function() {
               });
             },
             function createProjectApplication_step(cb) {
-              projectApplicationService.create({
+              projectService.createApplication({
                 projectId: project._id,
                 userId: user2._id
               }, function(err, _projectApplication) {
@@ -454,7 +463,14 @@ describe('api', function() {
         var auth2 = null;
         var project = null;
 
+        var createApplicationSpy;
+
         before(function(done) {
+
+          createApplicationSpy = sandbox.spy();
+
+          projectService.on(PROJECT_EVENTS.APPLICATION_CREATED, createApplicationSpy);
+
           async.series([
             function createUser1_step(cb) {
               userService.createUsingCredentials({
@@ -553,9 +569,11 @@ describe('api', function() {
 
               var projectApplication = response.body;
               should.exist(projectApplication);
-              projectApplication.status.should.equal(PROJECT_APPLICATION_STATUES.PENDING);
+              projectApplication.status.should.equal(PROJECT_APPLICATION_STATUSES.PENDING);
               projectApplication.user.should.equal(user2._id);
               projectApplication.project.should.equal(project._id);
+
+              createApplicationSpy.callCount.should.equal(1);
 
               done();
             });

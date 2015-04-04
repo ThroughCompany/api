@@ -8,7 +8,7 @@ var baseSchema = require('modules/common/data/base-schema');
 /* =========================================================================
  * Constants
  * ========================================================================= */
-var STATUSES = require('../constants/statuses');
+var STATUSES = require('../constants/applicationStatuses');
 
 /* =========================================================================
  * Schema
