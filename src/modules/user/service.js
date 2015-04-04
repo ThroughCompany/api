@@ -231,8 +231,8 @@ UserService.prototype.update = function update(options, next) {
 
       user.save(done);
     }
-  ], function(err, user) {
-    return next(err, user); //don't remove, callback needed because mongoose saves returns 3rd arg
+  ], function finish(err, user) {
+    return next(err, user); //don't remove, callback needed because mongoose save returns 3rd arg
   });
 };
 

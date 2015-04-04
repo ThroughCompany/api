@@ -4,6 +4,7 @@
 var util = require('util');
 var _ = require('underscore');
 var async = require('async');
+var jsonPatch = require('fast-json-patch');
 
 //modules
 var errors = require('modules/error');
@@ -21,6 +22,9 @@ var User = require('modules/user/data/model');
 var Project = require('./data/projectModel');
 var ProjectUser = require('modules/project/data/userModel');
 
+//utils
+var patchUtils = require('utils/patchUtils');
+
 var projectValidator = require('./validators/projectValidator');
 
 var partialResponseParser = require('modules/partialResponse/parser');
@@ -32,6 +36,14 @@ var EVENTS = require('./constants/events');
 var ROLES = require('modules/role/constants/role-names');
 var DEFAULTIMAGEURL = 'https://s3.amazonaws.com/throughcompany-assets/project-avatars/avatar';
 var IMAGE_TYPES = require('modules/image/constants/image-types');
+
+var UPDATEDABLE_PROJECT_PROPERTIES = [
+  'name',
+  'description',
+  'lastName',
+  'location',
+  'socialLinks'
+];
 
 /* =========================================================================
  * Constructor
@@ -136,17 +148,21 @@ ProjectService.prototype.create = function(options, next) {
 
 /**
  * @param {object} options
- * @param {string} userId
- * @param {object} updates
+ * @param {string} projectId
+ * @param {object} [updates] - a hash of changes to apply to the project
+ * @param {array} [patches] - an array of JSON patches to apply to the project
  * @param {function} next - callback
  */
 ProjectService.prototype.update = function(options, next) {
   if (!options.projectId) return next(new errors.InvalidArgumentError('Project Id is required'));
-  if (!options.updates) return next(new errors.InvalidArgumentError('Updates is required'));
+  if (!options.patches && !options.updates) return next(new errors.InvalidArgumentError('patches or updates is required'));
+  if (options.patches && _.isEmpty(options.patches)) return next(new errors.InvalidArgumentError('patches must contain values'));
+  if (options.updates && _.isEmpty(options.updates)) return next(new errors.InvalidArgumentError('updates must contain values'));
+  if (options.patches && !_.isArray(options.patches)) return next(new errors.InvalidArgumentError('patches must be an array'));
 
   var _this = this;
-  var updates = options.updates;
   var project = null;
+  var patches = null;
 
   async.waterfall([
     function findUserById(done) {
@@ -159,22 +175,53 @@ ProjectService.prototype.update = function(options, next) {
 
       project = _project;
 
-      projectValidator.validateUpdate(project, options, done);
+      if (options.updates && !options.patches) patches = patchUtils.generatePatches(options.updates);
+      else patches = options.patches;
+
+      patches = patchUtils.stripPatches(UPDATEDABLE_PROJECT_PROPERTIES, patches);
+
+      console.log('PROJECT');
+      console.log(project);
+
+      console.log('PATCHES:');
+      console.log(patches);
+
+      var projectClone = _.clone(project.toJSON());
+
+      var patchErrors = jsonPatch.validate(patches, projectClone);
+
+      if (patchErrors) {
+        console.log('PATCH ERRORS');
+        return done(patchErrors);
+      }
+
+      jsonPatch.apply(projectClone, patches);
+
+      console.log('WITH PATCHES APPLIED:');
+      console.log(projectClone);
+
+      projectValidator.validateUpdate(project, projectClone, done);
     },
     function updateProject(done) {
-      project.name = updates.name ? updates.name : project.name;
-      project.description = updates.description ? updates.description : project.description;
-      project.location = updates.location ? updates.location : project.location;
 
-      // if (updates.social) {
-      //   project.social.facebook = updates.social.facebook ? updates.social.facebook : project.social.facebook;
-      //   project.social.linkedIn = updates.social.linkedIn ? updates.social.linkedIn : project.social.linkedIn;
-      // }
+      try {
+        console.log('APPLYING PATCHES:');
+        console.log(patches);
+
+        jsonPatch.apply(project, patches);
+      } catch (err) {
+        logger.error(err);
+
+        return done(new errors.InvalidArgumentError('error applying patches'));
+      }
+
+      console.log('AFTER PATCHES:');
+      console.log(project);
 
       project.save(done);
     }
   ], function finish(err, results) {
-    return next(err, results);
+    return next(err, project); //don't remove, callback needed because mongoose save returns 3rd arg
   });
 };
 
