@@ -195,7 +195,7 @@ UserService.prototype.update = function update(options, next) {
       console.log(user);
 
       console.log('PATCHES:');
-      console.log(patches); 
+      console.log(patches);
 
       var userClone = _.clone(user.toJSON());
 
@@ -427,7 +427,7 @@ UserService.prototype.uploadImage = function(options, next) {
       switch (options.imageType) {
         case IMAGE_TYPES.PROFILE_PIC_USER:
           user.profilePic = imageUrl;
-          break
+          break;
         default:
           err = new errors.InvalidArgumentError('Invalid image type');
           break;

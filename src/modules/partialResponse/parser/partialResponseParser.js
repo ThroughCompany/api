@@ -3,9 +3,7 @@
 /* =========================================================================
  * Dependencies
  * ========================================================================= */
-var appConfig = require('src/config/app-config');
 var _ = require('underscore');
-var async = require('async');
 
 var logger = require('modules/logger');
 var errors = require('modules/error');
@@ -103,16 +101,15 @@ function parseString(fields) {
   var nestedStack = [];
   var currentMemberName = '';
   var parent = new FieldSelectorTreeNode('');
+  var childNode = null;
 
   for (var i = 0; i < fields.length; i++) {
     var currentChar = fields[i];
 
-    var childNode = null;
-
     switch (currentChar) {
       case NESTED_FIELD_SELECTOR:
         if (currentMemberName.length === 0) {
-          return next(new errors.InvalidArgumentError('Nested Field token ' + NESTED_FIELD_SELECTOR + ' can not be preceeded by another reserved token.'));
+          throw new Error('Nested Field token ' + NESTED_FIELD_SELECTOR + ' can not be preceeded by another reserved token.');
         }
         childNode = parent.getOrAddChildNode(currentMemberName);
         currentMemberName = '';
@@ -134,7 +131,7 @@ function parseString(fields) {
         break;
       case BEGIN_SUB_SELECT_EXPRESSION:
         if (currentMemberName.length === 0) {
-          return next(new errors.InvalidArgumentError('Begin Subselection token ' + BEGIN_SUB_SELECT_EXPRESSION + ' can not be preceeded by another reserved token.'));
+          throw new Error('Begin Subselection token ' + BEGIN_SUB_SELECT_EXPRESSION + ' can not be preceeded by another reserved token.');
         }
 
         childNode = parent.getOrAddChildNode(currentMemberName);

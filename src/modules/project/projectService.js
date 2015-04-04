@@ -483,10 +483,10 @@ ProjectService.prototype.uploadImage = function(options, next) {
       switch (options.imageType) {
         case IMAGE_TYPES.PROFILE_PIC_PROJECT:
           project.profilePic = imageUrl;
-          break
+          break;
         case IMAGE_TYPES.BANNER_PIC_PROJECT:
           project.bannerPic = imageUrl;
-          break
+          break;
         default:
           err = new errors.InvalidArgumentError('Invalid image type');
           break;
