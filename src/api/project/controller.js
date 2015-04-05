@@ -67,7 +67,7 @@ Controller.prototype.createProject = function createProject(req, res, next) {
  */
 Controller.prototype.updateProjectById = function(req, res, next) {
   var projectId = req.params.id;
-  var patches = req.body;
+  var patches = req.body.patches;
 
   projectService.update({
     projectId: projectId,
