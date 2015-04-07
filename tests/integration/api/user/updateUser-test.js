@@ -173,6 +173,9 @@ describe('api', function() {
         it('should return a 403', function(done) {
           agent
             .patch('/users/' + user._id)
+            .send({
+              patches: []
+            })
             .set('x-access-token', auth.token)
             .end(function(err, response) {
               should.not.exist(err);
@@ -255,7 +258,9 @@ describe('api', function() {
 
             agent
               .patch('/users/' + user._id)
-              .send(patches)
+              .send({
+                patches: patches
+              })
               .set('x-access-token', auth.token)
               .end(function(err, response) {
                 should.not.exist(err);
@@ -290,7 +295,9 @@ describe('api', function() {
 
             agent
               .patch('/users/' + user._id)
-              .send(patches)
+              .send({
+                patches: patches
+              })
               .set('x-access-token', auth.token)
               .end(function(err, response) {
                 should.not.exist(err);
@@ -382,7 +389,9 @@ describe('api', function() {
 
           agent
             .patch('/users/' + user._id)
-            .send(patches)
+            .send({
+              patches: patches
+            })
             .set('x-access-token', auth.token)
             .end(function(err, response) {
               should.not.exist(err);
@@ -470,7 +479,9 @@ describe('api', function() {
 
             agent
               .patch('/users/' + user._id)
-              .send(patches)
+              .send({
+                patches: patches
+              })
               .set('x-access-token', auth.token)
               .end(function(err, response) {
                 should.not.exist(err);
@@ -550,7 +561,9 @@ describe('api', function() {
 
             agent
               .patch('/users/' + user._id)
-              .send(patches)
+              .send({
+                patches: patches
+              })
               .set('x-access-token', auth.token)
               .end(function(err, response) {
                 should.not.exist(err);
@@ -633,7 +646,9 @@ describe('api', function() {
 
             agent
               .patch('/users/' + user._id)
-              .send(patches)
+              .send({
+                patches: patches
+              })
               .set('x-access-token', auth.token)
               .end(function(err, response) {
                 should.not.exist(err);
