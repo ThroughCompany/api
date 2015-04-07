@@ -25,7 +25,6 @@ var Project = require('modules/project/data/projectModel');
 var ProjectApplication = require('modules/project/data/applicationModel');
 var Permission = require('modules/permission/data/model');
 
-var PERMISSIONS_NAMES = require('modules/permission/constants/permission-names');
 var PROJECT_APPLICATION_STATUSES = require('modules/project/constants/applicationStatuses');
 
 var PROJECT_EVENTS = require('modules/project/constants/events');

@@ -24,7 +24,7 @@ var Project = require('modules/project/data/projectModel');
 var ProjectUser = require('modules/project/data/userModel');
 var Permission = require('modules/permission/data/model');
 
-var PERMISSIONS_NAMES = require('modules/permission/constants/permission-names');
+var PERMISSION_NAMES = require('modules/permission/constants/permissionNames');
 
 var agent;
 
@@ -230,7 +230,7 @@ describe('api', function() {
                     if (err) return next(err);
 
                     var addUserPermissions = _.find(permissions, function(perm) {
-                      return perm.name === PERMISSIONS_NAMES.ADD_PROJECT_USERS;
+                      return perm.name === PERMISSION_NAMES.ADD_PROJECT_USERS;
                     });
 
                     should.exist(addUserPermissions);

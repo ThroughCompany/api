@@ -53,7 +53,6 @@ PermissionService.prototype.getByRoleName = function getByRoleName(options, next
   ], next);
 };
 
-
 /**
  * @param {object} options
  * @param {array} options.ids
@@ -70,6 +69,24 @@ PermissionService.prototype.getByIds = function getByIds(options, next) {
     _id: {
       $in: options.ids
     }
+  });
+
+  query.exec(next);
+};
+
+/**
+ * @param {object} options
+ * @param {array} options.name
+ * @param {function} next - callback
+ */
+PermissionService.prototype.getByName = function getByName(options, next) {
+  if (!options) return next(new errors.InvalidArgumentError('options is required'));
+  if (!options.name) return next(new errors.InvalidArgumentError('Name is required'));
+
+  var _this = this;
+
+  var query = Permission.find({
+    name: options.name
   });
 
   query.exec(next);
