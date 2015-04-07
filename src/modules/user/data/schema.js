@@ -9,6 +9,7 @@ var baseSchema = require('modules/common/data/base-schema');
  * Constants
  * ========================================================================= */
 var LINK_TYPES = require('modules/common/constants/linkTypes');
+var LINK_ICONS = require('modules/common/constants/linkIcons');
 
 /* =========================================================================
  * Schema
@@ -81,6 +82,12 @@ var userSchema = baseSchema.extend({
       trim: true,
       required: true,
       enum: _.values(LINK_TYPES)
+    },
+    icon: {
+      type: String,
+      trim: true,
+      required: true,
+      enum: _.values(LINK_ICONS)
     },
     name: {
       type: String,

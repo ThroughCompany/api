@@ -316,7 +316,7 @@ describe('api', function() {
         });
 
         describe('invalid link type', function() {
-          it('should update the user', function(done) {
+          it('should return an error', function(done) {
 
             var projectClone = _.clone(project.toJSON());
 
@@ -325,7 +325,8 @@ describe('api', function() {
             projectClone.socialLinks.push({
               type: 'FOOBAR',
               name: 'FOOBAR',
-              link: 'http://wwwasfasd'
+              link: 'http://wwwasfasd',
+              icon: 'ICON_GITHUB'
             });
 
             var patches = jsonPatch.generate(observer);
@@ -353,7 +354,7 @@ describe('api', function() {
         });
 
         describe('invalid link url', function() {
-          it('should update the user', function(done) {
+          it('should return an error', function(done) {
 
             var projectClone = _.clone(project.toJSON());
 
@@ -362,7 +363,8 @@ describe('api', function() {
             projectClone.socialLinks.push({
               type: 'GITHUB',
               name: 'FOOBAR',
-              link: 'http://wwwasfasd'
+              link: 'http://wwwasfasd',
+              icon: 'ICON_GITHUB'
             });
 
             var patches = jsonPatch.generate(observer);
@@ -681,7 +683,8 @@ describe('api', function() {
             projectClone.socialLinks.push({
               type: 'GITHUB',
               name: 'Codez',
-              link: 'https://www.github.com'
+              link: 'https://www.github.com',
+              icon: 'ICON_GITHUB'
             });
 
             var patches = jsonPatch.generate(observer);
@@ -755,7 +758,8 @@ describe('api', function() {
                   project.socialLinks.push({
                     type: 'GITHUB',
                     name: 'Codez',
-                    link: 'https://www.github.com'
+                    link: 'https://www.github.com',
+                    icon: 'ICON_GITHUB'
                   });
 
                   project.save(cb);
