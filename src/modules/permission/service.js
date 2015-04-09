@@ -85,7 +85,7 @@ PermissionService.prototype.getByName = function getByName(options, next) {
 
   var _this = this;
 
-  var query = Permission.find({
+  var query = Permission.findOne({
     name: options.name
   });
 

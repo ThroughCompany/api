@@ -111,6 +111,7 @@ ProjectService.prototype.create = function(options, next) {
       var projectUser = new ProjectUser();
       projectUser.project = project._id;
       projectUser.user = user._id;
+      projectUser.email = user.email;
       projectUser.permissions = projectUser.permissions.concat(permissions);
 
       projectUser.save(done);
