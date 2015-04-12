@@ -13,7 +13,6 @@ var errors = require('modules/error');
 var REGEXES = require('modules/common/constants/regexes');
 var FIELD_LENGTHS = require('../constants/fieldLengths');
 var LINK_TYPES = require('modules/common/constants/linkTypes');
-var LINK_ICONS = require('modules/common/constants/linkIcons');
 
 /* =========================================================================
  * Constructor
@@ -60,10 +59,6 @@ function validateSocialLinks(socialLinks, next) {
       return next(new errors.InvalidArgumentError('Social Links must have a type'));
       break;
     }
-    if (!socialLink.icon || !_.isString(socialLink.icon)) {
-      return next(new errors.InvalidArgumentError('Social Links must have an icon'));
-      break;
-    }
     if (!socialLink.name || !_.isString(socialLink.name)) {
       return next(new errors.InvalidArgumentError('Social Links must have a name'));
       break;
@@ -74,10 +69,6 @@ function validateSocialLinks(socialLinks, next) {
     }
     if (!_.contains(_.values(LINK_TYPES), socialLink.type.toUpperCase())) {
       return next(new errors.InvalidArgumentError(socialLink.type + ' is not a valid link type'));
-      break;
-    }
-    if (!_.contains(_.values(LINK_ICONS), socialLink.icon.toUpperCase())) {
-      return next(new errors.InvalidArgumentError(socialLink.icon + ' is not a valid link icon'));
       break;
     }
     if (!REGEXES.url.test(socialLink.link)) {

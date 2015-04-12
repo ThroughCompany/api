@@ -252,7 +252,6 @@ describe('api', function() {
               type: 'FOOBAR',
               name: 'FOOBAR',
               link: 'http://wwwasfasd',
-              icon: 'ICON_GITHUB'
             });
 
             var patches = jsonPatch.generate(observer);
@@ -289,8 +288,7 @@ describe('api', function() {
             userClone.socialLinks.push({
               type: 'GITHUB',
               name: 'FOOBAR',
-              link: 'http://wwwasfasd',
-              icon: 'ICON_GITHUB'
+              link: 'http://wwwasfasd'
             });
 
             var patches = jsonPatch.generate(observer);
@@ -556,7 +554,6 @@ describe('api', function() {
             userClone.socialLinks.push({
               type: 'GITHUB',
               name: 'Codez',
-              icon: 'ICON_GITHUB',
               link: 'https://www.github.com'
             });
 
@@ -606,7 +603,6 @@ describe('api', function() {
                   user.socialLinks.push({
                     type: 'GITHUB',
                     name: 'Codez',
-                    icon: 'ICON_GITHUB',
                     link: 'https://www.github.com'
                   });
                   user.save(cb);
