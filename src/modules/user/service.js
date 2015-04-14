@@ -191,12 +191,6 @@ UserService.prototype.update = function update(options, next) {
 
       patches = patchUtils.stripPatches(UPDATEDABLE_USER_PROPERTIES, patches);
 
-      // console.log('USER');
-      // console.log(user);
-
-      // console.log('PATCHES:');
-      // console.log(patches);
-
       var userClone = _.clone(user.toJSON());
 
       var patchErrors = jsonPatch.validate(patches, userClone);
@@ -213,17 +207,11 @@ UserService.prototype.update = function update(options, next) {
         return done(new errors.InvalidArgumentError('error applying patches'));
       }
 
-      // console.log('WITH PATCHES APPLIED:');
-      // console.log(userClone);
-
       validator.validateUpdate(user, userClone, done);
     },
     function updateUser(done) {
 
       try {
-        // console.log('APPLYING PATCHES:');
-        // console.log(patches);
-
         jsonPatch.apply(user, patches);
       } catch (err) {
         logger.error(err);
@@ -233,10 +221,6 @@ UserService.prototype.update = function update(options, next) {
 
       // console.log('AFTER PATCHES:');
       // console.log(user);
-
-
-      console.log('SAVE');
-      console.log(user.save);
 
       user.save(done);
     }

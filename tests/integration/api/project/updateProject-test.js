@@ -5,7 +5,7 @@ require('tests/integration/before-all');
 
 var should = require('should');
 var async = require('async');
-var jsonPatch = require('fast-json-patch');
+var diff = require('rfc6902');
 var _ = require('underscore');
 
 var app = require('src');
@@ -320,15 +320,13 @@ describe('api', function() {
 
             var projectClone = _.clone(project.toJSON());
 
-            var observer = jsonPatch.observe(projectClone);
-
             projectClone.socialLinks.push({
               type: 'FOOBAR',
               name: 'FOOBAR',
               link: 'http://wwwasfasd'
             });
 
-            var patches = jsonPatch.generate(observer);
+            var patches = diff.diff(project.toJSON(), projectClone);
 
             agent
               .patch('/projects/' + project._id)
@@ -357,15 +355,13 @@ describe('api', function() {
 
             var projectClone = _.clone(project.toJSON());
 
-            var observer = jsonPatch.observe(projectClone);
-
             projectClone.socialLinks.push({
               type: 'GITHUB',
               name: 'FOOBAR',
               link: 'http://wwwasfasd'
             });
 
-            var patches = jsonPatch.generate(observer);
+            var patches = diff.diff(project.toJSON(), projectClone);
 
             agent
               .patch('/projects/' + project._id)
@@ -458,8 +454,6 @@ describe('api', function() {
 
           var projectClone = _.clone(project.toJSON());
 
-          var observer = jsonPatch.observe(projectClone);
-
           projectClone._id = '123';
           projectClone.slug = 'FOOOBARRRR';
           projectClone.wiki = 'BARFOO';
@@ -474,7 +468,7 @@ describe('api', function() {
           }];
           projectClone.profilePic = '1111';
 
-          var patches = jsonPatch.generate(observer);
+          var patches = diff.diff(project.toJSON(), projectClone);
 
           agent
             .patch('/projects/' + project._id)
@@ -577,13 +571,11 @@ describe('api', function() {
 
             var projectClone = _.clone(project.toJSON());
 
-            var observer = jsonPatch.observe(projectClone);
-
             projectClone._id = '123';
             projectClone.name = 'New Project Name';
             projectClone.description = 'New Project Description';
 
-            var patches = jsonPatch.generate(observer);
+            var patches = diff.diff(project.toJSON(), projectClone);
 
             agent
               .patch('/projects/' + project._id)
@@ -676,15 +668,13 @@ describe('api', function() {
 
             var projectClone = _.clone(project.toJSON());
 
-            var observer = jsonPatch.observe(projectClone);
-
             projectClone.socialLinks.push({
               type: 'GITHUB',
               name: 'Codez',
               link: 'https://www.github.com'
             });
 
-            var patches = jsonPatch.generate(observer);
+            var patches = diff.diff(project.toJSON(), projectClone);
 
             agent
               .patch('/projects/' + project._id)
@@ -786,11 +776,9 @@ describe('api', function() {
 
             var projectClone = _.clone(project.toJSON());
 
-            var observer = jsonPatch.observe(projectClone);
-
             projectClone.socialLinks.splice(0, 1);
 
-            var patches = jsonPatch.generate(observer);
+            var patches = diff.diff(project.toJSON(), projectClone);
 
             agent
               .patch('/projects/' + project._id)

@@ -28,13 +28,23 @@ PatchUtils.prototype.stripPatches = function stripPatches(allowedProperties, pat
 
   var regexes = convertToRegexes(allowedProperties);
 
+  // console.log('PATCHES BEFORE SCRUB');
+  // console.log(patches);
+
   _.each(patches, function(patch) {
     if (matchesRegex(patch.path, regexes)) {
       patch.valid = true;
     }
+
+    // if (_.isArray(patch.value)) {
+
+    // } else {
+    //   delete patch.value._id;
+    // }
   });
 
-  console.log(patches);
+  // console.log('PATCHES AFTER SCRUB');
+  // console.log(patches);
 
   return _.filter(patches, function(patch) {
     return patch.valid;
