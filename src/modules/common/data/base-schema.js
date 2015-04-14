@@ -6,6 +6,8 @@ var extend = require('mongoose-schema-extend');
 var uuid = require('node-uuid');
 var _ = require('underscore');
 
+var utils = require('utils/utils');
+
 /* =========================================================================
  * Constants
  * ========================================================================= */
@@ -13,9 +15,6 @@ var _ = require('underscore');
 /* =========================================================================
  * Private Helpers
  * ========================================================================= */
-var generateUniqueId = function() {
-  return uuid.v4();
-};
 
 /* =========================================================================
  * Schema
@@ -23,7 +22,7 @@ var generateUniqueId = function() {
 var baseSchemaData = {
   _id: {
     type: String,
-    default: generateUniqueId,
+    default: utils.guid,
     index: {
       unique: true
     }

@@ -5,6 +5,8 @@ var _ = require('underscore');
 
 var baseSchema = require('modules/common/data/base-schema');
 
+var utils = require('utils/utils');
+
 /* =========================================================================
  * Constants
  * ========================================================================= */
@@ -75,7 +77,11 @@ var userSchema = baseSchema.extend({
     trim: true
   },
   socialLinks: [{
-    _id: false,
+    _id: {
+      type: String,
+      default: utils.guid,
+      required: true
+    },
     type: {
       type: String,
       trim: true,
