@@ -4,6 +4,7 @@
 var async = require('async');
 var _ = require('underscore');
 var jsonPatch = require('fast-json-patch');
+var uuid = require('node-uuid');
 
 function Utils() {}
 
@@ -38,6 +39,10 @@ Utils.prototype.getServerErrorMessage = function getServerErrorMessage(response)
   if (!response.body.errors || !response.body.errors.length) return null;
 
   return response.body.errors[0].message;
+};
+
+Utils.prototype.guid = function guid() {
+  return uuid.v4();
 };
 
 /* =========================================================================
