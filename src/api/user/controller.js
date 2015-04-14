@@ -68,7 +68,7 @@ Controller.prototype.getUserById = function(req, res, next) {
  */
 Controller.prototype.updateUserById = function(req, res, next) {
   var userId = req.params.id;
-  var patches = req.body;
+  var patches = req.body.patches;
 
   userService.update({
     userId: userId,

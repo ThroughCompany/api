@@ -6,35 +6,23 @@ var baseSchema = require('modules/common/data/base-schema');
 /* =========================================================================
  * Schema
  * ========================================================================= */
-var projectUserSchema = baseSchema.extend({
-  project: {
+var organizationSchema = baseSchema.extend({
+  name: {
     type: String,
-    ref: 'Project',
-    required: true
-  },
-  user: {
-    type: String,
-    ref: 'User',
-    required: true
-  },
-  permissions: [{
-    type: String,
-    ref: 'Permission'
-  }],
-  email: {
-    type: String,
+    trim: true,
     required: true
   }
-});
-
-projectUserSchema.index({
-  project: 1,
-  user: 1
-}, {
-  unique: true
+  // projects: [{
+  //   type: String,
+  //   ref: 'Project'
+  // }],
+  // users: [{
+  //   type: String,
+  //   ref: 'User'
+  // }]
 });
 
 /* =========================================================================
  * Exports
  * ========================================================================= */
-module.exports = projectUserSchema;
+module.exports = organizationSchema;

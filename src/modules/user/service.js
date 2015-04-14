@@ -191,33 +191,38 @@ UserService.prototype.update = function update(options, next) {
 
       patches = patchUtils.stripPatches(UPDATEDABLE_USER_PROPERTIES, patches);
 
-      console.log('USER');
-      console.log(user);
+      // console.log('USER');
+      // console.log(user);
 
-      console.log('PATCHES:');
-      console.log(patches);
+      // console.log('PATCHES:');
+      // console.log(patches);
 
       var userClone = _.clone(user.toJSON());
 
       var patchErrors = jsonPatch.validate(patches, userClone);
 
       if (patchErrors) {
-        console.log('PATCH ERRORS');
-        return done(patchErrors);
+        return done(patchErrors && patchErrors.message ? new errors.InvalidArgumentError(patchErrors.message) : patchErrors);
       }
 
-      jsonPatch.apply(userClone, patches);
+      try {
+        jsonPatch.apply(userClone, patches);
+      } catch (err) {
+        logger.error(err);
 
-      console.log('WITH PATCHES APPLIED:');
-      console.log(userClone);
+        return done(new errors.InvalidArgumentError('error applying patches'));
+      }
+
+      // console.log('WITH PATCHES APPLIED:');
+      // console.log(userClone);
 
       validator.validateUpdate(user, userClone, done);
     },
     function updateUser(done) {
 
       try {
-        console.log('APPLYING PATCHES:');
-        console.log(patches);
+        // console.log('APPLYING PATCHES:');
+        // console.log(patches);
 
         jsonPatch.apply(user, patches);
       } catch (err) {
@@ -226,13 +231,17 @@ UserService.prototype.update = function update(options, next) {
         return done(new errors.InvalidArgumentError('error applying patches'));
       }
 
-      console.log('AFTER PATCHES:');
-      console.log(user);
+      // console.log('AFTER PATCHES:');
+      // console.log(user);
+
+
+      console.log('SAVE');
+      console.log(user.save);
 
       user.save(done);
     }
-  ], function(err, user) {
-    return next(err, user); //don't remove, callback needed because mongoose saves returns 3rd arg
+  ], function finish(err, user) {
+    return next(err, user); //don't remove, callback needed because mongoose save returns 3rd arg
   });
 };
 

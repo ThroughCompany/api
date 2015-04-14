@@ -38,7 +38,7 @@ function init(next, forceReConnect) {
   });
 
   dbConnection.on('disconnected', function() {
-    logger.error('Mongo Database disconnected');
+    logger.info('Mongo Database disconnected');
   });
 
   dbConnection.on('error', function(err) {
@@ -47,9 +47,16 @@ function init(next, forceReConnect) {
   });
 }
 
+function disconnect() {
+  if (!dbConnection) return;
+
+  mongoose.disconnect();
+}
+
 /* =========================================================================
  * Expose
  * ========================================================================= */
 module.exports = {
-  init: init
+  init: init,
+  disconnect: disconnect
 };

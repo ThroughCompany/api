@@ -17,10 +17,12 @@ var testUtils = require('tests/lib/test-utils');
 var userService = require('modules/user');
 var authService = require('modules/auth');
 var adminService = require('modules/admin');
+var projectService = require('modules/project');
 
 var User = require('modules/user/data/model');
 var Auth = require('modules/auth/data/model');
 var Admin = require('modules/admin/data/model');
+var Project = require('modules/project/data/projectModel');
 
 var agent;
 
@@ -35,13 +37,13 @@ before(function(done) {
 });
 
 describe('api', function() {
-  describe('user', function() {
-    describe('PATCH - /users/{id}', function() {
+  describe('project', function() {
+    describe('PATCH - /projects/{id}', function() {
       describe('when user is not authenticated', function() {
         it('should return a 401', function(done) {
 
           agent
-            .patch('/users/123')
+            .patch('/projects/123')
             .end(function(err, response) {
               should.not.exist(err);
               should.exist(response);
@@ -57,33 +59,59 @@ describe('api', function() {
         });
       });
 
-      describe('when user is trying to update another user and is not an admin', function() {
-        var email = 'testuser@test.com';
+      describe('when trying to update a project they aren\'t a member of and is not an admin', function() {
+        var email1 = 'testuser1@test.com';
+        var email2 = 'testuser2@test.com';
         var password = 'password';
-        var user = null;
+        var user1 = null;
+        var user2 = null;
         var auth = null;
+        var project = null;
 
         before(function(done) {
           async.series([
-            function createUser_step(cb) {
+            function createUser1_step(cb) {
               userService.createUsingCredentials({
-                email: email,
+                email: email1,
                 password: password
               }, function(err, _user) {
                 if (err) return cb(err);
 
-                user = _user;
+                user1 = _user;
+                cb();
+              });
+            },
+            function createUser2_step(cb) {
+              userService.createUsingCredentials({
+                email: email2,
+                password: password
+              }, function(err, _user) {
+                if (err) return cb(err);
+
+                user2 = _user;
                 cb();
               });
             },
             function authenticateUser_step(cb) {
               authService.authenticateCredentials({
-                email: email,
+                email: email1,
                 password: password
               }, function(err, _auth) {
                 if (err) return cb(err);
 
                 auth = _auth;
+                cb();
+              });
+            },
+            function createUserProjectStep_step(cb) {
+              projectService.create({
+                createdByUserId: user2._id,
+                name: 'Project 1',
+                shortDescription: 'short desc'
+              }, function(err, _project) {
+                if (err) return cb(err);
+
+                project = _project;
                 cb();
               });
             }
@@ -92,19 +120,27 @@ describe('api', function() {
 
         after(function(done) {
           User.remove({
-            email: email
+            email: {
+              $in: [email1, email2]
+            }
           }, done);
         });
 
         after(function(done) {
           Auth.remove({
-            user: user._id
+            user: user1._id
+          }, done);
+        });
+
+        after(function(done) {
+          Project.remove({
+            _id: project._id
           }, done);
         });
 
         it('should return a 403', function(done) {
           agent
-            .patch('/users/123')
+            .patch('/projects/' + project._id)
             .set('x-access-token', auth.token)
             .end(function(err, response) {
               should.not.exist(err);
@@ -118,7 +154,7 @@ describe('api', function() {
               var errorMessage = testUtils.getServerErrorMessage(response);
 
               should.exist(errorMessage);
-              errorMessage.should.equal('Current user id does not match user id param');
+              errorMessage.should.equal('Access Denied');
 
               done();
             });
@@ -130,6 +166,7 @@ describe('api', function() {
         var password = 'password';
         var user = null;
         var auth = null;
+        var project = null;
 
         before(function(done) {
           async.series([
@@ -154,6 +191,18 @@ describe('api', function() {
                 auth = _auth;
                 cb();
               });
+            },
+            function createUserProjectStep_step(cb) {
+              projectService.create({
+                createdByUserId: user._id,
+                name: 'Project 1',
+                shortDescription: 'short desc'
+              }, function(err, _project) {
+                if (err) return cb(err);
+
+                project = _project;
+                cb();
+              });
             }
           ], done);
         });
@@ -170,9 +219,15 @@ describe('api', function() {
           }, done);
         });
 
-        it('should return a 403', function(done) {
+        after(function(done) {
+          Project.remove({
+            _id: project._id
+          }, done);
+        });
+
+        it('should return a 400', function(done) {
           agent
-            .patch('/users/' + user._id)
+            .patch('/projects/' + project._id)
             .send({
               patches: []
             })
@@ -201,6 +256,7 @@ describe('api', function() {
         var password = 'password';
         var user = null;
         var auth = null;
+        var project = null;
 
         before(function(done) {
           async.series([
@@ -225,6 +281,18 @@ describe('api', function() {
                 auth = _auth;
                 cb();
               });
+            },
+            function createProject_step(cb) {
+              projectService.create({
+                createdByUserId: user._id,
+                name: 'Project 1',
+                shortDescription: 'short desc'
+              }, function(err, _project) {
+                if (err) return cb(err);
+
+                project = _project;
+                cb();
+              });
             }
           ], done);
         });
@@ -241,23 +309,29 @@ describe('api', function() {
           }, done);
         });
 
+        after(function(done) {
+          Project.remove({
+            _id: project._id
+          }, done);
+        });
+
         describe('invalid link type', function() {
-          it('should update the user', function(done) {
+          it('should return an error', function(done) {
 
-            var userClone = _.clone(user.toJSON());
+            var projectClone = _.clone(project.toJSON());
 
-            var observer = jsonPatch.observe(userClone);
+            var observer = jsonPatch.observe(projectClone);
 
-            userClone.socialLinks.push({
+            projectClone.socialLinks.push({
               type: 'FOOBAR',
               name: 'FOOBAR',
-              link: 'http://wwwasfasd',
+              link: 'http://wwwasfasd'
             });
 
             var patches = jsonPatch.generate(observer);
 
             agent
-              .patch('/users/' + user._id)
+              .patch('/projects/' + project._id)
               .send({
                 patches: patches
               })
@@ -279,13 +353,13 @@ describe('api', function() {
         });
 
         describe('invalid link url', function() {
-          it('should update the user', function(done) {
+          it('should return an error', function(done) {
 
-            var userClone = _.clone(user.toJSON());
+            var projectClone = _.clone(project.toJSON());
 
-            var observer = jsonPatch.observe(userClone);
+            var observer = jsonPatch.observe(projectClone);
 
-            userClone.socialLinks.push({
+            projectClone.socialLinks.push({
               type: 'GITHUB',
               name: 'FOOBAR',
               link: 'http://wwwasfasd'
@@ -294,7 +368,7 @@ describe('api', function() {
             var patches = jsonPatch.generate(observer);
 
             agent
-              .patch('/users/' + user._id)
+              .patch('/projects/' + project._id)
               .send({
                 patches: patches
               })
@@ -321,6 +395,7 @@ describe('api', function() {
         var password = 'password';
         var user = null;
         var auth = null;
+        var project = null;
 
         before(function(done) {
           async.series([
@@ -345,6 +420,18 @@ describe('api', function() {
                 auth = _auth;
                 cb();
               });
+            },
+            function createProject_step(cb) {
+              projectService.create({
+                createdByUserId: user._id,
+                name: 'Project 1',
+                shortDescription: 'short desc'
+              }, function(err, _project) {
+                if (err) return cb(err);
+
+                project = _project;
+                cb();
+              });
             }
           ], done);
         });
@@ -361,34 +448,36 @@ describe('api', function() {
           }, done);
         });
 
+        after(function(done) {
+          Project.remove({
+            _id: project._id
+          }, done);
+        });
+
         it('should ignore any non-updateable properties', function(done) {
 
-          var userClone = _.clone(user.toJSON());
+          var projectClone = _.clone(project.toJSON());
 
-          var observer = jsonPatch.observe(userClone);
+          var observer = jsonPatch.observe(projectClone);
 
-          userClone._id = '123';
-          userClone.email = 'FOOOBARRRR';
-          userClone.userName = 'BARFOO';
-          userClone.projectUsers = [{
+          projectClone._id = '123';
+          projectClone.slug = 'FOOOBARRRR';
+          projectClone.wiki = 'BARFOO';
+          projectClone.projectUsers = [{
             foo: 1
           }];
-          userClone.projectApplications = [{
+          projectClone.projectApplications = [{
             bar: 1
           }];
-          userClone.assetTags = [{
+          projectClone.assetTags = [{
             bar: 1
           }];
-          userClone.images = [{
-            foo: 1
-          }];
-          userClone.profilePic = '1111';
-          userClone.active = false;
+          projectClone.profilePic = '1111';
 
           var patches = jsonPatch.generate(observer);
 
           agent
-            .patch('/users/' + user._id)
+            .patch('/projects/' + project._id)
             .send({
               patches: patches
             })
@@ -399,20 +488,19 @@ describe('api', function() {
               var status = response.status;
               status.should.equal(200);
 
-              var updatedUser = response.body;
-              should.exist(updatedUser);
+              var updateProject = response.body;
+              should.exist(updateProject);
 
-              User.findById(user._id, function(err, foundUser) {
+              Project.findById(project._id, function(err, foundProject) {
                 if (err) return done(err);
 
-                foundUser._id.should.equal(user._id);
-                foundUser.email.should.equal(user.email);
-                foundUser.userName.should.equal(user.userName);
-                utils.arraysAreEqual(foundUser.projectUsers, user.projectUsers).should.equal(true);
-                utils.arraysAreEqual(foundUser.projectApplications, user.projectApplications).should.equal(true);
-                utils.arraysAreEqual(foundUser.assetTags, user.assetTags).should.equal(true);
-                foundUser.profilePic.should.equal(user.profilePic);
-                foundUser.active.should.equal(user.active);
+                foundProject._id.should.equal(project._id);
+                foundProject.slug.should.equal(project.slug);
+                utils.arraysAreEqual(foundProject.wiki, project.wiki).should.equal(true);
+                utils.arraysAreEqual(foundProject.projectUsers, project.projectUsers).should.equal(true);
+                utils.arraysAreEqual(foundProject.projectApplications, project.projectApplications).should.equal(true);
+                utils.arraysAreEqual(foundProject.assetTags, project.assetTags).should.equal(true);
+                foundProject.profilePic.should.equal(project.profilePic);
 
                 done();
               });
@@ -426,6 +514,7 @@ describe('api', function() {
           var password = 'password';
           var user = null;
           var auth = null;
+          var project = null;
 
           before(function(done) {
             async.series([
@@ -450,6 +539,18 @@ describe('api', function() {
                   auth = _auth;
                   cb();
                 });
+              },
+              function createProject_step(cb) {
+                projectService.create({
+                  createdByUserId: user._id,
+                  name: 'Project 1',
+                  shortDescription: 'short desc'
+                }, function(err, _project) {
+                  if (err) return cb(err);
+
+                  project = _project;
+                  cb();
+                });
               }
             ], done);
           });
@@ -466,19 +567,26 @@ describe('api', function() {
             }, done);
           });
 
-          it('should update the user\'s first and last name', function(done) {
+          after(function(done) {
+            Project.remove({
+              _id: project._id
+            }, done);
+          });
 
-            var userClone = _.clone(user.toJSON());
+          it('should update the project\'s name and description', function(done) {
 
-            var observer = jsonPatch.observe(userClone);
+            var projectClone = _.clone(project.toJSON());
 
-            userClone.firstName = 'Larry';
-            userClone.lastName = 'Peterson';
+            var observer = jsonPatch.observe(projectClone);
+
+            projectClone._id = '123';
+            projectClone.name = 'New Project Name';
+            projectClone.description = 'New Project Description';
 
             var patches = jsonPatch.generate(observer);
 
             agent
-              .patch('/users/' + user._id)
+              .patch('/projects/' + project._id)
               .send({
                 patches: patches
               })
@@ -489,11 +597,11 @@ describe('api', function() {
                 var status = response.status;
                 status.should.equal(200);
 
-                var user = response.body;
-                should.exist(user);
+                var project = response.body;
+                should.exist(project);
 
-                user.firstName.should.equal('Larry');
-                user.lastName.should.equal('Peterson');
+                project.name.should.equal('New Project Name');
+                project.description.should.equal('New Project Description');
 
                 done();
               });
@@ -505,6 +613,7 @@ describe('api', function() {
           var password = 'password';
           var user = null;
           var auth = null;
+          var project = null;
 
           before(function(done) {
             async.series([
@@ -529,6 +638,18 @@ describe('api', function() {
                   auth = _auth;
                   cb();
                 });
+              },
+              function createProject_step(cb) {
+                projectService.create({
+                  createdByUserId: user._id,
+                  name: 'Project 1',
+                  shortDescription: 'short desc'
+                }, function(err, _project) {
+                  if (err) return cb(err);
+
+                  project = _project;
+                  cb();
+                });
               }
             ], done);
           });
@@ -545,13 +666,19 @@ describe('api', function() {
             }, done);
           });
 
+          after(function(done) {
+            Project.remove({
+              _id: project._id
+            }, done);
+          });
+
           it('should add a link to the user\'s socialLinks', function(done) {
 
-            var userClone = _.clone(user.toJSON());
+            var projectClone = _.clone(project.toJSON());
 
-            var observer = jsonPatch.observe(userClone);
+            var observer = jsonPatch.observe(projectClone);
 
-            userClone.socialLinks.push({
+            projectClone.socialLinks.push({
               type: 'GITHUB',
               name: 'Codez',
               link: 'https://www.github.com'
@@ -560,7 +687,7 @@ describe('api', function() {
             var patches = jsonPatch.generate(observer);
 
             agent
-              .patch('/users/' + user._id)
+              .patch('/projects/' + project._id)
               .send({
                 patches: patches
               })
@@ -571,13 +698,13 @@ describe('api', function() {
                 var status = response.status;
                 status.should.equal(200);
 
-                var user = response.body;
+                var project = response.body;
                 should.exist(user);
 
-                user.socialLinks.length.should.equal(1);
-                user.socialLinks[0].type.should.equal('GITHUB');
-                user.socialLinks[0].link.should.equal('https://www.github.com');
-                user.socialLinks[0].name.should.equal('Codez');
+                project.socialLinks.length.should.equal(1);
+                project.socialLinks[0].type.should.equal('GITHUB');
+                project.socialLinks[0].link.should.equal('https://www.github.com');
+                project.socialLinks[0].name.should.equal('Codez');
 
                 done();
               });
@@ -589,6 +716,7 @@ describe('api', function() {
           var password = 'password';
           var user = null;
           var auth = null;
+          var project = null;
 
           before(function(done) {
             async.series([
@@ -600,22 +728,7 @@ describe('api', function() {
                   if (err) return cb(err);
 
                   user = _user;
-                  user.socialLinks.push({
-                    type: 'GITHUB',
-                    name: 'Codez',
-                    link: 'https://www.github.com'
-                  });
-                  user.socialLinks.push({
-                    type: 'FACEBOOK',
-                    name: 'FB',
-                    link: 'https://www.facebook.com'
-                  });
-                  user.socialLinks.push({
-                    type: 'LINKEDIN',
-                    name: 'Resume',
-                    link: 'https://www.linkedin.com'
-                  });
-                  user.save(cb);
+                  cb();
                 });
               },
               function authenticateUser_step(cb) {
@@ -627,6 +740,25 @@ describe('api', function() {
 
                   auth = _auth;
                   cb();
+                });
+              },
+              function createProject_step(cb) {
+                projectService.create({
+                  createdByUserId: user._id,
+                  name: 'Project 1',
+                  shortDescription: 'short desc'
+                }, function(err, _project) {
+                  if (err) return cb(err);
+
+                  project = _project;
+
+                  project.socialLinks.push({
+                    type: 'GITHUB',
+                    name: 'Codez',
+                    link: 'https://www.github.com'
+                  });
+
+                  project.save(cb);
                 });
               }
             ], done);
@@ -644,17 +776,24 @@ describe('api', function() {
             }, done);
           });
 
-          it('should remmove a link from the user\'s socialLinks', function(done) {
+          after(function(done) {
+            Project.remove({
+              _id: project._id
+            }, done);
+          });
 
-            var userClone = _.clone(user.toJSON());
+          it('should add a link to the user\'s socialLinks', function(done) {
 
-            var patches = [{
-              op: 'remove',
-              path: '/socialLinks/0'
-            }];
+            var projectClone = _.clone(project.toJSON());
+
+            var observer = jsonPatch.observe(projectClone);
+
+            projectClone.socialLinks.splice(0, 1);
+
+            var patches = jsonPatch.generate(observer);
 
             agent
-              .patch('/users/' + user._id)
+              .patch('/projects/' + project._id)
               .send({
                 patches: patches
               })
@@ -665,18 +804,10 @@ describe('api', function() {
                 var status = response.status;
                 status.should.equal(200);
 
-                var user = response.body;
-                should.exist(user);
+                var project = response.body;
+                should.exist(project);
 
-                user.socialLinks.length.should.equal(2);
-
-                user.socialLinks[0].type.should.equal('FACEBOOK');
-                user.socialLinks[0].name.should.equal('FB');
-                user.socialLinks[0].link.should.equal('https://www.facebook.com');
-
-                user.socialLinks[1].type.should.equal('LINKEDIN');
-                user.socialLinks[1].name.should.equal('Resume');
-                user.socialLinks[1].link.should.equal('https://www.linkedin.com');
+                project.socialLinks.length.should.equal(0);
 
                 done();
               });

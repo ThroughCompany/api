@@ -125,6 +125,101 @@ ProjectApplicationService.prototype.create = function create(options, next) {
 /**
  * @param {object} options
  * @param {string} options.projectId
+ * @param {string} options.projectApplicationId
+ * @param {function} next - callback
+ */
+ProjectApplicationService.prototype.accept = function accept(options, next) {
+  if (!options) return next(new errors.InvalidArgumentError('options is required'));
+  if (!options.projectId) return next(new errors.InvalidArgumentError('Project Id is required'));
+  if (!options.projectApplicationId) return next(new errors.InvalidArgumentError('Project Application Id is required'));
+
+  var _this = this;
+  var project = null;
+  var projectUsers = null;
+  var projectApplications = null;
+
+  var user = null;
+  var projectApplication = null;
+
+  return next(new errors.NotImplementedError('Not Implemented'));
+
+  // async.waterfall([
+  //   function getProjectByData_step(done) {
+  //     async.parallel([
+  //       function getProjectById_step(cb) {
+  //         Project.findById(options.projectId, cb);
+  //       },
+  //       function getProjectUsersById_step(cb) {
+  //         ProjectUser.find({
+  //           project: options.projectId
+  //         }, cb);
+  //       },
+  //       function getProjectApplicationsById_step(cb) {
+  //         ProjectApplication.find({
+  //           project: options.projectId
+  //         }, cb);
+  //       }
+  //     ], function(err, results) {
+  //       if (err) return done(err);
+
+  //       project = results[0];
+
+  //       if (!project) return done(new errors.ObjectNotFoundError('Project not found'));
+
+  //       projectUsers = results[1];
+  //       projectApplications = results[2];
+
+  //       return done(null);
+  //     });
+  //   },
+  //   function getUserById_step(done) {
+  //     if (_.contains(_.pluck(projectUsers, 'user'), options.userId)) {
+  //       return done(new errors.InvalidArgumentError('User ' + options.userId + ' is already a member of this project'));
+  //     }
+  //     if (_.contains(_.pluck(projectApplications, 'user'), options.userId)) {
+  //       return done(new errors.InvalidArgumentError('User ' + options.userId + ' has already applied to this project'));
+  //     }
+
+  //     userService.getById({
+  //       userId: options.userId
+  //     }, done);
+  //   },
+  //   function createProjectApplication_step(_user, done) {
+  //     user = _user;
+
+  //     var projectApplication = new ProjectApplication();
+  //     projectApplication.project = project._id;
+  //     projectApplication.user = user._id;
+  //     projectApplication.status = STATUSES.PENDING;
+
+  //     projectApplication.save(function(err, application) {
+  //       if (err) return done(err);
+  //       return done(null, application);
+  //     });
+  //   },
+  //   function updateProjectWithApplications_step(_projectApplication, done) {
+  //     projectApplication = _projectApplication;
+
+  //     project.projectApplications.push(projectApplication._id);
+
+  //     project.save(function(err) {
+  //       if (err) return done(err);
+  //       return done(null);
+  //     });
+  //   },
+  //   function updateUserWithApplications_step(done) {
+  //     user.projectApplications.push(projectApplication._id);
+  //     user.save(function(err) {
+  //       if (err) return done(err);
+  //       return done(null, projectApplication);
+  //     });
+  //   }
+  // ], next);
+};
+
+/**
+ * @param {object} options
+ * @param {string} options.projectId
  * @param {function} next - callback
  */
 ProjectApplicationService.prototype.getById = function(options, next) {

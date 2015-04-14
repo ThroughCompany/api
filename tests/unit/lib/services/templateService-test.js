@@ -1,6 +1,8 @@
 /* =========================================================================
  * Dependencies
  * ========================================================================= */
+require('tests/unit/before-all');
+
 var should = require('should');
 
 var templateService = require('lib/services/templateService');

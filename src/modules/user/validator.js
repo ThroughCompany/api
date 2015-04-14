@@ -55,6 +55,9 @@ function validateSocialLinks(socialLinks, next) {
   for (var i = 0; i < socialLinks.length; i++) {
     var socialLink = socialLinks[i];
 
+    console.log('socialLink');
+    console.log(socialLink);
+
     if (!socialLink.type || !_.isString(socialLink.type)) {
       return next(new errors.InvalidArgumentError('Social Links must have a type'));
       break;

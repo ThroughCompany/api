@@ -46,6 +46,19 @@ ProjectUserService.prototype.getByUserId = function(options, next) {
   query.exec(next);
 };
 
+ProjectUserService.prototype.getByProjectId = function(options, next) {
+  if (!options) return next(new errors.InvalidArgumentError('options is required'));
+  if (!options.projectId) return next(new errors.InvalidArgumentError('Project Id is required'));
+
+  var _this = this;
+
+  var query = ProjectUser.find({
+    project: options.projectId
+  });
+
+  query.exec(next);
+};
+
 /* =========================================================================
  * Private Helpers
  * ========================================================================= */

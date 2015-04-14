@@ -67,11 +67,11 @@ Controller.prototype.createProject = function createProject(req, res, next) {
  */
 Controller.prototype.updateProjectById = function(req, res, next) {
   var projectId = req.params.id;
-  var updates = req.body;
+  var patches = req.body.patches;
 
   projectService.update({
     projectId: projectId,
-    updates: updates
+    patches: patches
   }, function(err, project) {
     if (err) return next(err);
     else return res.status(200).json(project);
@@ -157,10 +157,12 @@ Controller.prototype.createApplication = function(req, res, next) {
 
 Controller.prototype.acceptApplication = function(req, res, next) {
   var projectId = req.params.id;
+  var projectApplicationId = req.params.projectApplicationId;
   var userId = req.body.userId;
 
-  projectApplicationService.accept({
+  projectService.acceptApplication({
     projectId: projectId,
+    projectApplicationId: projectApplicationId,
     userId: userId
   }, function(err, projectApplication) {
     if (err) return next(err);

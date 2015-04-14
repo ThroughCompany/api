@@ -10,6 +10,7 @@ var childProcess = require('child_process');
 
 var app = require('src');
 var appConfig = require('src/config/app-config');
+var mongoConfig = require('src/config/mongo-config');
 
 var agent = require('tests/lib/agent');
 
@@ -67,6 +68,14 @@ before(function(next) {
 
 before(function(next) {
   console.log('\n--------------------------------------------\nFINISHED RUNNING TEST SETUP\n--------------------------------------------');
+
+  next();
+});
+
+after(function(next) {
+  console.log('\n--------------------------------------------\nCLEANUP TEST SETUP\n--------------------------------------------');
+
+  mongoConfig.disconnect();
 
   next();
 });
