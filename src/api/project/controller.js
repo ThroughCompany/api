@@ -157,10 +157,12 @@ Controller.prototype.createApplication = function(req, res, next) {
 
 Controller.prototype.acceptApplication = function(req, res, next) {
   var projectId = req.params.id;
+  var projectApplicationId = req.params.projectApplicationId;
   var userId = req.body.userId;
 
-  projectApplicationService.accept({
+  projectService.acceptApplication({
     projectId: projectId,
+    projectApplicationId: projectApplicationId,
     userId: userId
   }, function(err, projectApplication) {
     if (err) return next(err);

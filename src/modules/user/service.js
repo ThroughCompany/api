@@ -205,7 +205,13 @@ UserService.prototype.update = function update(options, next) {
         return done(patchErrors && patchErrors.message ? new errors.InvalidArgumentError(patchErrors.message) : patchErrors);
       }
 
-      jsonPatch.apply(userClone, patches);
+      try {
+        jsonPatch.apply(userClone, patches);
+      } catch (err) {
+        logger.error(err);
+
+        return done(new errors.InvalidArgumentError('error applying patches'));
+      }
 
       // console.log('WITH PATCHES APPLIED:');
       // console.log(userClone);
@@ -227,6 +233,10 @@ UserService.prototype.update = function update(options, next) {
 
       // console.log('AFTER PATCHES:');
       // console.log(user);
+
+
+      console.log('SAVE');
+      console.log(user.save);
 
       user.save(done);
     }

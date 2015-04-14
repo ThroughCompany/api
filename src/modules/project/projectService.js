@@ -192,11 +192,16 @@ ProjectService.prototype.update = function(options, next) {
       var patchErrors = jsonPatch.validate(patches, projectClone);
 
       if (patchErrors) {
-        console.log('PATCH ERRORS');
-        return done(patchErrors);
+        return done(patchErrors && patchErrors.message ? new errors.InvalidArgumentError(patchErrors.message) : patchErrors);
       }
 
-      jsonPatch.apply(projectClone, patches);
+      try {
+        jsonPatch.apply(projectClone, patches);
+      } catch (err) {
+        logger.error(err);
+
+        return done(new errors.InvalidArgumentError('error applying patches'));
+      }
 
       console.log('WITH PATCHES APPLIED:');
       console.log(projectClone);
@@ -563,6 +568,23 @@ ProjectService.prototype.createApplication = function(options, next) {
       projectId: projectApplication.project,
       userId: projectApplication.user
     });
+
+    next(null, projectApplication);
+  });
+};
+
+ProjectService.prototype.acceptApplication = function(options, next) {
+  var _this = this;
+
+  projectApplicationService.accept(options, function(err, projectApplication) {
+    if (err) return next(err);
+
+    //TODO: implement this - email the accepted user
+    // _this.emit(EVENTS.APPLICATION_ACCEPTED, {
+    //   projectApplicationId: projectApplication._id,
+    //   projectId: projectApplication.project,
+    //   userId: projectApplication.user
+    // });
 
     next(null, projectApplication);
   });

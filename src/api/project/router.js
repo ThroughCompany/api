@@ -12,6 +12,11 @@ var multipartMiddleware = multipart();
 var controller = require('./controller');
 
 /* =========================================================================
+ * Constants
+ * ========================================================================= */
+var PERMISSION_NAMES = require('modules/permission/constants/permissionNames');
+
+/* =========================================================================
  * Swagger specs
  * ========================================================================= */
 var getProjects = {
@@ -166,7 +171,7 @@ var createApplication = {
       swagger.params.body('userId', 'user\'s id', 'string')
     ],
     nickname: 'createApplication',
-    type: 'User',
+    type: 'ProjectApplication',
     produces: ['application/json']
   },
   action: function(req, res, next) {
@@ -175,6 +180,30 @@ var createApplication = {
       authMiddleware.currentUserIdBodyParamRequired('userId')(req, res, function(err) {
         if (err) return next(err);
         controller.createApplication(req, res, next);
+      });
+    });
+  }
+};
+
+var acceptApplication = {
+  spec: {
+    path: '/projects/{id}/applications/{projectApplicationId}/accept',
+    summary: 'App a project application',
+    method: 'POST',
+    parameters: [
+      swagger.params.path('id', 'project\'s id', 'string'),
+      swagger.params.body('projectApplicationId', 'application\'s id', 'string')
+    ],
+    nickname: 'acceptApplication',
+    type: 'ProjectApplication',
+    produces: ['application/json']
+  },
+  action: function(req, res, next) {
+    authMiddleware.authenticationRequired(req, res, function(err) {
+      if (err) return next(err);
+      authMiddleware.currentProjectPermissionParamRequired(PERMISSION_NAMES.ADD_PROJECT_USERS, 'id')(req, res, function(err) {
+        if (err) return next(err);
+        controller.acceptApplication(req, res, next);
       });
     });
   }
@@ -238,6 +267,7 @@ swagger.addPost(uploadImage);
 swagger.addPatch(updateProjectById);
 swagger.addGet(getProjectUsers);
 swagger.addPost(createApplication);
+swagger.addPost(acceptApplication);
 swagger.addPost(createWikiPage);
 swagger.addPatch(updateWikiPage);
 

@@ -605,6 +605,16 @@ describe('api', function() {
                     name: 'Codez',
                     link: 'https://www.github.com'
                   });
+                  user.socialLinks.push({
+                    type: 'FACEBOOK',
+                    name: 'FB',
+                    link: 'https://www.facebook.com'
+                  });
+                  user.socialLinks.push({
+                    type: 'LINKEDIN',
+                    name: 'Resume',
+                    link: 'https://www.linkedin.com'
+                  });
                   user.save(cb);
                 });
               },
@@ -634,15 +644,14 @@ describe('api', function() {
             }, done);
           });
 
-          it('should add a link to the user\'s socialLinks', function(done) {
+          it('should remmove a link from the user\'s socialLinks', function(done) {
 
             var userClone = _.clone(user.toJSON());
 
-            var observer = jsonPatch.observe(userClone);
-
-            userClone.socialLinks.splice(0, 1);
-
-            var patches = jsonPatch.generate(observer);
+            var patches = [{
+              op: 'remove',
+              path: '/socialLinks/0'
+            }];
 
             agent
               .patch('/users/' + user._id)
@@ -659,7 +668,15 @@ describe('api', function() {
                 var user = response.body;
                 should.exist(user);
 
-                user.socialLinks.length.should.equal(0);
+                user.socialLinks.length.should.equal(2);
+
+                user.socialLinks[0].type.should.equal('FACEBOOK');
+                user.socialLinks[0].name.should.equal('FB');
+                user.socialLinks[0].link.should.equal('https://www.facebook.com');
+
+                user.socialLinks[1].type.should.equal('LINKEDIN');
+                user.socialLinks[1].name.should.equal('Resume');
+                user.socialLinks[1].link.should.equal('https://www.linkedin.com');
 
                 done();
               });
