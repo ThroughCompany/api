@@ -802,7 +802,6 @@ describe('api', function() {
           });
         });
       });
-
     });
   });
 });

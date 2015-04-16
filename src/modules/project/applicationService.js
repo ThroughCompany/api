@@ -219,7 +219,7 @@ ProjectApplicationService.prototype.accept = function accept(options, next) {
 
 /**
  * @param {object} options
- * @param {string} options.projectId
+ * @param {string} options.projectApplicationId
  * @param {function} next - callback
  */
 ProjectApplicationService.prototype.getById = function(options, next) {
@@ -237,6 +237,28 @@ ProjectApplicationService.prototype.getById = function(options, next) {
     if (!projectApplication) return next(new errors.ObjectNotFoundError('Project Application not found'));
 
     return next(null, projectApplication);
+  });
+};
+
+/**
+ * @param {object} options
+ * @param {string} options.projectId
+ * @param {function} next - callback
+ */
+ProjectApplicationService.prototype.getByProjectId = function(options, next) {
+  if (!options) return next(new errors.InvalidArgumentError('options is required'));
+  if (!options.projectId) return next(new errors.InvalidArgumentError('Project Id is required'));
+
+  var _this = this;
+
+  var query = ProjectApplication.find({
+    project: options.projectId
+  });
+
+  query.exec(function(err, projectApplications) {
+    if (err) return next(err);
+
+    return next(null, projectApplications);
   });
 };
 

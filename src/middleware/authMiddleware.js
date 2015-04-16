@@ -27,10 +27,10 @@ AuthMiddleware.prototype.authenticationRequired = function authenticationRequire
     }, function(err, claims) {
       if (err) return next(err);
 
-      //attach the user and their claims to the request
+      //attach the user's claims to the request
       req.claims = claims;
 
-      return next();
+      return next(null);
     });
   }
 };
@@ -44,7 +44,7 @@ AuthMiddleware.prototype.currentUserIdQueryParamRequired = function currentUserI
     if (!req.claims || !req.params[param] || (req.params[param] !== req.claims.userId && !req.claims.admin)) { //allow admins to bypass
       return next(new errors.ForbiddenError('Current user id does not match user id param'));
     } else {
-      next();
+      return next(null);
     }
   };
 };
@@ -54,12 +54,13 @@ AuthMiddleware.prototype.currentUserIdBodyParamRequired = function currentUserId
   var param = paramName || 'id';
 
   return function _currentUserIdQueryBodyRequired(req, res, next) {
+    if (!req.claims) return next(new errors.ForbiddenError('Access Denied'));
     if (req.claims.admin) return next(); //allow admins to bypass
 
     if (!req.claims || !req.body[param] || req.body[param] !== req.claims.userId) {
       return next(new errors.ForbiddenError('Current user id does not match user id body param'));
     }
-    return next();
+    return next(null);
   };
 };
 
@@ -68,11 +69,12 @@ AuthMiddleware.prototype.currentUserProjectIdQueryParamRequired = function curre
   var param = paramName || 'id';
 
   return function _currentUserProjectIdParamRequired(req, res, next) {
+    if (!req.claims) return next(new errors.ForbiddenError('Access Denied'));
     if (req.claims.admin) return next(); //allow admins to bypass
     if (!req.claims || !req.params[param] || !req.claims.projectIds || !req.claims.projectIds.length || !_.contains(req.claims.projectIds, req.params[param])) {
       return next(new errors.ForbiddenError('Access Denied'));
     }
-    return next();
+    return next(null);
   };
 };
 

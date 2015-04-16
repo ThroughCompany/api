@@ -672,6 +672,7 @@ describe('api', function() {
           });
         });
 
+        //does not current work due to an issue saving sub documents with mongoose
         // describe.only('link is changed', function() {
         //   var email = 'testuser@test.com';
         //   var password = 'password';

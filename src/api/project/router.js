@@ -209,6 +209,29 @@ var acceptApplication = {
   }
 };
 
+var getApplications = {
+  spec: {
+    path: '/projects/{id}/applications',
+    summary: 'Get a project\'s applications',
+    method: 'GET',
+    parameters: [
+      swagger.params.path('id', 'project\'s id', 'string')
+    ],
+    nickname: 'getApplications',
+    type: 'Application',
+    produces: ['application/json']
+  },
+  action: function(req, res, next) {
+    authMiddleware.authenticationRequired(req, res, function(err) {
+      if (err) return next(err);
+      authMiddleware.currentUserProjectIdQueryParamRequired('id')(req, res, function(err) {
+        if (err) return next(err);
+        controller.getApplications(req, res, next);
+      });
+    });
+  }
+};
+
 var createWikiPage = {
   spec: {
     path: '/projects/{id}/wiki/pages',
@@ -268,6 +291,7 @@ swagger.addPatch(updateProjectById);
 swagger.addGet(getProjectUsers);
 swagger.addPost(createApplication);
 swagger.addPost(acceptApplication);
+swagger.addGet(getApplications);
 swagger.addPost(createWikiPage);
 swagger.addPatch(updateWikiPage);
 

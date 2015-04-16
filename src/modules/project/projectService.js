@@ -263,13 +263,6 @@ ProjectService.prototype.createAssetTag = function createAssetTag(options, next)
       }, done);
     },
     function addTagToProject_step(_assetTag, done) {
-
-      var existingAssetTag = _.find(project.assetTags, function(assetTag) {
-        return assetTag.slug === _assetTag.slug;
-      });
-
-      if (existingAssetTag) return done(new errors.InvalidArgumentError(options.name + ' tag already exists. Cannot have duplicate tags'));
-
       assetTag = _assetTag;
 
       project.assetTags.push({
@@ -557,7 +550,7 @@ ProjectService.prototype.uploadImage = function(options, next) {
 /* =========================================================================
  * Project Applications
  * ========================================================================= */
-ProjectService.prototype.createApplication = function(options, next) {
+ProjectService.prototype.createApplication = function createApplication(options, next) {
   var _this = this;
 
   projectApplicationService.create(options, function(err, projectApplication) {
@@ -573,7 +566,7 @@ ProjectService.prototype.createApplication = function(options, next) {
   });
 };
 
-ProjectService.prototype.acceptApplication = function(options, next) {
+ProjectService.prototype.acceptApplication = function acceptApplication(options, next) {
   var _this = this;
 
   projectApplicationService.accept(options, function(err, projectApplication) {
@@ -588,6 +581,12 @@ ProjectService.prototype.acceptApplication = function(options, next) {
 
     next(null, projectApplication);
   });
+};
+
+ProjectService.prototype.getApplications = function getApplications(options, next) {
+  var _this = this;
+
+  projectApplicationService.getByProjectId(options, next);
 };
 
 /* =========================================================================

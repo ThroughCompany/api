@@ -170,6 +170,17 @@ Controller.prototype.acceptApplication = function(req, res, next) {
   });
 };
 
+Controller.prototype.getApplications = function(req, res, next) {
+  var projectId = req.params.id;
+
+  projectService.getApplications({
+    projectId: projectId
+  }, function(err, projectApplications) {
+    if (err) return next(err);
+    return res.status(200).json(projectApplications);
+  });
+};
+
 Controller.prototype.createWikiPage = function(req, res, next) {
   var projectId = req.params.id;
   var title = req.body.title;
