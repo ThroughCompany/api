@@ -16,13 +16,15 @@ var userService = require('modules/user');
 var authService = require('modules/auth');
 var adminService = require('modules/admin');
 var skillService = require('modules/skill');
+var projectService = require('modules/project');
 
 var User = require('modules/user/data/model');
 var Auth = require('modules/auth/data/model');
 var Admin = require('modules/admin/data/model');
 var Skill = require('modules/skill/data/model');
+var Project = require('modules/project/data/projectModel');
 
-var USER_EVENTS = require('modules/user/constants/events');
+var PROJECT_EVENTS = require('modules/project/constants/events');
 
 var agent;
 var sandbox;
@@ -38,8 +40,8 @@ before(function(done) {
 });
 
 describe('api', function() {
-  describe('user', function() {
-    describe('POST - /users/{id}/skills', function() {
+  describe('project', function() {
+    describe('POST - /projects/{id}/needs', function() {
       after(function(next) {
         sandbox.restore();
 
@@ -50,7 +52,7 @@ describe('api', function() {
         it('should return a 401', function(done) {
 
           agent
-            .post('/users/123/skills')
+            .post('/projects/123/needs')
             .end(function(err, response) {
               should.not.exist(err);
               should.exist(response);
@@ -114,7 +116,7 @@ describe('api', function() {
         it('should return a 403', function(done) {
 
           agent
-            .post('/users/123/skills')
+            .post('/projects/123/needs')
             .set('x-access-token', auth.token)
             .end(function(err, response) {
               should.not.exist(err);
@@ -131,11 +133,114 @@ describe('api', function() {
         });
       });
 
+      describe('when trying to update a project they aren\'t a member of and is not an admin', function() {
+        var email1 = 'testuser1@test.com';
+        var email2 = 'testuser2@test.com';
+        var password = 'password';
+        var user1 = null;
+        var user2 = null;
+        var auth = null;
+        var project = null;
+
+        before(function(done) {
+          async.series([
+            function createUser1_step(cb) {
+              userService.createUsingCredentials({
+                email: email1,
+                password: password
+              }, function(err, _user) {
+                if (err) return cb(err);
+
+                user1 = _user;
+                cb();
+              });
+            },
+            function createUser2_step(cb) {
+              userService.createUsingCredentials({
+                email: email2,
+                password: password
+              }, function(err, _user) {
+                if (err) return cb(err);
+
+                user2 = _user;
+                cb();
+              });
+            },
+            function authenticateUser_step(cb) {
+              authService.authenticateCredentials({
+                email: email1,
+                password: password
+              }, function(err, _auth) {
+                if (err) return cb(err);
+
+                auth = _auth;
+                cb();
+              });
+            },
+            function createUserProjectStep_step(cb) {
+              projectService.create({
+                createdByUserId: user2._id,
+                name: 'Project 1',
+                shortDescription: 'short desc'
+              }, function(err, _project) {
+                if (err) return cb(err);
+
+                project = _project;
+                cb();
+              });
+            }
+          ], done);
+        });
+
+        after(function(done) {
+          User.remove({
+            email: {
+              $in: [email1, email2]
+            }
+          }, done);
+        });
+
+        after(function(done) {
+          Auth.remove({
+            user: user1._id
+          }, done);
+        });
+
+        after(function(done) {
+          Project.remove({
+            _id: project._id
+          }, done);
+        });
+
+        it('should return a 403', function(done) {
+          agent
+            .post('/projects/' + project._id + '/needs')
+            .set('x-access-token', auth.token)
+            .end(function(err, response) {
+              should.not.exist(err);
+
+              var error = response.body;
+              should.exist(error);
+
+              var status = response.status;
+              status.should.equal(403);
+
+              var errorMessage = testUtils.getServerErrorMessage(response);
+
+              should.exist(errorMessage);
+              errorMessage.should.equal('Access Denied');
+
+              done();
+            });
+        });
+      });
+
       describe('when not all required data is passed', function() {
         var email = 'testuser@test.com';
         var password = 'password';
         var user = null;
         var auth = null;
+        var project = null;
 
         before(function(done) {
           async.series([
@@ -160,6 +265,18 @@ describe('api', function() {
                 auth = _auth;
                 cb();
               });
+            },
+            function createUserProjectStep_step(cb) {
+              projectService.create({
+                createdByUserId: user._id,
+                name: 'Project 1',
+                shortDescription: 'short desc'
+              }, function(err, _project) {
+                if (err) return cb(err);
+
+                project = _project;
+                cb();
+              });
             }
           ], done);
         });
@@ -176,14 +293,18 @@ describe('api', function() {
           }, done);
         });
 
-        it('should return a 500', function(done) {
+        after(function(done) {
+          Project.remove({
+            _id: project._id
+          }, done);
+        });
 
+        it('should return a 400', function(done) {
           agent
-            .post('/users/' + user._id + '/skills')
+            .post('/projects/' + project._id + '/needs')
             .set('x-access-token', auth.token)
             .end(function(err, response) {
               should.not.exist(err);
-              should.exist(response);
 
               var error = response.body;
               should.exist(error);
@@ -205,6 +326,7 @@ describe('api', function() {
         var password = 'password';
         var user = null;
         var auth = null;
+        var project = null;
         var skillName = 'Programmer';
         var skillDescription = 'I am a Programmer';
 
@@ -214,7 +336,7 @@ describe('api', function() {
 
           createSkillSpy = sandbox.spy();
 
-          userService.on(USER_EVENTS.SKILL_USED_BY_USER, createSkillSpy);
+          projectService.on(PROJECT_EVENTS.SKILL_USED_BY_PROJECT, createSkillSpy);
 
           async.series([
             function createUser_step(cb) {
@@ -238,6 +360,18 @@ describe('api', function() {
                 auth = _auth;
                 cb();
               });
+            },
+            function createUserProjectStep_step(cb) {
+              projectService.create({
+                createdByUserId: user._id,
+                name: 'Project 1',
+                shortDescription: 'short desc'
+              }, function(err, _project) {
+                if (err) return cb(err);
+
+                project = _project;
+                cb();
+              });
             }
           ], done);
         });
@@ -255,15 +389,15 @@ describe('api', function() {
         });
 
         after(function(done) {
-          Skill.remove({
-            name: skillName
+          Project.remove({
+            _id: project._id
           }, done);
         });
 
-        it('should return create a new skill and bump the skills user count', function(done) {
 
+        it('should return create a new skill and bump the skills user count', function(done) {
           agent
-            .post('/users/' + user._id + '/skills')
+            .post('/projects/' + project._id + '/needs')
             .set('x-access-token', auth.token)
             .send({
               name: skillName,

@@ -81,18 +81,18 @@ Controller.prototype.updateProjectById = function(req, res, next) {
 /** 
  * @description Create skill
  */
-Controller.prototype.createSkill = function(req, res, next) {
+Controller.prototype.createNeed = function(req, res, next) {
   var projectId = req.params.id;
   var name = req.body.name;
   var description = req.body.description;
 
-  projectService.createSkill({
+  projectService.createNeed({
     projectId: projectId,
     name: name,
     description: description
-  }, function(err, skill) {
+  }, function(err, need) {
     if (err) return next(err);
-    return res.status(201).json(skill);
+    return res.status(201).json(need);
   });
 };
 

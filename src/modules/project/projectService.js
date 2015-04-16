@@ -238,7 +238,7 @@ ProjectService.prototype.update = function(options, next) {
  * @param {object} updates
  * @param {function} next - callback
  */
-ProjectService.prototype.createSkill = function createSkill(options, next) {
+ProjectService.prototype.createNeed = function createNeed(options, next) {
   if (!options) return next(new errors.InvalidArgumentError('options is required'));
   if (!options.projectId) return next(new errors.InvalidArgumentError('Project Id is required'));
   if (!options.name) return next(new errors.InvalidArgumentError('Name is required'));
@@ -246,7 +246,7 @@ ProjectService.prototype.createSkill = function createSkill(options, next) {
   var _this = this;
   var project = null;
   var skill = null;
-  var projectSkill = null;
+  var projectNeed = null;
 
   async.waterfall([
     function findProjectById_step(done) {
@@ -254,26 +254,26 @@ ProjectService.prototype.createSkill = function createSkill(options, next) {
         projectId: options.projectId
       }, done);
     },
-    function findSkill_step(_project, done) {
+    function findNeed_step(_project, done) {
       if (!_project) return done(new errors.InvalidArgumentError('No project exists with the id ' + options.projectId));
 
       project = _project;
 
-      createSkill.getOrCreateByName({
+      skillService.getOrCreateByName({
         name: options.name
       }, done);
     },
-    function addSkillToProject_step(_skill, done) {
+    function addNeedoProject_step(_skill, done) {
       skill = _skill;
 
-      projectSkill = {
+      projectNeed = {
         name: skill.name,
         skill: skill._id,
         slug: skill.slug,
         description: options.description
       };
 
-      project.skills.push(projectSkill);
+      project.needs.push(projectNeed);
 
       project.save(done);
     }
@@ -284,7 +284,7 @@ ProjectService.prototype.createSkill = function createSkill(options, next) {
       skillId: skill._id
     });
 
-    return next(null, projectSkill);
+    return next(null, projectNeed);
   });
 };
 

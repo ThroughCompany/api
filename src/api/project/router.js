@@ -71,17 +71,17 @@ var createProject = {
   }
 };
 
-var createSkill = {
+var createNeed = {
   spec: {
-    path: '/projects/{id}/skills',
-    summary: 'Add project skills',
+    path: '/projects/{id}/needs',
+    summary: 'Add project needs',
     method: 'POST',
     parameters: [
       swagger.params.path('id', 'project\'s id', 'string'),
-      swagger.params.path('name', 'skill name', 'string'),
-      swagger.params.path('description', 'skill description', 'string')
+      swagger.params.body('name', 'need name', 'string'),
+      swagger.params.body('description', 'need description', 'string')
     ],
-    nickname: 'createSkill',
+    nickname: 'createNeed',
     type: 'User',
     produces: ['application/json']
   },
@@ -90,7 +90,7 @@ var createSkill = {
       if (err) return next(err);
       authMiddleware.currentUserProjectIdQueryParamRequired('id')(req, res, function(err) {
         if (err) return next(err);
-        controller.createSkill(req, res, next);
+        controller.createNeed(req, res, next);
       });
     });
   }
@@ -286,7 +286,7 @@ var updateWikiPage = {
 swagger.addGet(getProjects);
 swagger.addGet(getProjectById);
 swagger.addPost(createProject);
-swagger.addPost(createSkill);
+swagger.addPost(createNeed);
 swagger.addPost(uploadImage);
 swagger.addPatch(updateProjectById);
 swagger.addGet(getProjectUsers);

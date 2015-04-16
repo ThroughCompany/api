@@ -80,7 +80,7 @@ var projectSchema = baseSchema.extend({
     type: String,
     ref: 'ProjectApplication'
   }],
-  skills: [{
+  needs: [{
     _id: false,
     skill: {
       type: String,
