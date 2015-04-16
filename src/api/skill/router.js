@@ -13,18 +13,18 @@ var controller = require('./controller');
 /* =========================================================================
  * Swagger specs
  * ========================================================================= */
-var getAssetTags = {
+var getSkills = {
   spec: {
-    path: '/assettags',
-    summary: 'Get a list of asset tags',
+    path: '/skills',
+    summary: 'Get a list of skills',
     method: 'GET',
     parameters: [
-      swagger.params.query('name', 'asset tag name', 'string'),
+      swagger.params.query('name', 'skill name', 'string'),
       swagger.params.query('fields', 'csv of fields to select', 'string'),
       swagger.params.query('take', 'number of results to take', 'int')
     ],
-    nickname: 'getAssetTags',
-    type: 'Asset-Tags',
+    nickname: 'getSkills',
+    type: 'Skill',
     produces: ['application/json']
   },
   action: function(req, res, next) {
@@ -38,12 +38,12 @@ var getAssetTags = {
   }
 };
 
-swagger.addGet(getAssetTags);
+swagger.addGet(getSkills);
 /* =========================================================================
  *   Swagger declarations
  * ========================================================================= */
 
-swagger.configureDeclaration('asset-tags', {
-  description: 'Operations for asset tags',
+swagger.configureDeclaration('skills', {
+  description: 'Operations for skills',
   produces: ['application/json']
 });

@@ -24,12 +24,12 @@ var userEvents = {
 };
 
 //user event 1
-var assetTagUsedByUserEvent = {
-  name: USER_EVENTS.ASSET_TAG_USED_BY_USER,
+var skillUsedByUserEvent = {
+  name: USER_EVENTS.SKILL_USED_BY_USER,
   handlers: []
 };
-assetTagUsedByUserEvent.handlers.push(require('./handlers/user/assetTagUsedByUser'));
-userEvents.events.push(assetTagUsedByUserEvent);
+skillUsedByUserEvent.handlers.push(require('./handlers/user/skillUsedByUser'));
+userEvents.events.push(skillUsedByUserEvent);
 
 EVENTS.push(userEvents);
 
@@ -42,12 +42,12 @@ var projectEvents = {
 };
 
 //project event 1
-var assetTagUsedByProjectEvent = {
-  name: PROJECT_EVENTS.ASSET_TAG_USED_BY_PROJECT,
+var skillUsedByProjectEvent = {
+  name: PROJECT_EVENTS.SKILL_USED_BY_PROJECT,
   handlers: []
 };
-assetTagUsedByProjectEvent.handlers.push(require('./handlers/project/assetTagUsedByProject'));
-projectEvents.events.push(assetTagUsedByProjectEvent);
+skillUsedByProjectEvent.handlers.push(require('./handlers/project/skillUsedByProject'));
+projectEvents.events.push(skillUsedByProjectEvent);
 
 //project event 2
 var applicationCreated = {

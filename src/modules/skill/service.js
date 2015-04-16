@@ -10,7 +10,7 @@ var errors = require('modules/error');
 var CommonService = require('modules/common');
 
 //models
-var AssetTag = require('./data/model');
+var Skill = require('./data/model');
 
 /* =========================================================================
  * Constants
@@ -21,29 +21,29 @@ var MAX_TAKE = 200;
 /* =========================================================================
  * Constructor
  * ========================================================================= */
-var AssetTagService = function() {
-  CommonService.call(this, AssetTag);
+var SkillsService = function() {
+  CommonService.call(this, Skill);
 };
-util.inherits(AssetTagService, CommonService);
+util.inherits(SkillsService, CommonService);
 
 /**
  * @param {object} options
  * @param {string} name
  * @param {function} next - callback
  */
-AssetTagService.prototype.getByName = function(options, next) {
+SkillsService.prototype.getByName = function(options, next) {
   if (!options) return next(new errors.InvalidArgumentError('options is required'));
   if (!options.name) return next(new errors.InvalidArgumentError('Name is required'));
 
-  var query = AssetTag.findOne({
+  var query = Skill.findOne({
     name: options.name
   });
 
-  query.exec(function(err, assetTag) {
+  query.exec(function(err, skill) {
     if (err) return next(err);
-    if (!assetTag) return next(new errors.ObjectNotFoundError('Asset Tag not found'));
+    if (!skill) return next(new errors.ObjectNotFoundError('Skill not found'));
 
-    next(null, assetTag);
+    next(null, skill);
   });
 };
 
@@ -54,7 +54,7 @@ AssetTagService.prototype.getByName = function(options, next) {
  * @param {object} [options.take]
  * @param {function} next - callback
  */
-AssetTagService.prototype.getAll = function(options, next) {
+SkillsService.prototype.getAll = function(options, next) {
   if (!options) return next(new errors.InvalidArgumentError('options is required'));
 
   var conditions = {};
@@ -67,7 +67,7 @@ AssetTagService.prototype.getAll = function(options, next) {
     };
   }
 
-  var query = AssetTag.find(conditions);
+  var query = Skill.find(conditions);
 
   if (options.select) {
     query.select(options.select);
@@ -77,10 +77,33 @@ AssetTagService.prototype.getAll = function(options, next) {
 
   query.sort('projectUseCount');
 
-  query.exec(function(err, assetTags) {
+  query.exec(function(err, skills) {
     if (err) return next(err);
 
-    next(null, assetTags);
+    next(null, skills);
+  });
+};
+
+/**
+ * @param {object} options
+ * @param {object} [options.name]
+ * @param {object} [options.select]
+ * @param {object} [options.take]
+ * @param {function} next - callback
+ */
+SkillsService.prototype.getById = function(options, next) {
+  if (!options) return next(new errors.InvalidArgumentError('options is required'));
+  if (!options.skillId) return next(new errors.InvalidArgumentError('Skill Id is required'));
+
+  var query = Skill.findOne({
+    _id: options.skillId
+  });
+
+  query.exec(function(err, skill) {
+    if (err) return next(err);
+    if (!skill) return next(new errors.ObjectNotFoundError('Skill not found'));
+
+    next(null, skill);
   });
 };
 
@@ -89,7 +112,7 @@ AssetTagService.prototype.getAll = function(options, next) {
  * @param {string} options.name
  * @param {function} next - callback
  */
-AssetTagService.prototype.getOrCreateByName = function getOrCreateByName(options, next) {
+SkillsService.prototype.getOrCreateByName = function getOrCreateByName(options, next) {
   if (!options) return next(new errors.InvalidArgumentError('options is required'));
   if (!options.name) return next(new errors.InvalidArgumentError('Name is required'));
 
@@ -99,27 +122,27 @@ AssetTagService.prototype.getOrCreateByName = function getOrCreateByName(options
 
   async.waterfall([
     function verifyTagIsUnique_step(done) {
-      var query = AssetTag.findOne({
+      var query = Skill.findOne({
         slug: slug
       });
 
-      query.exec(function(err, assetTag) {
+      query.exec(function(err, skill) {
         if (err) return done(err);
 
-        done(null, assetTag);
+        done(null, skill);
       });
     },
-    function createAssetTag_step(assetTag, done) {
-      if (assetTag) return done(null, assetTag);
+    function createSkill_step(skill, done) {
+      if (skill) return done(null, skill);
 
-      var assetTag = new AssetTag();
-      assetTag.name = options.name;
-      assetTag.slug = slug;
+      var skill = new Skill();
+      skill.name = options.name;
+      skill.slug = slug;
 
-      assetTag.save(done);
+      skill.save(done);
     }
-  ], function(err, assetTag) {
-    next(err, assetTag);
+  ], function(err, skill) {
+    next(err, skill);
   });
 };
 
@@ -128,23 +151,21 @@ AssetTagService.prototype.getOrCreateByName = function getOrCreateByName(options
  * @param {string} options.name
  * @param {function} next - callback
  */
-AssetTagService.prototype.updateTagUserUseCount = function updateTagUserUseCount(options, next) {
+SkillsService.prototype.updateSkillUserUseCount = function updateSkillUserUseCount(options, next) {
   if (!options) return next(new errors.InvalidArgumentError('options is required'));
-  if (!options.name) return next(new errors.InvalidArgumentError('Name is required'));
+  if (!options.skillId) return next(new errors.InvalidArgumentError('Skill Id is required'));
 
   var _this = this;
 
-  var slug = generateSlug(options.name);
-
   async.waterfall([
-    function findTagByName_step(done) {
-      _this.getByName({
-        name: options.name
+    function findTagById_step(done) {
+      _this.getById({
+        skillId: options.skillId
       }, done);
     },
-    function updateAssetTag_step(assetTag, done) {
-      assetTag.userUseCount = assetTag.userUseCount + 1;
-      assetTag.save(done);
+    function updateSkill_step(skill, done) {
+      skill.userUseCount = skill.userUseCount + 1;
+      skill.save(done);
     }
   ], next);
 };
@@ -154,23 +175,21 @@ AssetTagService.prototype.updateTagUserUseCount = function updateTagUserUseCount
  * @param {string} options.name
  * @param {function} next - callback
  */
-AssetTagService.prototype.updateTagProjectUseCount = function updateTagProjectUseCount(options, next) {
+SkillsService.prototype.updateSkillProjectUseCount = function updateSkillProjectUseCount(options, next) {
   if (!options) return next(new errors.InvalidArgumentError('options is required'));
-  if (!options.name) return next(new errors.InvalidArgumentError('Name is required'));
+  if (!options.skillId) return next(new errors.InvalidArgumentError('Skill Id is required'));
 
   var _this = this;
 
-  var slug = generateSlug(options.name);
-
   async.waterfall([
-    function findTagByName_step(done) {
-      _this.getByName({
-        name: options.name
+    function findTagById_step(done) {
+      _this.getById({
+        skillId: options.skillId
       }, done);
     },
-    function updateAssetTag_step(assetTag, done) {
-      assetTag.projectUseCount = assetTag.projectUseCount + 1;
-      assetTag.save(done);
+    function updateSkill_step(skill, done) {
+      skill.projectUseCount = skill.projectUseCount + 1;
+      skill.save(done);
     }
   ], next);
 };
@@ -184,4 +203,4 @@ function generateSlug(name) {
 /* =========================================================================
  * Export
  * ========================================================================= */
-module.exports = new AssetTagService();
+module.exports = new SkillsService();

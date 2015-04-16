@@ -10,7 +10,7 @@ var jsonPatch = require('fast-json-patch');
 var errors = require('modules/error');
 var CommonService = require('modules/common');
 var imageService = require('modules/image');
-var assetTagService = require('modules/assetTag');
+var skillService = require('modules/skill');
 var logger = require('modules/logger');
 
 //models
@@ -236,14 +236,15 @@ UserService.prototype.update = function update(options, next) {
  * @param {object} updates
  * @param {function} next - callback
  */
-UserService.prototype.createAssetTag = function createAssetTag(options, next) {
+UserService.prototype.createSkill = function createSkill(options, next) {
   if (!options) return next(new errors.InvalidArgumentError('options is required'));
   if (!options.userId) return next(new errors.InvalidArgumentError('User Id is required'));
   if (!options.name) return next(new errors.InvalidArgumentError('Name is required'));
 
   var _this = this;
   var user = null;
-  var assetTag = null;
+  var skill = null;
+  var userSkill = null;
 
   async.waterfall([
     function findUserById_step(done) {
@@ -251,41 +252,44 @@ UserService.prototype.createAssetTag = function createAssetTag(options, next) {
         userId: options.userId
       }, done);
     },
-    function findAssetTag_step(_user, done) {
+    function findSkill_step(_user, done) {
       if (!_user) return done(new errors.InvalidArgumentError('No user exists with the id ' + options.userId));
 
       user = _user;
 
-      assetTagService.getOrCreateByName({
+      skillService.getOrCreateByName({
         name: options.name
       }, done);
     },
-    function addTagToUser_step(_assetTag, done) {
+    function addSkillToUser_step(_skill, done) {
 
-      var existingAssetTag = _.find(user.assetTags, function(assetTag) {
-        return assetTag.slug === _assetTag.slug;
+      var existingSkill = _.find(user.skills, function(skill) {
+        return skill.slug === _skill.slug;
       });
 
-      if (existingAssetTag) return done(new errors.InvalidArgumentError(options.name + ' tag already exists. Cannot have duplicate tags'));
+      if (existingSkill) return done(new errors.InvalidArgumentError(options.name + ' skill already exists. Cannot have duplicate skills'));
 
-      assetTag = _assetTag;
+      skill = _skill;
 
-      user.assetTags.push({
-        name: assetTag.name,
-        slug: assetTag.slug,
+      userSkill = {
+        name: skill.name,
+        skill: skill._id,
+        slug: skill.slug,
         description: options.description
-      });
+      };
+
+      user.skills.push(userSkill);
 
       user.save(done);
     }
   ], function finish(err, user) {
     if (err) return next(err);
 
-    _this.emit(EVENTS.ASSET_TAG_USED_BY_USER, {
-      assetTagName: assetTag.name
+    _this.emit(EVENTS.SKILL_USED_BY_USER, {
+      skillId: skill._id
     });
 
-    return next(null, assetTag);
+    return next(null, userSkill);
   });
 };
 

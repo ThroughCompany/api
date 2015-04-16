@@ -141,18 +141,18 @@ Controller.prototype.uploadImage = function(req, res, next) {
 /** 
  * @description Create asset tag
  */
-Controller.prototype.createAssetTag = function(req, res, next) {
+Controller.prototype.createSkill = function(req, res, next) {
   var userId = req.params.id;
   var name = req.body.name;
   var description = req.body.description;
 
-  userService.createAssetTag({
+  userService.createSkill({
     userId: userId,
     name: name,
     description: description
-  }, function(err, assetTag) {
+  }, function(err, skill) {
     if (err) return next(err);
-    return res.status(201).json(assetTag);
+    return res.status(201).json(skill);
   });
 };
 

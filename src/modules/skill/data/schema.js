@@ -12,7 +12,7 @@ var baseSchema = require('modules/common/data/base-schema');
 /* =========================================================================
  * Schema
  * ========================================================================= */
-var assetTagSchema = baseSchema.extend({
+var skillSchema = baseSchema.extend({
   name: {
     type: String,
     trim: true,
@@ -48,7 +48,7 @@ var assetTagSchema = baseSchema.extend({
 /* =========================================================================
  * Statics
  * ========================================================================= */
-_.extend(assetTagSchema.statics, {});
+_.extend(skillSchema.statics, {});
 
 /* =========================================================================
  * Private Helpers
@@ -57,4 +57,4 @@ _.extend(assetTagSchema.statics, {});
 /* =========================================================================
  * Exports
  * ========================================================================= */
-module.exports = assetTagSchema;
+module.exports = skillSchema;

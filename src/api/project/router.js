@@ -71,16 +71,17 @@ var createProject = {
   }
 };
 
-var createAssetTag = {
+var createSkill = {
   spec: {
-    path: '/projects/{id}/assettags',
-    summary: 'Add project asset tag',
+    path: '/projects/{id}/skills',
+    summary: 'Add project skills',
     method: 'POST',
     parameters: [
       swagger.params.path('id', 'project\'s id', 'string'),
-      swagger.params.body('tags', 'asset tag', 'string')
+      swagger.params.path('name', 'skill name', 'string'),
+      swagger.params.path('description', 'skill description', 'string')
     ],
-    nickname: 'createAssetTag',
+    nickname: 'createSkill',
     type: 'User',
     produces: ['application/json']
   },
@@ -89,7 +90,7 @@ var createAssetTag = {
       if (err) return next(err);
       authMiddleware.currentUserProjectIdQueryParamRequired('id')(req, res, function(err) {
         if (err) return next(err);
-        controller.createAssetTag(req, res, next);
+        controller.createSkill(req, res, next);
       });
     });
   }
@@ -285,7 +286,7 @@ var updateWikiPage = {
 swagger.addGet(getProjects);
 swagger.addGet(getProjectById);
 swagger.addPost(createProject);
-swagger.addPost(createAssetTag);
+swagger.addPost(createSkill);
 swagger.addPost(uploadImage);
 swagger.addPatch(updateProjectById);
 swagger.addGet(getProjectUsers);

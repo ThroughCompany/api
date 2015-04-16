@@ -11,7 +11,7 @@ var errors = require('modules/error');
 var CommonService = require('modules/common');
 var userService = require('modules/user');
 var permissionService = require('modules/permission');
-var assetTagService = require('modules/assetTag');
+var skillService = require('modules/skill');
 var imageService = require('modules/image');
 var projectPopulateService = require('./populate/service');
 var projectApplicationService = require('./applicationService');
@@ -238,14 +238,15 @@ ProjectService.prototype.update = function(options, next) {
  * @param {object} updates
  * @param {function} next - callback
  */
-ProjectService.prototype.createAssetTag = function createAssetTag(options, next) {
+ProjectService.prototype.createSkill = function createSkill(options, next) {
   if (!options) return next(new errors.InvalidArgumentError('options is required'));
   if (!options.projectId) return next(new errors.InvalidArgumentError('Project Id is required'));
   if (!options.name) return next(new errors.InvalidArgumentError('Name is required'));
 
   var _this = this;
   var project = null;
-  var assetTag = null;
+  var skill = null;
+  var projectSkill = null;
 
   async.waterfall([
     function findProjectById_step(done) {
@@ -253,34 +254,37 @@ ProjectService.prototype.createAssetTag = function createAssetTag(options, next)
         projectId: options.projectId
       }, done);
     },
-    function findAssetTag_step(_project, done) {
+    function findSkill_step(_project, done) {
       if (!_project) return done(new errors.InvalidArgumentError('No project exists with the id ' + options.projectId));
 
       project = _project;
 
-      assetTagService.getOrCreateByName({
+      createSkill.getOrCreateByName({
         name: options.name
       }, done);
     },
-    function addTagToProject_step(_assetTag, done) {
-      assetTag = _assetTag;
+    function addSkillToProject_step(_skill, done) {
+      skill = _skill;
 
-      project.assetTags.push({
-        name: assetTag.name,
-        slug: assetTag.slug,
+      projectSkill = {
+        name: skill.name,
+        skill: skill._id,
+        slug: skill.slug,
         description: options.description
-      });
+      };
+
+      project.skills.push(projectSkill);
 
       project.save(done);
     }
   ], function finish(err, project) {
     if (err) return next(err);
 
-    _this.emit(EVENTS.ASSET_TAG_USED_BY_PROJECT, {
-      assetTagName: assetTag.name
+    _this.emit(EVENTS.SKILL_USED_BY_PROJECT, {
+      skillId: skill._id
     });
 
-    return next(null, assetTag);
+    return next(null, projectSkill);
   });
 };
 

@@ -4,7 +4,7 @@
 var async = require('async');
 
 //services
-var assetTagService = require('modules/assetTag');
+var skillService = require('modules/skill');
 
 /* =========================================================================
  * Controller
@@ -20,13 +20,13 @@ Controller.prototype.getAll = function getAll(req, res, next) {
   var expands = req.expands;
   var take = req.query.take;
 
-  assetTagService.getAll({
+  skillService.getAll({
     name: name,
     select: select,
     take: take
-  }, function(err, assetTags) {
+  }, function(err, skills) {
     if (err) return next(err);
-    return res.status(200).json(assetTags);
+    return res.status(200).json(skills);
   });
 };
 

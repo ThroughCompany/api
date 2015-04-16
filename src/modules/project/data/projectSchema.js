@@ -80,8 +80,13 @@ var projectSchema = baseSchema.extend({
     type: String,
     ref: 'ProjectApplication'
   }],
-  assetTags: [{
+  skills: [{
     _id: false,
+    skill: {
+      type: String,
+      ref: 'Skill',
+      required: true
+    },
     name: {
       type: String,
       trim: true,

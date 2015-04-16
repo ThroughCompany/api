@@ -463,7 +463,7 @@ describe('api', function() {
           projectClone.projectApplications = [{
             bar: 1
           }];
-          projectClone.assetTags = [{
+          projectClone.skills = [{
             bar: 1
           }];
           projectClone.profilePic = '1111';
@@ -493,7 +493,7 @@ describe('api', function() {
                 utils.arraysAreEqual(foundProject.wiki, project.wiki).should.equal(true);
                 utils.arraysAreEqual(foundProject.projectUsers, project.projectUsers).should.equal(true);
                 utils.arraysAreEqual(foundProject.projectApplications, project.projectApplications).should.equal(true);
-                utils.arraysAreEqual(foundProject.assetTags, project.assetTags).should.equal(true);
+                utils.arraysAreEqual(foundProject.skills, project.skills).should.equal(true);
                 foundProject.profilePic.should.equal(project.profilePic);
 
                 done();

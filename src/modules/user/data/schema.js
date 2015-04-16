@@ -99,8 +99,13 @@ var userSchema = baseSchema.extend({
       required: true
     }
   }],
-  assetTags: [{
+  skills: [{
     _id: false,
+    skill: {
+      type: String,
+      ref: 'Skill',
+      required: true
+    },
     name: {
       type: String,
       trim: true,

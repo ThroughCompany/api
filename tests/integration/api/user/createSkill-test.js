@@ -15,12 +15,12 @@ var testUtils = require('tests/lib/test-utils');
 var userService = require('modules/user');
 var authService = require('modules/auth');
 var adminService = require('modules/admin');
-var assetTagService = require('modules/assetTag');
+var skillService = require('modules/skill');
 
 var User = require('modules/user/data/model');
 var Auth = require('modules/auth/data/model');
 var Admin = require('modules/admin/data/model');
-var AssetTag = require('modules/assetTag/data/model');
+var Skill = require('modules/skill/data/model');
 
 var USER_EVENTS = require('modules/user/constants/events');
 
@@ -39,7 +39,7 @@ before(function(done) {
 
 describe('api', function() {
   describe('user', function() {
-    describe('POST - /users/{id}/assettags', function() {
+    describe('POST - /users/{id}/skills', function() {
       after(function(next) {
         sandbox.restore();
 
@@ -50,7 +50,7 @@ describe('api', function() {
         it('should return a 401', function(done) {
 
           agent
-            .post('/users/123/assettags')
+            .post('/users/123/skills')
             .end(function(err, response) {
               should.not.exist(err);
               should.exist(response);
@@ -114,7 +114,7 @@ describe('api', function() {
         it('should return a 403', function(done) {
 
           agent
-            .post('/users/123/assettags')
+            .post('/users/123/skills')
             .set('x-access-token', auth.token)
             .end(function(err, response) {
               should.not.exist(err);
@@ -179,7 +179,7 @@ describe('api', function() {
         it('should return a 500', function(done) {
 
           agent
-            .post('/users/' + user._id + '/assettags')
+            .post('/users/' + user._id + '/skills')
             .set('x-access-token', auth.token)
             .end(function(err, response) {
               should.not.exist(err);
@@ -205,15 +205,16 @@ describe('api', function() {
         var password = 'password';
         var user = null;
         var auth = null;
-        var tagName = 'Programmer';
+        var skillName = 'Programmer';
+        var skillDescription = 'I am a Programmer';
 
-        var createAssetTagSpy;
+        var createSkillSpy;
 
         before(function(done) {
 
-          createAssetTagSpy = sandbox.spy();
+          createSkillSpy = sandbox.spy();
 
-          userService.on(USER_EVENTS.ASSET_TAG_USED_BY_USER, createAssetTagSpy);
+          userService.on(USER_EVENTS.SKILL_USED_BY_USER, createSkillSpy);
 
           async.series([
             function createUser_step(cb) {
@@ -254,19 +255,19 @@ describe('api', function() {
         });
 
         after(function(done) {
-          AssetTag.remove({
-            name: tagName
+          Skill.remove({
+            name: skillName
           }, done);
         });
 
-        it('should return create a new asset tag and bump the tags user count', function(done) {
+        it('should return create a new skill and bump the skills user count', function(done) {
 
           agent
-            .post('/users/' + user._id + '/assettags')
+            .post('/users/' + user._id + '/skills')
             .set('x-access-token', auth.token)
             .send({
-              name: tagName,
-              description: 'I am a Programmer'
+              name: skillName,
+              description: skillDescription
             })
             .end(function(err, response) {
               should.not.exist(err);
@@ -275,12 +276,13 @@ describe('api', function() {
               var status = response.status;
               status.should.equal(201);
 
-              var assetTag = response.body;
-              should.exist(assetTag);
+              var skill = response.body;
+              should.exist(skill);
 
-              assetTag.name.should.equal(tagName);
+              skill.name.should.equal(skillName);
+              skill.description.should.equal(skillDescription);
 
-              createAssetTagSpy.callCount.should.equal(1);
+              createSkillSpy.callCount.should.equal(1);
 
               done();
             });

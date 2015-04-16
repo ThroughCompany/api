@@ -3,7 +3,7 @@
  * ========================================================================= */
 var mongoose = require('mongoose');
 
-var assetTagSchema = require('./schema');
+var skillSchema = require('./schema');
 
 /* =========================================================================
  * Private Helpers
@@ -12,4 +12,4 @@ var assetTagSchema = require('./schema');
 /* =========================================================================
  * Exports
  * ========================================================================= */
-module.exports = mongoose.model('AssetTag', assetTagSchema);
+module.exports = mongoose.model('Skill', skillSchema);

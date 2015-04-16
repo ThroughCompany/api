@@ -9,17 +9,17 @@ var async = require('async');
 var errors = require('modules/error');
 
 //services
-var assetTagService = require('modules/assetTag');
+var skillService = require('modules/skill');
 
 /* =========================================================================
  * Event Handler
  * ========================================================================= */
 function eventHandler(options, next) {
   if (!options) return next(new errors.InvalidArgumentError('options is required'));
-  if (!options.assetTagName) return next(new errors.InvalidArgumentError('options.assetTagName is required'));
+  if (!options.skillId) return next(new errors.InvalidArgumentError('options.skillId is required'));
 
-  assetTagService.updateTagProjectUseCount({
-    name: options.assetTagName
+  skillService.updateSkillProjectUseCount({
+    skillId: options.skillId
   }, next);
 }
 
