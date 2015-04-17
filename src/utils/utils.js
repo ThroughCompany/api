@@ -34,6 +34,16 @@ Utils.prototype.arraysAreEqual = function arraysAreEqual(array1, array2) {
   return true;
 };
 
+Utils.prototype.arrayClean = function arrayClean(array1) {
+  for (var i = 0; i < array1.length; i++) {
+    if (array1[i] == undefined || array1[i] == null || array1[i] == "") {
+      array1.splice(i, 1);
+      i--;
+    }
+  }
+  return array1;
+};
+
 Utils.prototype.getServerErrorMessage = function getServerErrorMessage(response) {
   if (!response || !response.body) return null;
   if (!response.body.errors || !response.body.errors.length) return null;

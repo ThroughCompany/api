@@ -23,8 +23,10 @@ var Auth = require('modules/auth/data/model');
 var Admin = require('modules/admin/data/model');
 var Skill = require('modules/skill/data/model');
 var Project = require('modules/project/data/projectModel');
+var ProjectNeed = require('modules/project/data/needModel');
 
 var PROJECT_EVENTS = require('modules/project/constants/events');
+var NEED_EMPLOYMENT_TYPES = require('modules/project/constants/needEmploymentTypes');
 
 var agent;
 var sandbox;
@@ -327,8 +329,9 @@ describe('api', function() {
         var user = null;
         var auth = null;
         var project = null;
-        var skillName = 'Programmer';
-        var skillDescription = 'I am a Programmer';
+        var needName = 'Node JS Programmer';
+        var needDescription = 'We need an awesome Node JS programmer';
+        var needSkills = ['Programmer', 'Node JS'];
 
         var createSkillSpy;
 
@@ -394,14 +397,20 @@ describe('api', function() {
           }, done);
         });
 
+        after(function(done) {
+          ProjectNeed.remove({
+            project: project._id
+          }, done);
+        });
 
-        it('should return create a new skill and bump the skills user count', function(done) {
+        it('should create a new need and bump the skills user count', function(done) {
           agent
             .post('/projects/' + project._id + '/needs')
             .set('x-access-token', auth.token)
             .send({
-              name: skillName,
-              description: skillDescription
+              name: needName,
+              description: needDescription,
+              skills: needSkills
             })
             .end(function(err, response) {
               should.not.exist(err);
@@ -410,16 +419,75 @@ describe('api', function() {
               var status = response.status;
               status.should.equal(201);
 
-              var skill = response.body;
-              should.exist(skill);
+              var projectNeed = response.body;
+              should.exist(projectNeed);
 
-              skill.name.should.equal(skillName);
-              skill.description.should.equal(skillDescription);
+              projectNeed.name.should.equal(needName);
+              projectNeed.description.should.equal(needDescription);
 
-              createSkillSpy.callCount.should.equal(1);
+              createSkillSpy.callCount.should.equal(needSkills.length);
 
               done();
             });
+        });
+
+        describe('when no employmentType is passed', function() {
+          it('should create a new need and have a employmentType of VOLUNTEER', function(done) {
+            agent
+              .post('/projects/' + project._id + '/needs')
+              .set('x-access-token', auth.token)
+              .send({
+                name: needName,
+                description: needDescription,
+                skills: needSkills
+              })
+              .end(function(err, response) {
+                should.not.exist(err);
+                should.exist(response);
+
+                var status = response.status;
+                status.should.equal(201);
+
+                var projectNeed = response.body;
+
+                should.exist(projectNeed);
+
+                projectNeed.employmentType.should.equal(NEED_EMPLOYMENT_TYPES.VOLUNTEER);
+
+                done();
+              });
+          });
+        });
+
+        describe('when employmentType=FULLTIME is passed', function() {
+          it('should create a new need and have a employmentType of FULLTIME', function(done) {
+            agent
+              .post('/projects/' + project._id + '/needs')
+              .set('x-access-token', auth.token)
+              .send({
+                name: needName,
+                description: needDescription,
+                employmentType: NEED_EMPLOYMENT_TYPES.FULLTIME,
+                skills: needSkills
+              })
+              .end(function(err, response) {
+                should.not.exist(err);
+                should.exist(response);
+
+                var status = response.status;
+                status.should.equal(201);
+
+                var projectNeed = response.body;
+
+                console.log(projectNeed);
+
+                should.exist(projectNeed);
+
+                projectNeed.employmentType.should.equal(NEED_EMPLOYMENT_TYPES.FULLTIME);
+
+                done();
+              });
+          });
         });
       });
     });

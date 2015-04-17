@@ -12,86 +12,81 @@ var utils = require('utils/utils');
  * Constants
  * ========================================================================= */
 var LINK_TYPES = require('modules/common/constants/linkTypes');
+var NEED_EMPLOYMENT_TYPES = require('modules/project/constants/needEmploymentTypes');
+var DURATION_AMOUNTS = require('modules/project/constants/durationAmounts');
 
 /* =========================================================================
  * Schema
  * ========================================================================= */
-var projectSchema = baseSchema.extend({
+var needSchema = baseSchema.extend({
+  project: {
+    type: String,
+    ref: 'Project',
+    required: true
+  },
+  employmentType: {
+    type: String,
+    trim: true,
+    required: true,
+    enum: _.keys(NEED_EMPLOYMENT_TYPES),
+    default: NEED_EMPLOYMENT_TYPES.VOLUNTEER
+  },
+  duration: {
+    startDate: {
+      type: Date
+    },
+    endDate: {
+      type: Date
+    },
+  },
+  timeCommitment: {},
+  // duration: {
+  //   min: {
+  //     type: Number,
+  //     required: true
+  //   },
+  //   minAmount: {
+  //     type: String,
+  //     required: true,
+  //     enum: _.values(DURATION_AMOUNTS)
+  //   },
+  //   max: {
+  //     type: Number
+  //   },
+  //   maxAmount: {
+  //     type: String,
+  //     enum: _.values(DURATION_AMOUNTS)
+  //   }
+  // },
+  skills: [{
+    type: String,
+    ref: 'Skill',
+    required: true
+  }],
   name: {
     type: String,
     trim: true,
     required: true
   },
-  slug: {
-    type: String,
-    trim: true,
-    required: true,
-    index: {
-      unique: true
-    }
-  },
   description: {
     type: String,
     trim: true
-  },
-  wiki: {
-    pages: [wikiPageSchema]
-  },
-  profilePic: {
-    type: String,
-    trim: true
-  },
-  bannerPic: {
-    type: String,
-    trim: true
-  },
-  location: {
-    type: String,
-    trim: true
-  },
-  socialLinks: [{
-    _id: {
-      type: String,
-      default: utils.guid,
-      required: true
-    },
-    type: {
-      type: String,
-      trim: true,
-      required: true,
-      enum: _.values(LINK_TYPES)
-    },
-    name: {
-      type: String,
-      trim: true,
-      required: true,
-    },
-    link: {
-      type: String,
-      trim: true,
-      required: true
-    }
-  }],
-  projectUsers: [{
-    type: String,
-    ref: 'ProjectUser'
-  }],
-  projectApplications: [{
-    type: String,
-    ref: 'ProjectApplication'
-  }],
-  projectNeeds: [{
-    type: String,
-    ref: 'ProjectNeed'
-  }]
+  }
+  // criteria: [{
+  //   description: {
+  //     type: String,
+  //     trim: true,
+  //     required: true
+  //   }
+  // }]
 }, {
-  collection: 'projects'
+  collection: 'projectneeds'
 });
 
 /* =========================================================================
  * Statics
  * ========================================================================= */
-_.extend(projectSchema.statics, {});
+_.extend(needSchema.statics, {});
 
 /* =========================================================================
  * Private Helpers
@@ -100,4 +95,4 @@ _.extend(projectSchema.statics, {});
 /* =========================================================================
  * Exports
  * ========================================================================= */
-module.exports = projectSchema;
+module.exports = needSchema;

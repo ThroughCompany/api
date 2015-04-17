@@ -85,11 +85,15 @@ Controller.prototype.createNeed = function(req, res, next) {
   var projectId = req.params.id;
   var name = req.body.name;
   var description = req.body.description;
+  var employmentType = req.body.employmentType;
+  var skills = req.body.skills;
 
   projectService.createNeed({
     projectId: projectId,
     name: name,
-    description: description
+    description: description,
+    employmentType: employmentType,
+    skills: skills
   }, function(err, need) {
     if (err) return next(err);
     return res.status(201).json(need);

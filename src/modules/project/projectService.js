@@ -15,15 +15,18 @@ var skillService = require('modules/skill');
 var imageService = require('modules/image');
 var projectPopulateService = require('./populate/service');
 var projectApplicationService = require('./applicationService');
+var projectNeedService = require('./needService');
 var projectUserService = require('./userService');
 
 //models
 var User = require('modules/user/data/model');
 var Project = require('./data/projectModel');
 var ProjectUser = require('modules/project/data/userModel');
+var ProjectNeed = require('modules/project/data/needModel');
 
 //utils
 var patchUtils = require('utils/patchUtils');
+var utils = require('utils/utils');
 
 var projectValidator = require('./validators/projectValidator');
 
@@ -228,63 +231,6 @@ ProjectService.prototype.update = function(options, next) {
     }
   ], function finish(err, results) {
     return next(err, project); //don't remove, callback needed because mongoose save returns 3rd arg
-  });
-};
-
-/**
- * @param {object} options
- * @param {string} projectId
- * @param {string} name
- * @param {object} updates
- * @param {function} next - callback
- */
-ProjectService.prototype.createNeed = function createNeed(options, next) {
-  if (!options) return next(new errors.InvalidArgumentError('options is required'));
-  if (!options.projectId) return next(new errors.InvalidArgumentError('Project Id is required'));
-  if (!options.name) return next(new errors.InvalidArgumentError('Name is required'));
-
-  var _this = this;
-  var project = null;
-  var skill = null;
-  var projectNeed = null;
-
-  async.waterfall([
-    function findProjectById_step(done) {
-      _this.getById({
-        projectId: options.projectId
-      }, done);
-    },
-    function findNeed_step(_project, done) {
-      if (!_project) return done(new errors.InvalidArgumentError('No project exists with the id ' + options.projectId));
-
-      project = _project;
-
-      skillService.getOrCreateByName({
-        name: options.name
-      }, done);
-    },
-    function addNeedoProject_step(_skill, done) {
-      skill = _skill;
-
-      projectNeed = {
-        name: skill.name,
-        skill: skill._id,
-        slug: skill.slug,
-        description: options.description
-      };
-
-      project.needs.push(projectNeed);
-
-      project.save(done);
-    }
-  ], function finish(err, project) {
-    if (err) return next(err);
-
-    _this.emit(EVENTS.SKILL_USED_BY_PROJECT, {
-      skillId: skill._id
-    });
-
-    return next(null, projectNeed);
   });
 };
 
@@ -552,6 +498,34 @@ ProjectService.prototype.uploadImage = function(options, next) {
 };
 
 /* =========================================================================
+ * Project Needs
+ * ========================================================================= */
+/**
+ * @param {object} options
+ * @param {string} projectId
+ * @param {string} name
+ * @param {object} updates
+ * @param {function} next - callback
+ */
+ProjectService.prototype.createNeed = function createNeed(options, next) {
+  var _this = this;
+
+  projectNeedService.create(options, function(err, projectNeed) {
+    if (err) return next(err);
+
+    console.log(projectNeed);
+
+    _.each(projectNeed.skills, function(skill) {
+      _this.emit(EVENTS.SKILL_USED_BY_PROJECT, {
+        skillId: skill
+      });
+    });
+
+    return next(null, projectNeed);
+  });
+};
+
+/* =========================================================================
  * Project Applications
  * ========================================================================= */
 ProjectService.prototype.createApplication = function createApplication(options, next) {
@@ -566,7 +540,7 @@ ProjectService.prototype.createApplication = function createApplication(options,
       userId: projectApplication.user
     });
 
-    next(null, projectApplication);
+    return next(null, projectApplication);
   });
 };
 

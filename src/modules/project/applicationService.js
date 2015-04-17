@@ -119,7 +119,11 @@ ProjectApplicationService.prototype.create = function create(options, next) {
         return done(null, projectApplication);
       });
     }
-  ], next);
+  ], function(err) {
+    if (err) return next(err);
+
+    return next(null, projectApplication);
+  });
 };
 
 /**
