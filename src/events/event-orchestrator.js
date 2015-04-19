@@ -31,6 +31,15 @@ var skillUsedByUserEvent = {
 skillUsedByUserEvent.handlers.push(require('./handlers/user/skillUsedByUser'));
 userEvents.events.push(skillUsedByUserEvent);
 
+//user event 2
+var userCreatedEvent = {
+  name: USER_EVENTS.USER_CREATED,
+  handlers: []
+};
+userCreatedEvent.handlers.push(require('./handlers/user/userCreated'));
+userEvents.events.push(userCreatedEvent);
+
+
 EVENTS.push(userEvents);
 
 /* =========================================================================

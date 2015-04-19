@@ -14,6 +14,7 @@ var userService = require('modules/user');
 var projectApplicationService = require('modules/project/applicationService');
 var projectUserService = require('modules/project/userService');
 var permissionService = require('modules/permission');
+var templateService = require('modules/template');
 
 //models
 var User = require('modules/user/data/model');
@@ -22,7 +23,6 @@ var ProjectUser = require('modules/project/data/userModel');
 
 //libs
 var mailgunApi = require('lib/mailgun-api');
-var templateService = require('lib/services/templateService');
 
 /* =========================================================================
  * Constants

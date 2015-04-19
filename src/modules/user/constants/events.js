@@ -1,3 +1,4 @@
 module.exports = {
+  USER_CREATED: 'USER_CREATED',
   SKILL_USED_BY_USER: 'SKILL_USED_BY_USER'
 };

@@ -106,7 +106,13 @@ UserService.prototype.createUsingCredentials = function createUsingCredentials(o
       });
     }
   ], function finish(err, newUser) {
-    return next(err, newUser);
+    if (err) return next(err);
+
+    _this.emit(EVENTS.USER_CREATED, {
+      userId: newUser._id
+    });
+
+    return next(null, newUser);
   });
 };
 
@@ -153,7 +159,13 @@ UserService.prototype.createUsingFacebook = function createUsingFacebook(options
       user.save(done);
     }
   ], function finish(err, newUser) {
-    return next(err, newUser);
+    if (err) return next(err);
+
+    _this.emit(EVENTS.USER_CREATED, {
+      userId: newUser._id
+    });
+
+    return next(null, newUser);
   });
 };
 

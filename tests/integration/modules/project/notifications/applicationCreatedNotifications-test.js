@@ -327,7 +327,7 @@ describe('modules', function() {
               should.not.exist(err);
               should.exist(notifiedUserIds);
 
-              mailGunApiSendEmailStub.callCount.should.equal(1);
+              mailGunApiSendEmailStub.callCount.should.equal(3);
 
               notifiedUserIds.length.should.equal(1);
 
