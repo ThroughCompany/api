@@ -365,8 +365,6 @@ ProjectService.prototype.getById = function(options, next) {
     function populate_step(project, done) {
       if (!expands) return done(null, project);
 
-      console.log(project);
-
       projectPopulateService.populate({
         docs: project,
         expands: expands

@@ -9,6 +9,7 @@ var partialResponse = require('modules/partialResponse');
 //models
 var ProjectUser = require('modules/project/data/userModel');
 var ProjectApplication = require('modules/project/data/applicationModel');
+var ProjectNeed = require('modules/project/data/needModel');
 
 //services
 var PopulateService = partialResponse.service;
@@ -31,8 +32,12 @@ projectPopulateService.addPopulate({
   model: ProjectUser
 });
 projectPopulateService.addPopulate({
-  key: 'applications',
+  key: 'projectApplications',
   model: ProjectApplication
+});
+projectPopulateService.addPopulate({
+  key: 'projectNeeds',
+  model: ProjectNeed
 });
 
 /* =========================================================================
