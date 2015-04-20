@@ -24,40 +24,6 @@ var needSchema = baseSchema.extend({
     ref: 'Project',
     required: true
   },
-  employmentType: {
-    type: String,
-    trim: true,
-    required: true,
-    enum: _.keys(NEED_EMPLOYMENT_TYPES),
-    default: NEED_EMPLOYMENT_TYPES.VOLUNTEER
-  },
-  duration: {
-    startDate: {
-      type: Date
-    },
-    endDate: {
-      type: Date
-    },
-  },
-  timeCommitment: {},
-  // duration: {
-  //   min: {
-  //     type: Number,
-  //     required: true
-  //   },
-  //   minAmount: {
-  //     type: String,
-  //     required: true,
-  //     enum: _.values(DURATION_AMOUNTS)
-  //   },
-  //   max: {
-  //     type: Number
-  //   },
-  //   maxAmount: {
-  //     type: String,
-  //     enum: _.values(DURATION_AMOUNTS)
-  //   }
-  // },
   skills: [{
     type: String,
     ref: 'Skill',
@@ -71,7 +37,36 @@ var needSchema = baseSchema.extend({
   description: {
     type: String,
     trim: true
-  }
+  },
+  // employmentType: {
+  //   type: String,
+  //   trim: true,
+  //   required: true,
+  //   enum: _.keys(NEED_EMPLOYMENT_TYPES),
+  //   default: NEED_EMPLOYMENT_TYPES.VOLUNTEER
+  // },
+  duration: {
+    startDate: {
+      type: Date
+    },
+    endDate: {
+      type: Date
+    },
+  },
+  timeCommitment: {
+    hoursPerWeek: {
+      type: Number,
+      default: 0
+    },
+    totalHours: {
+      type: Number,
+      default: 0
+    }
+  },
+  locationSpecific: {
+    type: Boolean,
+    default: false
+  },
   // criteria: [{
   //   description: {
   //     type: String,

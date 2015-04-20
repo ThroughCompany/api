@@ -6,6 +6,7 @@ require('tests/integration/before-all');
 var should = require('should');
 var async = require('async');
 var sinon = require('sinon');
+var moment = require('moment');
 
 var app = require('src');
 var appConfig = require('src/config/app-config');
@@ -332,6 +333,14 @@ describe('api', function() {
         var needName = 'Node JS Programmer';
         var needDescription = 'We need an awesome Node JS programmer';
         var needSkills = ['Programmer', 'Node JS'];
+        var needLocationSpecific = true;
+        var needTimeCommitment = {
+          totalHours: 200
+        };
+        var needDuration = {
+          startDate: moment(),
+          endDate: moment().add('month', 6)
+        };
 
         var createSkillSpy;
 
@@ -410,7 +419,10 @@ describe('api', function() {
             .send({
               name: needName,
               description: needDescription,
-              skills: needSkills
+              skills: needSkills,
+              locationSpecific: needLocationSpecific,
+              duration: needDuration,
+              timeCommitment: needTimeCommitment
             })
             .end(function(err, response) {
               should.not.exist(err);
@@ -424,70 +436,19 @@ describe('api', function() {
 
               projectNeed.name.should.equal(needName);
               projectNeed.description.should.equal(needDescription);
+              projectNeed.locationSpecific.should.equal(needLocationSpecific);
+              should.exist(projectNeed.duration);
+              should.exist(projectNeed.duration.startDate);
+              should.exist(projectNeed.duration.endDate);
+              new Date(projectNeed.duration.startDate).getTime().should.equal(needDuration.startDate.toDate().getTime());
+              new Date(projectNeed.duration.endDate).getTime().should.equal(needDuration.endDate.toDate().getTime());
+              should.exist(projectNeed.timeCommitment);
+              projectNeed.timeCommitment.totalHours.should.equal(needTimeCommitment.totalHours);
 
               createSkillSpy.callCount.should.equal(needSkills.length);
 
               done();
             });
-        });
-
-        describe('when no employmentType is passed', function() {
-          it('should create a new need and have a employmentType of VOLUNTEER', function(done) {
-            agent
-              .post('/projects/' + project._id + '/needs')
-              .set('x-access-token', auth.token)
-              .send({
-                name: needName,
-                description: needDescription,
-                skills: needSkills
-              })
-              .end(function(err, response) {
-                should.not.exist(err);
-                should.exist(response);
-
-                var status = response.status;
-                status.should.equal(201);
-
-                var projectNeed = response.body;
-
-                should.exist(projectNeed);
-
-                projectNeed.employmentType.should.equal(NEED_EMPLOYMENT_TYPES.VOLUNTEER);
-
-                done();
-              });
-          });
-        });
-
-        describe('when employmentType=FULLTIME is passed', function() {
-          it('should create a new need and have a employmentType of FULLTIME', function(done) {
-            agent
-              .post('/projects/' + project._id + '/needs')
-              .set('x-access-token', auth.token)
-              .send({
-                name: needName,
-                description: needDescription,
-                employmentType: NEED_EMPLOYMENT_TYPES.FULLTIME,
-                skills: needSkills
-              })
-              .end(function(err, response) {
-                should.not.exist(err);
-                should.exist(response);
-
-                var status = response.status;
-                status.should.equal(201);
-
-                var projectNeed = response.body;
-
-                console.log(projectNeed);
-
-                should.exist(projectNeed);
-
-                projectNeed.employmentType.should.equal(NEED_EMPLOYMENT_TYPES.FULLTIME);
-
-                done();
-              });
-          });
         });
       });
     });

@@ -19,7 +19,7 @@ var Project = require('modules/project/data/projectModel');
 //utils
 var utils = require('utils/utils');
 
-//var needValidator = require('./validators/applicationValidator');
+var needValidator = require('./validators/needValidator');
 
 /* =========================================================================
  * Constants
@@ -39,6 +39,15 @@ util.inherits(ProjectNeedService, CommonService);
 /**
  * @param {object} options
  * @param {string} options.projectId
+ * @param {string} options.name
+ * @param {string} options.description
+ * @param {array} options.skills
+ * @param {object} options.timeCommitment
+ * @param {int} options.timeCommitment.hoursPerWeek
+ * @param {int} options.timeCommitment.totalHours
+ * @param {object} options.duration
+ * @param {date} options.timeCommitment.startDate
+ * @param {date} options.timeCommitment.endDate
  * @param {function} next - callback
  */
 ProjectNeedService.prototype.create = function create(options, next) {
@@ -54,26 +63,18 @@ ProjectNeedService.prototype.create = function create(options, next) {
   var skillIds = [];
   var projectNeed = null;
 
-  if (options.employmentType && !_.contains(_.values(NEED_EMPLOYMENT_TYPES), options.employmentType)) return next(new errors.InvalidArgumentError(options.employmentType + ' is not a valid employment type'));
-  // if (options.duration) {
-  //   if (!options.duration.min) return next(new errors.InvalidArgumentError('Duration Min is required'));
-  //   if (!options.duration.minAmount) return next(new errors.InvalidArgumentError('Duration Min Amount is required'));
-  //   if (!_.contains(_.values(DURATION_AMOUNTS), options.duration.minAmount)) return next(new errors.InvalidArgumentError(options.duration.minAmount + ' is not a valid duration min amount'));
-  //   if (options.duration.maxAmount && !_.contains(_.values(DURATION_AMOUNTS), options.duration.maxAmount)) return next(new errors.InvalidArgumentError(options.duration.maxAmount + ' is not a valid duration max amount'));
-
-  //   //TODO: validate that min is not greater than max
-  //   //TODO: validate that minAmount type is not greater than maxAmount type (ie minAmount = days && maxAmount = hours)
-  // }
-
   async.waterfall([
       function findProjectById_step(done) {
         Project.findById(options.projectId, done);
       },
-      function findNeed_step(_project, done) {
+      function validateData_step(_project, done) {
         if (!_project) return done(new errors.InvalidArgumentError('No project exists with the id ' + options.projectId));
 
         project = _project;
 
+        needValidator.validateCreate(options, done);
+      },
+      function findOrCreateSkills_step(done) {
         async.each(options.skills, function(skill, cb) {
           skillService.getOrCreateByName({
             name: skill
@@ -92,16 +93,16 @@ ProjectNeedService.prototype.create = function create(options, next) {
         projectNeed.name = options.name;
         projectNeed.skills = skillIds;
         projectNeed.description = options.description;
-        projectNeed.employmentType = options.employmentType || NEED_EMPLOYMENT_TYPES.VOLUNTEER;
-
-        // if (options.duration) {
-        //   projectNeed.duration = {
-        //     min: options.duration.min,
-        //     minAmount: options.minAmount,
-        //     max: options.max,
-        //     maxAmount: options.maxAmount
-        //   };
-        // }
+        if (options.timeCommitment) {
+          projectNeed.timeCommitment.hoursPerWeek = options.timeCommitment.hoursPerWeek;
+          projectNeed.timeCommitment.totalHours = options.timeCommitment.totalHours;
+        }
+        if (options.duration) {
+          projectNeed.duration.startDate = options.duration.startDate;
+          projectNeed.duration.endDate = options.duration.endDate;
+        }
+        projectNeed.locationSpecific = options.locationSpecific !== null && options.locationSpecific !== undefined ? options.locationSpecific : false;
+        //projectNeed.employmentType = options.employmentType || NEED_EMPLOYMENT_TYPES.VOLUNTEER;
 
         projectNeed.save(function(err, newProjectNeed) {
           if (err) return done(err);

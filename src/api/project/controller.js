@@ -85,18 +85,22 @@ Controller.prototype.createNeed = function(req, res, next) {
   var projectId = req.params.id;
   var name = req.body.name;
   var description = req.body.description;
-  var employmentType = req.body.employmentType;
   var skills = req.body.skills;
+  var locationSpecific = req.body.locationSpecific;
+  var timeCommitment = req.body.timeCommitment;
+  var duration = req.body.duration;
 
   projectService.createNeed({
     projectId: projectId,
     name: name,
     description: description,
-    employmentType: employmentType,
-    skills: skills
-  }, function(err, need) {
+    skills: skills,
+    locationSpecific: locationSpecific,
+    timeCommitment: timeCommitment,
+    duration: duration
+  }, function(err, projectNeed) {
     if (err) return next(err);
-    return res.status(201).json(need);
+    return res.status(201).json(projectNeed);
   });
 };
 
