@@ -18,11 +18,6 @@ var FIELD_LENGTHS = require('../constants/fieldLengths');
 function Validator() {}
 
 Validator.prototype.validateCreate = function(data, next) {
-
-  if (data.timeCommitment) {
-    if (data.timeCommitment.hoursPerWeek && data.timeCommitment.totalHours) return next(new errors.InvalidArgumentError('Cannot have both a timeCommitment.hoursPerWeek and timeCommitment.totalHours'));
-  }
-
   baseValidate(null, data, next);
 };
 
@@ -37,6 +32,10 @@ function baseValidate(projectNeed, data, next) {
   var steps = [];
 
   if (data.description && data.description.lengths > FIELD_LENGTHS.NEED_DESCRIPTION) return next(new errors.InvalidArgumentError('Need Description cannot be longer than ' + FIELD_LENGTHS.NEED_DESCRIPTION + ' charachters'));
+
+  if (data.timeCommitment) {
+    if (data.timeCommitment.hoursPerWeek && data.timeCommitment.totalHours) return next(new errors.InvalidArgumentError('Cannot have both a timeCommitment.hoursPerWeek and timeCommitment.totalHours'));
+  }
 
   if (data.duration) {
     if (data.duration.startDate) {
@@ -53,7 +52,7 @@ function baseValidate(projectNeed, data, next) {
   if (data.locationSpecific && !_.isBoolean(data.locationSpecific)) return next(new errors.InvalidArgumentError('Location Specific must be a boolean'));
 
   async.series(steps, function(err) {
-    next(err);
+    return next(err);
   });
 }
 

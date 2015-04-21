@@ -158,6 +158,7 @@ ProjectService.prototype.create = function(options, next) {
  * @param {function} next - callback
  */
 ProjectService.prototype.update = function(options, next) {
+  if (!options) return next(new errors.InvalidArgumentError('options is required'));
   if (!options.projectId) return next(new errors.InvalidArgumentError('Project Id is required'));
   if (!options.patches && !options.updates) return next(new errors.InvalidArgumentError('patches or updates is required'));
   if (options.patches && _.isEmpty(options.patches)) return next(new errors.InvalidArgumentError('patches must contain values'));
@@ -229,7 +230,7 @@ ProjectService.prototype.update = function(options, next) {
 
       project.save(done);
     }
-  ], function finish(err, results) {
+  ], function finish(err, project) {
     return next(err, project); //don't remove, callback needed because mongoose save returns 3rd arg
   });
 };
@@ -521,6 +522,17 @@ ProjectService.prototype.createNeed = function createNeed(options, next) {
 
     return next(null, projectNeed);
   });
+};
+
+/**
+ * @param {object} options
+ * @param {string} projectId
+ * @param {string} name
+ * @param {object} updates
+ * @param {function} next - callback
+ */
+ProjectService.prototype.updateNeedById = function createNeed(options, next) {
+  projectNeedService.update(options, next);
 };
 
 /* =========================================================================
