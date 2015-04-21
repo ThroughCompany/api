@@ -81,7 +81,7 @@ Controller.prototype.updateProjectById = function(req, res, next) {
 /** 
  * @description Create skill
  */
-Controller.prototype.createNeed = function(req, res, next) {
+Controller.prototype.createProjectNeed = function(req, res, next) {
   var projectId = req.params.id;
   var name = req.body.name;
   var description = req.body.description;
@@ -101,6 +101,24 @@ Controller.prototype.createNeed = function(req, res, next) {
   }, function(err, projectNeed) {
     if (err) return next(err);
     return res.status(201).json(projectNeed);
+  });
+};
+
+/** 
+ * @description Create skill
+ */
+Controller.prototype.updateProjectNeedById = function(req, res, next) {
+  var projectId = req.params.id;
+  var projectNeedId = req.params.needId;
+  var patches = req.body.patches;
+
+  projectService.updateNeedById({
+    projectId: projectId,
+    projectNeedId: projectNeedId,
+    patches: patches
+  }, function(err, projectNeed) {
+    if (err) return next(err);
+    return res.status(200).json(projectNeed);
   });
 };
 
@@ -150,7 +168,7 @@ Controller.prototype.getProjectUsers = function(req, res, next) {
   });
 };
 
-Controller.prototype.createApplication = function(req, res, next) {
+Controller.prototype.createProjectApplication = function(req, res, next) {
   var projectId = req.params.id;
   var userId = req.body.userId;
 
@@ -163,7 +181,7 @@ Controller.prototype.createApplication = function(req, res, next) {
   });
 };
 
-Controller.prototype.acceptApplication = function(req, res, next) {
+Controller.prototype.acceptProjectApplication = function(req, res, next) {
   var projectId = req.params.id;
   var projectApplicationId = req.params.projectApplicationId;
   var userId = req.body.userId;
@@ -178,7 +196,7 @@ Controller.prototype.acceptApplication = function(req, res, next) {
   });
 };
 
-Controller.prototype.getApplications = function(req, res, next) {
+Controller.prototype.getProjectApplications = function(req, res, next) {
   var projectId = req.params.id;
 
   projectService.getApplications({

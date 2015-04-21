@@ -4,6 +4,7 @@
 var util = require('util');
 var _ = require('underscore');
 var async = require('async');
+var jsonPatch = require('fast-json-patch');
 
 //modules
 var errors = require('modules/error');
@@ -17,6 +18,7 @@ var ProjectUser = require('modules/project/data/userModel');
 var Project = require('modules/project/data/projectModel');
 
 //utils
+var patchUtils = require('utils/patchUtils');
 var utils = require('utils/utils');
 
 var needValidator = require('./validators/needValidator');
@@ -25,8 +27,17 @@ var needValidator = require('./validators/needValidator');
  * Constants
  * ========================================================================= */
 var EVENTS = require('./constants/events');
-var NEED_EMPLOYMENT_TYPES = require('./constants/needEmploymentTypes');
+//var NEED_EMPLOYMENT_TYPES = require('./constants/needEmploymentTypes');
 var DURATION_AMOUNTS = require('./constants/durationAmounts');
+
+var UPDATEDABLE_PROJECT_NEED_PROPERTIES = [
+  'name',
+  'description',
+  'duration',
+  'timeCommitment',
+  'locationSpecific',
+  'skills'
+];
 
 /* =========================================================================
  * Constructor
@@ -123,6 +134,115 @@ ProjectNeedService.prototype.create = function create(options, next) {
 
       return next(null, projectNeed);
     });
+};
+
+/**
+ * @param {object} options
+ * @param {function} next - callback
+ */
+ProjectNeedService.prototype.update = function update(options, next) {
+  if (!options) return next(new errors.InvalidArgumentError('options is required'));
+  if (!options.projectId) return next(new errors.InvalidArgumentError('Project Id is required'));
+  if (!options.projectNeedId) return next(new errors.InvalidArgumentError('Project Need Id is required'));
+  if (!options.patches && !options.updates) return next(new errors.InvalidArgumentError('patches or updates is required'));
+  if (options.patches && _.isEmpty(options.patches)) return next(new errors.InvalidArgumentError('patches must contain values'));
+  if (options.updates && _.isEmpty(options.updates)) return next(new errors.InvalidArgumentError('updates must contain values'));
+  if (options.patches && !_.isArray(options.patches)) return next(new errors.InvalidArgumentError('patches must be an array'));
+
+  //TODO: if a skill is changed, need to emit SKILL_USED_BY_PROJECT event
+
+  var _this = this;
+  var project = null;
+  var projectNeed = null;
+  var patches = null;
+
+  async.waterfall([
+    function findProjectAndProjectNeed(done) {
+      async.parallel([
+        function findProjectById_step(cb) {
+          Project.findById({
+            _id: options.projectId
+          }, function(err, _project) {
+            if (!_project) return done(new errors.ObjectNotFoundError('No project exists with the id ' + options.projectId));
+
+            project = _project;
+
+            cb();
+          });
+        },
+        function findProjectNeedById(cb) {
+          ProjectNeed.findById({
+            _id: options.projectNeedId
+          }, function(err, _projectNeed) {
+            if (!_projectNeed) return done(new errors.ObjectNotFoundError('No project need exists with the id ' + options.projectNeedId));
+
+            projectNeed = _projectNeed;
+
+            cb();
+          });
+        },
+      ], function(err) {
+        if (err) return done(err);
+        return done(err);
+      });
+    },
+    function validateData_step(done) {
+
+      if (!_.contains(project.projectNeeds, options.projectNeedId)) return done(new errors.InvalidArgumentError(options.projectNeedId + ' is not a need on this project'));
+
+      if (options.updates && !options.patches) patches = patchUtils.generatePatches(options.updates);
+      else patches = options.patches;
+
+      patches = patchUtils.stripPatches(UPDATEDABLE_PROJECT_NEED_PROPERTIES, patches);
+
+      console.log('PROJECT NEED');
+      console.log(projectNeed);
+
+      console.log('PATCHES:');
+      console.log(patches);
+
+      var projectNeedClone = _.clone(projectNeed.toJSON());
+
+      var patchErrors = jsonPatch.validate(patches, projectNeedClone);
+
+      if (patchErrors) {
+        return done(patchErrors && patchErrors.message ? new errors.InvalidArgumentError(patchErrors.message) : patchErrors);
+      }
+
+      try {
+        jsonPatch.apply(projectNeedClone, patches);
+      } catch (err) {
+        logger.error(err);
+
+        return done(new errors.InvalidArgumentError('error applying patches'));
+      }
+
+      console.log('WITH PATCHES APPLIED:');
+      console.log(projectNeedClone);
+
+      needValidator.validateUpdate(projectNeed, projectNeedClone, done);
+    },
+    function updateProject(done) {
+
+      try {
+        console.log('APPLYING PATCHES:');
+        console.log(patches);
+
+        jsonPatch.apply(projectNeed, patches);
+      } catch (err) {
+        logger.error(err);
+
+        return done(new errors.InvalidArgumentError('error applying patches'));
+      }
+
+      console.log('AFTER PATCHES:');
+      console.log(projectNeed);
+
+      projectNeed.save(done);
+    }
+  ], function finish(err, projectNeed) {
+    return next(err, projectNeed); //don't remove, callback needed because mongoose save returns 3rd arg
+  });
 };
 
 /* =========================================================================

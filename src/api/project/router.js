@@ -71,31 +71,6 @@ var createProject = {
   }
 };
 
-var createNeed = {
-  spec: {
-    path: '/projects/{id}/needs',
-    summary: 'Add project needs',
-    method: 'POST',
-    parameters: [
-      swagger.params.path('id', 'project\'s id', 'string'),
-      swagger.params.body('name', 'need name', 'string'),
-      swagger.params.body('description', 'need description', 'string')
-    ],
-    nickname: 'createNeed',
-    type: 'User',
-    produces: ['application/json']
-  },
-  action: function(req, res, next) {
-    authMiddleware.authenticationRequired(req, res, function(err) {
-      if (err) return next(err);
-      authMiddleware.currentUserProjectIdQueryParamRequired('id')(req, res, function(err) {
-        if (err) return next(err);
-        controller.createNeed(req, res, next);
-      });
-    });
-  }
-};
-
 var updateProjectById = {
   spec: {
     path: '/projects/{id}',
@@ -119,6 +94,25 @@ var updateProjectById = {
   }
 };
 
+// ------- Project Users ------- //
+var getProjectUsers = {
+  spec: {
+    path: '/projects/{id}/users',
+    summary: 'Get a project\'s users',
+    method: 'GET',
+    parameters: [
+      swagger.params.path('id', 'project\'s id', 'string')
+    ],
+    nickname: 'getProjectUsers',
+    type: 'User',
+    produces: ['application/json']
+  },
+  action: function(req, res, next) {
+    controller.getProjectUsers(req, res, next);
+  }
+};
+
+// ------- Images ------- //
 var uploadImage = {
   spec: {
     path: '/projects/{id}/images',
@@ -145,24 +139,58 @@ var uploadImage = {
   }
 };
 
-var getProjectUsers = {
+// ------- Project Needs ------- //
+var createProjectNeed = {
   spec: {
-    path: '/projects/{id}/users',
-    summary: 'Get a project\'s users',
-    method: 'GET',
+    path: '/projects/{id}/needs',
+    summary: 'Add project needs',
+    method: 'POST',
     parameters: [
-      swagger.params.path('id', 'project\'s id', 'string')
+      swagger.params.path('id', 'project\'s id', 'string'),
+      swagger.params.body('name', 'need name', 'string'),
+      swagger.params.body('description', 'need description', 'string')
     ],
-    nickname: 'getProjectUsers',
-    type: 'User',
+    nickname: 'createNeed',
+    type: 'ProjectNeed',
     produces: ['application/json']
   },
   action: function(req, res, next) {
-    controller.getProjectUsers(req, res, next);
+    authMiddleware.authenticationRequired(req, res, function(err) {
+      if (err) return next(err);
+      authMiddleware.currentUserProjectIdQueryParamRequired('id')(req, res, function(err) {
+        if (err) return next(err);
+        controller.createProjectNeed(req, res, next);
+      });
+    });
   }
 };
 
-var createApplication = {
+var updateProjectNeedById = {
+  spec: {
+    path: '/projects/{id}/needs/{needId}',
+    summary: 'Update a project need',
+    method: 'PATCH',
+    parameters: [
+      swagger.params.path('id', 'project\'s id', 'string'),
+      swagger.params.path('needId', 'project need\'s id', 'string')
+    ],
+    nickname: 'updateProjectNeedById',
+    type: 'ProjectNeed',
+    produces: ['application/json']
+  },
+  action: function(req, res, next) {
+    authMiddleware.authenticationRequired(req, res, function(err) {
+      if (err) return next(err);
+      authMiddleware.currentUserProjectIdQueryParamRequired('id')(req, res, function(err) {
+        if (err) return next(err);
+        controller.updateProjectNeedById(req, res, next);
+      });
+    });
+  }
+};
+
+// ------- Project Applications ------- //
+var createProjectApplication = {
   spec: {
     path: '/projects/{id}/applications',
     summary: 'Apply to a project',
@@ -180,13 +208,13 @@ var createApplication = {
       if (err) return next(err);
       authMiddleware.currentUserIdBodyParamRequired('userId')(req, res, function(err) {
         if (err) return next(err);
-        controller.createApplication(req, res, next);
+        controller.createProjectApplication(req, res, next);
       });
     });
   }
 };
 
-var acceptApplication = {
+var acceptProjectApplication = {
   spec: {
     path: '/projects/{id}/applications/{projectApplicationId}/accept',
     summary: 'App a project application',
@@ -204,13 +232,13 @@ var acceptApplication = {
       if (err) return next(err);
       authMiddleware.currentProjectPermissionParamRequired(PERMISSION_NAMES.ADD_PROJECT_USERS, 'id')(req, res, function(err) {
         if (err) return next(err);
-        controller.acceptApplication(req, res, next);
+        controller.acceptProjectApplication(req, res, next);
       });
     });
   }
 };
 
-var getApplications = {
+var getProjectApplications = {
   spec: {
     path: '/projects/{id}/applications',
     summary: 'Get a project\'s applications',
@@ -227,12 +255,13 @@ var getApplications = {
       if (err) return next(err);
       authMiddleware.currentUserProjectIdQueryParamRequired('id')(req, res, function(err) {
         if (err) return next(err);
-        controller.getApplications(req, res, next);
+        controller.getProjectApplications(req, res, next);
       });
     });
   }
 };
 
+// ------- Project Wiki ------- //
 var createWikiPage = {
   spec: {
     path: '/projects/{id}/wiki/pages',
@@ -286,15 +315,21 @@ var updateWikiPage = {
 swagger.addGet(getProjects);
 swagger.addGet(getProjectById);
 swagger.addPost(createProject);
-swagger.addPost(createNeed);
-swagger.addPost(uploadImage);
 swagger.addPatch(updateProjectById);
+//project users
 swagger.addGet(getProjectUsers);
-swagger.addPost(createApplication);
-swagger.addPost(acceptApplication);
-swagger.addGet(getApplications);
+//project needs
+swagger.addPost(createProjectNeed);
+swagger.addPatch(updateProjectNeedById);
+//project applications
+swagger.addPost(createProjectApplication);
+swagger.addPost(acceptProjectApplication);
+swagger.addGet(getProjectApplications);
+//wiki
 swagger.addPost(createWikiPage);
 swagger.addPatch(updateWikiPage);
+//images
+swagger.addPost(uploadImage);
 
 /* =========================================================================
  *   Swagger declarations
