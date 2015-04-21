@@ -60,7 +60,7 @@ projectEvents.events.push(skillUsedByProjectEvent);
 
 //project event 2
 var applicationCreated = {
-  name: PROJECT_EVENTS.APPLICATION_CREATED,
+  name: PROJECT_EVENTS.PROJECT_APPLICATION_CREATED,
   handlers: []
 };
 applicationCreated.handlers.push(require('./handlers/project/applicationCreated'));

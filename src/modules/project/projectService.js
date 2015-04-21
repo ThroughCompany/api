@@ -36,7 +36,7 @@ var partialResponseParser = require('modules/partialResponse/parser');
  * Constants
  * ========================================================================= */
 var EVENTS = require('./constants/events');
-var ROLES = require('modules/role/constants/role-names');
+var ROLES = require('modules/role/constants/roleNames');
 var DEFAULTIMAGEURL = 'https://s3.amazonaws.com/throughcompany-assets/project-avatars/avatar';
 var IMAGE_TYPES = require('modules/image/constants/image-types');
 
@@ -532,7 +532,7 @@ ProjectService.prototype.createApplication = function createApplication(options,
   projectApplicationService.create(options, function(err, projectApplication) {
     if (err) return next(err);
 
-    _this.emit(EVENTS.APPLICATION_CREATED, {
+    _this.emit(EVENTS.PROJECT_APPLICATION_CREATED, {
       projectApplicationId: projectApplication._id,
       projectId: projectApplication.project,
       userId: projectApplication.user

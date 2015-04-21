@@ -51,14 +51,6 @@ var userSchema = baseSchema.extend({
     type: String,
     trim: true
   },
-  projectUsers: [{
-    type: String,
-    ref: 'ProjectUser'
-  }],
-  projectApplications: [{
-    type: String,
-    ref: 'ProjectApplication'
-  }],
   facebook: {
     id: {
       type: String,
@@ -120,6 +112,20 @@ var userSchema = baseSchema.extend({
       type: String,
       trim: true
     }
+  }],
+  //projects
+  projectUsers: [{
+    type: String,
+    ref: 'ProjectUser'
+  }],
+  projectApplications: [{
+    type: String,
+    ref: 'ProjectApplication'
+  }],
+  //organizations
+  organizationUsers: [{
+    type: String,
+    ref: 'OrganizationUser'
   }]
 });
 

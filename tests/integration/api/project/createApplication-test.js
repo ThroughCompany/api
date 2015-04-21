@@ -468,7 +468,7 @@ describe('api', function() {
 
           createApplicationSpy = sandbox.spy();
 
-          projectService.on(PROJECT_EVENTS.APPLICATION_CREATED, createApplicationSpy);
+          projectService.on(PROJECT_EVENTS.PROJECT_APPLICATION_CREATED, createApplicationSpy);
 
           async.series([
             function createUser1_step(cb) {
