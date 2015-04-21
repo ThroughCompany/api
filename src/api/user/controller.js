@@ -9,6 +9,7 @@ var authService = require('modules/auth');
 var userService = require('modules/user');
 var projectService = require('modules/project');
 var imageService = require('modules/image');
+var organizationService = require('modules/organization');
 
 var errors = require('modules/error');
 
@@ -104,6 +105,20 @@ Controller.prototype.getUserProjectsById = function(req, res, next) {
   }, function(err, projects) {
     if (err) return next(err);
     return res.status(200).json(projects);
+  });
+};
+
+/** 
+ * @description Get a user's organization
+ */
+Controller.prototype.getUserOrganizationsById = function(req, res, next) {
+  var userId = req.params.id;
+
+  organizationService.getByUserId({
+    userId: userId
+  }, function(err, organizations) {
+    if (err) return next(err);
+    return res.status(200).json(organizations);
   });
 };
 

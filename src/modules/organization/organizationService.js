@@ -133,6 +133,39 @@ OrganizationService.prototype.create = function(options, next) {
   });
 };
 
+/**
+ * @param {object} options
+ * @param {string} options.userId
+ * @param {function} next - callback
+ */
+OrganizationService.prototype.getByUserId = function(options, next) {
+  if (!options) return next(new errors.InvalidArgumentError('options is required'));
+  if (!options.userId) return next(new errors.InvalidArgumentError('User Id is required'));
+
+  var _this = this;
+
+  async.waterfall([
+    function findOrganizationUsersByUserId_step(done) {
+      var query = OrganizationUser.find({
+        user: options.userId
+      });
+
+      query.exec(done);
+    },
+    function findOrganizationById_step(organizationUsers, done) {
+      var organizationIds = _.pluck(organizationUsers, 'organization');
+
+      var query = Organization.find({
+        _id: {
+          $in: organizationIds
+        }
+      });
+
+      query.exec(done);
+    }
+  ], next);
+};
+
 /* =========================================================================
  * Private Helpers
  * ========================================================================= */

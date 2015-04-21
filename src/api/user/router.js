@@ -103,7 +103,7 @@ var createUser = {
 var getUserProjectsById = {
   spec: {
     path: '/users/{id}/projects',
-    summary: 'Get a user\'s project by id',
+    summary: 'Get a user\'s projects by id',
     method: 'GET',
     parameters: [
       swagger.params.path('id', 'user\'s id', 'string')
@@ -114,6 +114,23 @@ var getUserProjectsById = {
   },
   action: function(req, res, next) {
     controller.getUserProjectsById(req, res, next);
+  }
+};
+
+var getUserOrganizationsById = {
+  spec: {
+    path: '/users/{id}/organizations',
+    summary: 'Get a user\'s organizations by id',
+    method: 'GET',
+    parameters: [
+      swagger.params.path('id', 'user\'s id', 'string')
+    ],
+    nickname: 'getUserOrganizationsById',
+    type: 'User',
+    produces: ['application/json']
+  },
+  action: function(req, res, next) {
+    controller.getUserOrganizationsById(req, res, next);
   }
 };
 
@@ -196,6 +213,7 @@ swagger.addGet(getUserById);
 swagger.addGet(getUserClaimsById);
 swagger.addPost(createUser);
 swagger.addGet(getUserProjectsById);
+swagger.addGet(getUserOrganizationsById);
 swagger.addPatch(updateUserById);
 swagger.addPost(uploadImage);
 swagger.addPost(createSkill);
