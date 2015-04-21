@@ -21,7 +21,19 @@ var organizationSchema = baseSchema.extend({
     trim: true,
     required: true
   },
+  slug: {
+    type: String,
+    trim: true,
+    required: true,
+    index: {
+      unique: true
+    }
+  },
   description: {
+    type: String,
+    trim: true
+  },
+  location: {
     type: String,
     trim: true
   },
@@ -48,14 +60,10 @@ var organizationSchema = baseSchema.extend({
       required: true
     }
   }],
-  // projects: [{
-  //   type: String,
-  //   ref: 'Project'
-  // }],
-  // users: [{
-  //   type: String,
-  //   ref: 'User'
-  // }]
+  organizationUsers: [{
+    type: String,
+    ref: 'OrganizationUser'
+  }],
 });
 
 /* =========================================================================

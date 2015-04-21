@@ -20,7 +20,7 @@ var projectUserService = require('./userService');
 
 //models
 var User = require('modules/user/data/model');
-var Project = require('./data/projectModel');
+var Project = require('modules/project/data/projectModel');
 var ProjectUser = require('modules/project/data/userModel');
 var ProjectNeed = require('modules/project/data/needModel');
 

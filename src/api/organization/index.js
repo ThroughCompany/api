@@ -1,12 +1,9 @@
-"use strict";
-
 /* =========================================================================
  * Dependencies
  * ========================================================================= */
-var mongoose = require('mongoose');
-var organizationSchema = require('./organizationSchema');
+var router = require('./router');
 
 /* =========================================================================
- * Exports
+ * Expose
  * ========================================================================= */
-module.exports = mongoose.model('Organization', organizationSchema);
+module.exports = router;
