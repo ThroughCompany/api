@@ -14,6 +14,7 @@ var logger = require('modules/logger');
 //services
 var userService = require('modules/user');
 var adminService = require('modules/admin');
+var organizationService = require('modules/organization');
 var projectService = require('modules/project');
 var permissionService = require('modules/permission');
 
@@ -232,6 +233,11 @@ AuthService.prototype.getUserClaims = function getUserClaims(options, next) {
         userId: options.userId
       }, done);
     },
+    organizationUsers: function getProjectUsers_step(done) {
+      organizationService.getOrganizationUsersByUserId({
+        userId: options.userId
+      }, done);
+    },
     projectUsers: function getProjectUsers_step(done) {
       projectService.getProjectUsersByUserId({
         userId: options.userId
@@ -258,6 +264,7 @@ AuthService.prototype.getUserClaims = function getUserClaims(options, next) {
 
     var user = results.user;
     var admin = results.admin;
+    var organizationUsers = results.organizationUsers;
     var projectUsers = results.projectUsers;
     var permissions = results.permissions;
 
@@ -265,9 +272,35 @@ AuthService.prototype.getUserClaims = function getUserClaims(options, next) {
       userId: user._id,
       email: user.email,
       admin: admin ? true : false,
+      organizationIds: [],
+      organizationPermissions: {},
       projectIds: [],
       projectPermissions: {}
     };
+
+    if (organizationUsers && organizationUsers.length) {
+      organizationUsers.forEach(function(organizationUser) {
+        userClaims.organizationIds.push(organizationUser.organization);
+
+        var organizationPermissions = [];
+
+        if (organizationUser.permissions) {
+          organizationUser.permissions.forEach(function(permission) {
+            var foundPermission = _.find(permissions, function(p) {
+              return p._id === permission;
+            });
+
+            if (foundPermission) {
+              organizationPermissions.push({
+                name: foundPermission.name
+              });
+            }
+          });
+        }
+
+        userClaims.organizationPermissions[organizationUser.organization] = organizationPermissions;
+      });
+    }
 
     if (projectUsers && projectUsers.length) {
       projectUsers.forEach(function(projectUser) {

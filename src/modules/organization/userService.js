@@ -31,18 +31,18 @@ util.inherits(OrganizationUserService, CommonService);
  * @param {object} options.userId
  * @param {function} next - callback
  */
-// OrganizationUserService.prototype.getByUserId = function(options, next) {
-//   if (!options) return next(new errors.InvalidArgumentError('options is required'));
-//   if (!options.userId) return next(new errors.InvalidArgumentError('User Id is required'));
+OrganizationUserService.prototype.getByUserId = function(options, next) {
+  if (!options) return next(new errors.InvalidArgumentError('options is required'));
+  if (!options.userId) return next(new errors.InvalidArgumentError('User Id is required'));
 
-//   var _this = this;
+  var _this = this;
 
-//   var query = OrganizationUser.find({
-//     user: options.userId
-//   });
+  var query = OrganizationUser.find({
+    user: options.userId
+  });
 
-//   query.exec(next);
-// };
+  query.exec(next);
+};
 
 // OrganizationUserService.prototype.getByOrganizationId = function(options, next) {
 //   if (!options) return next(new errors.InvalidArgumentError('options is required'));

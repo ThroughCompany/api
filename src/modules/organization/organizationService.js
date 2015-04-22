@@ -12,6 +12,8 @@ var CommonService = require('modules/common');
 var permissionService = require('modules/permission');
 var userService = require('modules/user');
 var organizationPopulateService = require('./populate/service');
+var organizationProjectService = require('./projectService');
+var organizationUserService = require('./userService');
 
 //models
 var Organization = require('modules/organization/data/organizationModel');
@@ -227,6 +229,26 @@ OrganizationService.prototype.getByUserId = function(options, next) {
       query.exec(done);
     }
   ], next);
+};
+
+/* =========================================================================
+ * Organization Projects
+ * ========================================================================= */
+OrganizationService.prototype.createProject = function(options, next) {
+  organizationProjectService.create(options, next);
+};
+
+/* =========================================================================
+ * Organization Users
+ * ========================================================================= */
+
+/**
+ * @param {object} options
+ * @param {object} options.userId
+ * @param {function} next - callback
+ */
+OrganizationService.prototype.getOrganizationUsersByUserId = function getOrganizationUsersByUserId(options, next) {
+  organizationUserService.getByUserId(options, next);
 };
 
 /* =========================================================================

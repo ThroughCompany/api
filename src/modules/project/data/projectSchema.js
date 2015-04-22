@@ -4,7 +4,6 @@
 var _ = require('underscore');
 
 var baseSchema = require('modules/common/data/base-schema');
-var wikiPageSchema = require('./wikiPageSchema');
 
 var utils = require('utils/utils');
 
@@ -35,7 +34,17 @@ var projectSchema = baseSchema.extend({
     trim: true
   },
   wiki: {
-    pages: [wikiPageSchema]
+    pages: [{
+      title: {
+        type: String,
+        trim: true,
+        required: true
+      },
+      text: {
+        type: String,
+        trim: true
+      }
+    }]
   },
   profilePic: {
     type: String,
@@ -83,6 +92,11 @@ var projectSchema = baseSchema.extend({
   projectNeeds: [{
     type: String,
     ref: 'ProjectNeed'
+  }],
+  //organizations
+  organizationProjects: [{
+    type: String,
+    ref: 'OrganizationProject'
   }]
 }, {
   collection: 'projects'

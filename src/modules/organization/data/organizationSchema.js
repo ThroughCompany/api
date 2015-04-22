@@ -64,6 +64,10 @@ var organizationSchema = baseSchema.extend({
     type: String,
     ref: 'OrganizationUser'
   }],
+  organizationProjects: [{
+    type: String,
+    ref: 'OrganizationProject'
+  }]
 });
 
 /* =========================================================================

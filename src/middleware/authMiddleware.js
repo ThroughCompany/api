@@ -64,6 +64,28 @@ AuthMiddleware.prototype.currentUserIdBodyParamRequired = function currentUserId
   };
 };
 
+// ----------------------------------
+// Organization
+// ----------------------------------
+
+//verifies the user is a project member - param
+AuthMiddleware.prototype.currentUserOrganizationIdQueryParamRequired = function currentUserOrganizationIdQueryParamRequired(paramName) {
+  var param = paramName || 'id';
+
+  return function _currentUserOrganizationIdQueryParamRequired(req, res, next) {
+    if (!req.claims) return next(new errors.ForbiddenError('Access Denied'));
+    if (req.claims.admin) return next(); //allow admins to bypass
+    if (!req.claims || !req.params[param] || !req.claims.organizationIds || !req.claims.organizationIds.length || !_.contains(req.claims.organizationIds, req.params[param])) {
+      return next(new errors.ForbiddenError('Access Denied'));
+    }
+    return next(null);
+  };
+};
+
+// ----------------------------------
+// Projects
+// ----------------------------------
+
 //verifies the user is a project member - param
 AuthMiddleware.prototype.currentUserProjectIdQueryParamRequired = function currentUserProjectIdQueryParamRequired(paramName) {
   var param = paramName || 'id';

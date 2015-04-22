@@ -21,6 +21,8 @@ var organizationUserSchema = baseSchema.extend({
     type: String,
     ref: 'Permission'
   }]
+}, {
+  collection: 'organizationusers'
 });
 
 organizationUserSchema.index({

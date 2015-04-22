@@ -1,28 +1,15 @@
 /* =========================================================================
  * Dependencies
- * ========================================================================= */	
-var baseSchema = require('modules/common/data/base-schema');
+ * ========================================================================= */
+var mongoose = require('mongoose');
+
+var organizationProjectSchema = require('./projectSchema.js');
 
 /* =========================================================================
- * Constants
+ * Private Helpers
  * ========================================================================= */
-
-/* =========================================================================
- * Schema
- * ========================================================================= */
-var wikiPageSchema = baseSchema.extend({
-  title: {
-    type: String,
-    trim: true,
-    required: true
-  },
-  text: {
-    type: String,
-    trim: true
-  }
-});
 
 /* =========================================================================
  * Exports
  * ========================================================================= */
-module.exports = wikiPageSchema;
+module.exports = mongoose.model('OrganizationProject', organizationProjectSchema);

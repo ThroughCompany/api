@@ -25,6 +25,8 @@ var projectUserSchema = baseSchema.extend({
     type: String,
     required: true
   }
+}, {
+  collection: 'projectusers'
 });
 
 projectUserSchema.index({

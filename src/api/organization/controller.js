@@ -50,6 +50,20 @@ Controller.prototype.createOrganization = function createOrganization(req, res, 
   });
 };
 
+/** 
+ * @description Create an organization project
+ */
+Controller.prototype.createOrganizationProject = function createOrganizationProject(req, res, next) {
+  var data = req.body;
+  data.organizationId = req.params.id;
+  data.createdByUserId = req.claims.userId;
+
+  organizationService.createProject(data, function(err, newOrganizationProject) {
+    if (err) return next(err);
+    return res.status(201).json(newOrganizationProject);
+  });
+};
+
 /* =========================================================================
  * Private Helpers
  * ========================================================================= */
