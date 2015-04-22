@@ -11,6 +11,7 @@ var errors = require('modules/error');
 var CommonService = require('modules/common');
 var permissionService = require('modules/permission');
 var userService = require('modules/user');
+var organizationPopulateService = require('./populate/service');
 
 //models
 var Organization = require('modules/organization/data/organizationModel');
@@ -69,7 +70,7 @@ OrganizationService.prototype.create = function(options, next) {
         userId: options.createdByUserId
       }, done);
     },
-    function generateProjectSlug_step(_user, done) {
+    function generateOrganizationSlug_step(_user, done) {
       user = _user;
 
       generateOrganizationSlug(options.name, done);
@@ -91,7 +92,7 @@ OrganizationService.prototype.create = function(options, next) {
         roleName: ROLES.ORGANIZATION_ADMIN
       }, done);
     },
-    function createProjectUser_step(_permissions, done) {
+    function createOrganizationUser_step(_permissions, done) {
       permissions = _permissions;
 
       var organizationUser = new OrganizationUser();
@@ -131,6 +132,68 @@ OrganizationService.prototype.create = function(options, next) {
 
     next(null, organization);
   });
+};
+
+/**
+ * @param {object} options
+ * @param {string} options.organizationId
+ * @param {string} options.fields
+ * @param {function} next - callback
+ */
+OrganizationService.prototype.getById = function(options, next) {
+  if (!options) return next(new errors.InvalidArgumentError('options is required'));
+  if (!options.organizationId) return next(new errors.InvalidArgumentError('Organization Id is required'));
+
+  var _this = this;
+  var fields = null;
+  var expands = null;
+
+  async.waterfall([
+    function parseFieldsAndExpands(done) {
+      if (options.fields) {
+        partialResponseParser.parse({
+          fields: options.fields
+        }, function(err, results) {
+          if (err) return done(err);
+
+          fields = results.fields;
+          expands = results.expands;
+
+          return done();
+        });
+      } else {
+        return done(null);
+      }
+    },
+    function getOrganizationById_step(done) {
+      var query = Organization.findOne({
+        $or: [{
+          _id: options.organizationId
+        }, {
+          slug: options.organizationId
+        }]
+      });
+
+      if (fields) {
+        query.select(fields.select);
+      }
+
+      query.exec(function(err, organization) {
+        if (err) return done(err);
+        if (!organization) return done(new errors.ObjectNotFoundError('Organization not found'));
+
+        return done(null, organization);
+      });
+    },
+    function populate_step(organization, done) {
+      if (!expands) return done(null, organization);
+
+      organizationPopulateService.populate({
+        docs: organization,
+        expands: expands
+      }, done);
+    }
+  ], next);
 };
 
 /**

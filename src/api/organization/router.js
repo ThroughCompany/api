@@ -19,6 +19,24 @@ var PERMISSION_NAMES = require('modules/permission/constants/permissionNames');
 /* =========================================================================
  * Swagger specs
  * ========================================================================= */
+var getOrganizationById = {
+  spec: {
+    path: '/organizations/{id}',
+    summary: 'Get an organization by id',
+    method: 'GET',
+    parameters: [
+      swagger.params.path('id', 'organization\'s id', 'string'),
+      swagger.params.query('fields', 'csv of fields to select', 'string')
+    ],
+    nickname: 'getOrganizationById',
+    type: 'Project',
+    produces: ['application/json']
+  },
+  action: function(req, res, next) {
+    controller.getOrganizationById(req, res, next);
+  }
+};
+
 var createOrganization = {
   spec: {
     path: '/organizations',
@@ -39,6 +57,7 @@ var createOrganization = {
   }
 };
 
+swagger.addGet(getOrganizationById);
 swagger.addPost(createOrganization);
 
 /* =========================================================================

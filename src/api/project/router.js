@@ -42,7 +42,7 @@ var getProjectById = {
       swagger.params.path('id', 'project\'s id', 'string'),
       swagger.params.query('fields', 'csv of fields to select', 'string')
     ],
-    nickname: 'getProjects',
+    nickname: 'getProjectById',
     type: 'Project',
     produces: ['application/json']
   },
