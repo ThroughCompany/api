@@ -57,33 +57,33 @@ var createOrganization = {
   }
 };
 
-var createOrganizationProject = {
-  spec: {
-    path: '/organizations/{id}/projects',
-    summary: 'Create an organization project',
-    method: 'POST',
-    parameters: [
-      swagger.params.path('id', 'organization\'s id', 'string'),
-      swagger.params.body('project', 'project info', 'string')
-    ],
-    nickname: 'createOrganizationProject',
-    type: 'OrganizationProject',
-    produces: ['application/json']
-  },
-  action: function(req, res, next) {
-    authMiddleware.authenticationRequired(req, res, function(err) {
-      if (err) return next(err);
-      authMiddleware.currentUserOrganizationIdQueryParamRequired('id')(req, res, function(err) {
-        if (err) return next(err);
-        controller.createOrganizationProject(req, res, next);
-      });
-    });
-  }
-};
+// var createOrganizationProject = {
+//   spec: {
+//     path: '/organizations/{id}/projects',
+//     summary: 'Create an organization project',
+//     method: 'POST',
+//     parameters: [
+//       swagger.params.path('id', 'organization\'s id', 'string'),
+//       swagger.params.body('project', 'project info', 'string')
+//     ],
+//     nickname: 'createOrganizationProject',
+//     type: 'OrganizationProject',
+//     produces: ['application/json']
+//   },
+//   action: function(req, res, next) {
+//     authMiddleware.authenticationRequired(req, res, function(err) {
+//       if (err) return next(err);
+//       authMiddleware.currentUserOrganizationIdQueryParamRequired('id')(req, res, function(err) {
+//         if (err) return next(err);
+//         controller.createOrganizationProject(req, res, next);
+//       });
+//     });
+//   }
+// };
 
 swagger.addGet(getOrganizationById);
 swagger.addPost(createOrganization);
-swagger.addPost(createOrganizationProject);
+//swagger.addPost(createOrganizationProject);
 
 /* =========================================================================
  *   Swagger declarations

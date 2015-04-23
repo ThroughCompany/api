@@ -234,9 +234,9 @@ OrganizationService.prototype.getByUserId = function(options, next) {
 /* =========================================================================
  * Organization Projects
  * ========================================================================= */
-OrganizationService.prototype.createProject = function(options, next) {
-  organizationProjectService.create(options, next);
-};
+// OrganizationService.prototype.createProject = function(options, next) {
+//   organizationProjectService.create(options, next);
+// };
 
 /* =========================================================================
  * Organization Users

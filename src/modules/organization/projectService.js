@@ -28,71 +28,71 @@ var OrganizationProjectService = function() {
 };
 util.inherits(OrganizationProjectService, CommonService);
 
-OrganizationProjectService.prototype.create = function(options, next) {
-  if (!options) return next(new errors.InvalidArgumentError('options is required'));
-  if (!options.organizationId) return next(new errors.InvalidArgumentError('Organization Id is required'));
+// OrganizationProjectService.prototype.create = function(options, next) {
+//   if (!options) return next(new errors.InvalidArgumentError('options is required'));
+//   if (!options.organizationId) return next(new errors.InvalidArgumentError('Organization Id is required'));
 
-  var _this = this;
-  var organization = null;
-  var project = null;
-  var organizationProject = null;
+//   var _this = this;
+//   var organization = null;
+//   var project = null;
+//   var organizationProject = null;
 
-  async.waterfall([
-    function findOrganizationBy_step(done) {
-      Organization.findById(options.organizationId, done);
-    },
-    function createProject_step(_organization, done) {
-      if (!_organization) return done(new errors.ObjectNotFoundError('Organization not found'));
+//   async.waterfall([
+//     function findOrganizationBy_step(done) {
+//       Organization.findById(options.organizationId, done);
+//     },
+//     function createProject_step(_organization, done) {
+//       if (!_organization) return done(new errors.ObjectNotFoundError('Organization not found'));
 
-      organization = _organization;
+//       organization = _organization;
 
-      projectService.create(options, done);
-    },
-    function createOrganizationProject_step(_project, done) {
-      project = _project;
+//       projectService.create(options, done);
+//     },
+//     function createOrganizationProject_step(_project, done) {
+//       project = _project;
 
-      organizationProject = new OrganizationProject();
-      organizationProject.project = project._id;
-      organizationProject.organization = organization._id;
-      organizationProject.created = new Date();
-      organizationProject.modified = organizationProject.created;
+//       organizationProject = new OrganizationProject();
+//       organizationProject.project = project._id;
+//       organizationProject.organization = organization._id;
+//       organizationProject.created = new Date();
+//       organizationProject.modified = organizationProject.created;
 
-      organizationProject.save(function(err, updatedOrganizationProject) {
-        if (err) return done(err);
+//       organizationProject.save(function(err, updatedOrganizationProject) {
+//         if (err) return done(err);
 
-        organizationProject = updatedOrganizationProject;
+//         organizationProject = updatedOrganizationProject;
 
-        return done(null);
-      });
-    },
-    function updateOrganizationWithProject_step(done) {
-      organization.organizationProjects.push(organizationProject._id);
+//         return done(null);
+//       });
+//     },
+//     function updateOrganizationWithProject_step(done) {
+//       organization.organizationProjects.push(organizationProject._id);
 
-      organization.save(function(err, updatedOrganization) {
-        if (err) return done(err);
+//       organization.save(function(err, updatedOrganization) {
+//         if (err) return done(err);
 
-        organization = updatedOrganization;
+//         organization = updatedOrganization;
 
-        return done(null);
-      });
-    },
-    function updateProjectWithOrganization_step(done) {
-      project.organizationProjects.push(organizationProject._id);
+//         return done(null);
+//       });
+//     },
+//     function updateProjectWithOrganization_step(done) {
+//       project.organizationProjects.push(organizationProject._id);
 
-      project.save(function(err, updatedProject) {
-        if (err) return done(err);
+//       project.save(function(err, updatedProject) {
+//         if (err) return done(err);
 
-        project = updatedProject;
+//         project = updatedProject;
 
-        return done(null);
-      });
-    }
-  ], function(err) {
-    if (err) return next(err);
+//         return done(null);
+//       });
+//     }
+//   ], function(err) {
+//     if (err) return next(err);
 
-    return next(null, organizationProject);
-  });
-};
+//     return next(null, organizationProject);
+//   });
+// };
 
 /**
  * @param {object} options
