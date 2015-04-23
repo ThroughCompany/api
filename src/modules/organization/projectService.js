@@ -77,7 +77,7 @@ util.inherits(OrganizationProjectService, CommonService);
 //       });
 //     },
 //     function updateProjectWithOrganization_step(done) {
-//       project.organizationProjects.push(organizationProject._id);
+//       project.organizationProject = organizationProject._id;
 
 //       project.save(function(err, updatedProject) {
 //         if (err) return done(err);
