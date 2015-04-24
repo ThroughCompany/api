@@ -339,7 +339,7 @@ describe('api', function() {
         };
         var needDuration = {
           startDate: moment(),
-          endDate: moment().add('month', 6)
+          endDate: moment().add(6, 'month')
         };
 
         var createSkillSpy;

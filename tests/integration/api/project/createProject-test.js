@@ -242,8 +242,7 @@ describe('api', function() {
           });
         });
 
-
-        describe('and user does not already have projects', function() {
+        describe('and user does already have projects', function() {
           var email = 'testuser@test.com';
           var password = 'password';
           var user = null;

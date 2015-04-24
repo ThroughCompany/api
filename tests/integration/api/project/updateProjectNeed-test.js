@@ -466,7 +466,7 @@ describe('api', function() {
 
           var projectNeedClone = _.clone(projectNeed.toJSON());
 
-          //var newNeedStartDate = moment().add('month', 1);
+          //var newNeedStartDate = moment().add(1, 'month');
 
           projectNeedClone.name = '123';
           projectNeedClone.description = 'new description';
