@@ -6,21 +6,9 @@ var _ = require('underscore');
 
 var app = require('src');
 
-var mongoose;
+var mongoose = require('mongoose');
 
-var appConfig;
-
-var Auth;
-var User;
-var Admin;
-var Role;
-var Permission;
-
-var authService;
-var userService;
-var adminService;
-
-var logger;
+var appConfig = require('src/config/app-config');
 
 /* =========================================================================
  * Db Seed
@@ -45,28 +33,6 @@ function dbClean(options, next) {
 /* =========================================================================
  * Steps
  * ========================================================================= */
-steps.push(function loadDependencies_step(done) {
-  appConfig = require('src/config/app-config');
-
-  if (appConfig.ENV === 'development' || appConfig.ENV === 'production') throw new Error('\n\n DELETING ' + appConfig.ENV + ' - BE CAREFUL!!!!! \n\n');
-
-  Auth = require('modules/auth/data/model');
-  Admin = require('modules/admin/data/model');
-  User = require('modules/user/data/model');
-  Role = require('modules/role/data/model');
-  Permission = require('modules/permission/data/model');
-
-  authService = require('modules/auth');
-  userService = require('modules/user');
-  adminService = require('modules/admin');
-
-  logger = require('modules/logger');
-
-  mongoose = require('mongoose');
-
-  done();
-});
-
 steps.push(function dropDatabase_step(done) {
   var conn = mongoose.createConnection(appConfig.db);
 
@@ -118,10 +84,10 @@ function functionName(fun) {
  * ========================================================================= */
 module.exports = {
   run: function(options, next) {
-    app.init({
-      http: false
-    }, function() {
-      dbClean(options, next);
-    });
+    if (appConfig.ENV === 'development' || appConfig.ENV === 'production') {
+      return next(new Error('\n\n DELETING ' + appConfig.ENV + ' - BE CAREFUL!!!!! \n\n'));
+    }
+
+    dbClean(options, next);
   }
 };

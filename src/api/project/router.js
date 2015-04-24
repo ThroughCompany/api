@@ -66,7 +66,10 @@ var createProject = {
   action: function(req, res, next) {
     authMiddleware.authenticationRequired(req, res, function(err) {
       if (err) return next(err);
-      controller.createProject(req, res, next);
+      authMiddleware.currentUserOrganizationIdBodyParamOptional('organizationId')(req, res, function(err) {
+        if (err) return next(err);
+        controller.createProject(req, res, next);
+      });
     });
   }
 };
@@ -88,7 +91,10 @@ var updateProjectById = {
       if (err) return next(err);
       authMiddleware.currentUserProjectIdQueryParamRequired('id')(req, res, function(err) {
         if (err) return next(err);
-        controller.updateProjectById(req, res, next);
+        authMiddleware.currentUserOrganizationIdBodyParamOptional('organizationId')(req, res, function(err) {
+          if (err) return next(err);
+          controller.updateProjectById(req, res, next);
+        });
       });
     });
   }

@@ -17,12 +17,15 @@ var projectPopulateService = require('./populate/service');
 var projectApplicationService = require('./applicationService');
 var projectNeedService = require('./needService');
 var projectUserService = require('./userService');
+var organizationProjectService = require('modules/organization/ProjectService');
 
 //models
 var User = require('modules/user/data/model');
 var Project = require('modules/project/data/projectModel');
 var ProjectUser = require('modules/project/data/userModel');
 var ProjectNeed = require('modules/project/data/needModel');
+var Organization = require('modules/organization/data/organizationModel');
+var OrganizationProject = require('modules/organization/data/projectModel');
 
 //utils
 var patchUtils = require('utils/patchUtils');
@@ -86,8 +89,8 @@ ProjectService.prototype.create = function(options, next) {
       generateProjectSlug(options.name, done);
     },
     function createProject_step(slug, done) {
+      project = new Project();
 
-      var project = new Project();
       project.name = options.name;
       project.created = new Date();
       project.modified = project.created;
@@ -111,17 +114,35 @@ ProjectService.prototype.create = function(options, next) {
     function createProjectUser_step(_permissions, done) {
       permissions = _permissions;
 
-      var projectUser = new ProjectUser();
+      projectUser = new ProjectUser();
       projectUser.project = project._id;
       projectUser.user = user._id;
       projectUser.email = user.email;
       projectUser.permissions = projectUser.permissions.concat(permissions);
 
-      projectUser.save(done);
-    },
-    function updateProject_step(_projectUser, numCreated, done) {
-      projectUser = _projectUser;
+      projectUser.save(function(err, _projectUser) {
+        if (err) return done(err);
 
+        projectUser = _projectUser;
+
+        return done(null);
+      });
+    },
+    function createOrganizationProject_step(done) {
+      if (!options.organizationId) {
+        return done(null);
+      } else {
+        organizationProjectService.create({
+          organizationId: options.organizationId,
+          projectId: project._id,
+        }, function(err, _organizationProject) {
+          if (err) return done(err);
+
+          return done(null);
+        });
+      }
+    },
+    function updateProject_step(done) {
       project.projectUsers.push(projectUser._id);
 
       project.save(function(err, updatedProject) {
