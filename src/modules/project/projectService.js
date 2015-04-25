@@ -138,6 +138,8 @@ ProjectService.prototype.create = function(options, next) {
         }, function(err, _organizationProject) {
           if (err) return done(err);
 
+          project.organizationProject = _organizationProject._id;
+
           return done(null);
         });
       }
