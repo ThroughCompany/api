@@ -27,7 +27,6 @@ var Project = require('modules/project/data/projectModel');
 var ProjectNeed = require('modules/project/data/needModel');
 
 var PROJECT_EVENTS = require('modules/project/constants/events');
-var NEED_EMPLOYMENT_TYPES = require('modules/project/constants/needEmploymentTypes');
 
 var agent;
 var sandbox;

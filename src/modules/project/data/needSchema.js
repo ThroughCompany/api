@@ -11,8 +11,6 @@ var utils = require('utils/utils');
  * Constants
  * ========================================================================= */
 var LINK_TYPES = require('modules/common/constants/linkTypes');
-var NEED_EMPLOYMENT_TYPES = require('modules/project/constants/needEmploymentTypes');
-var DURATION_AMOUNTS = require('modules/project/constants/durationAmounts');
 
 /* =========================================================================
  * Schema

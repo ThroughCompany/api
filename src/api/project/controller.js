@@ -23,7 +23,11 @@ function Controller() {}
  * @description Get all projects
  */
 Controller.prototype.getProjects = function getProjects(req, res, next) {
-  projectService.getAll({}, function(err, projects) {
+  var status = req.query.status;
+
+  projectService.getAll({
+    status: status
+  }, function(err, projects) {
     if (err) return next(err);
     return res.status(200).json(projects);
   });

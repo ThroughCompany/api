@@ -40,8 +40,9 @@ var partialResponseParser = require('modules/partialResponse/parser');
  * ========================================================================= */
 var EVENTS = require('./constants/events');
 var ROLES = require('modules/role/constants/roleNames');
-var DEFAULTIMAGEURL = 'https://s3.amazonaws.com/throughcompany-assets/project-avatars/avatar';
+var DEFAULT_IMAGEURL = 'https://s3.amazonaws.com/throughcompany-assets/project-avatars/avatar';
 var IMAGE_TYPES = require('modules/image/constants/image-types');
+var PROJECT_STATUSES = require('modules/project/constants/projectStatuses');
 
 var UPDATEDABLE_PROJECT_PROPERTIES = [
   'name',
@@ -95,8 +96,9 @@ ProjectService.prototype.create = function(options, next) {
       project.created = new Date();
       project.modified = project.created;
       project.slug = slug
-      project.profilePic = DEFAULTIMAGEURL + randomNum(1, 4) + '.jpg';
+      project.profilePic = DEFAULT_IMAGEURL + randomNum(1, 4) + '.jpg';
       project.description = options.description;
+      project.status = PROJECT_STATUSES.DRAFT;
       project.wiki.pages.push({
         title: 'Start',
         text: 'Wiki for ' + options.name + '...'
@@ -403,8 +405,17 @@ ProjectService.prototype.getById = function(options, next) {
  */
 ProjectService.prototype.getAll = function(options, next) {
   if (!options) return next(new errors.InvalidArgumentError('options is required'));
+  if (options.status && !_.contains(_.values(PROJECT_STATUSES), options.status)) return next(new errors.InvalidArgumentError(options.status + ' is not a valid project status'));
 
-  var query = Project.find({});
+  var conditions = {};
+
+  if (options.status) {
+    conditions.status = options.status;
+  } else {
+    conditions.status = PROJECT_STATUSES.OPEN;
+  }
+
+  var query = Project.find(conditions);
 
   return query.exec(next);
 };
@@ -577,22 +588,22 @@ ProjectService.prototype.createApplication = function createApplication(options,
   });
 };
 
-ProjectService.prototype.acceptApplication = function acceptApplication(options, next) {
-  var _this = this;
+// ProjectService.prototype.acceptApplication = function acceptApplication(options, next) {
+//   var _this = this;
 
-  projectApplicationService.accept(options, function(err, projectApplication) {
-    if (err) return next(err);
+//   projectApplicationService.accept(options, function(err, projectApplication) {
+//     if (err) return next(err);
 
-    //TODO: implement this - email the accepted user
-    // _this.emit(EVENTS.APPLICATION_ACCEPTED, {
-    //   projectApplicationId: projectApplication._id,
-    //   projectId: projectApplication.project,
-    //   userId: projectApplication.user
-    // });
+//     //TODO: implement this - email the accepted user
+//     // _this.emit(EVENTS.APPLICATION_ACCEPTED, {
+//     //   projectApplicationId: projectApplication._id,
+//     //   projectId: projectApplication.project,
+//     //   userId: projectApplication.user
+//     // });
 
-    next(null, projectApplication);
-  });
-};
+//     next(null, projectApplication);
+//   });
+// };
 
 ProjectService.prototype.getApplications = function getApplications(options, next) {
   var _this = this;

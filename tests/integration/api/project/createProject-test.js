@@ -27,6 +27,7 @@ var Permission = require('modules/permission/data/model');
 var Organization = require('modules/organization/data/organizationModel');
 var OrganizationProject = require('modules/organization/data/projectModel');
 
+var PROJECT_STATUSES = require('modules/project/constants/projectStatuses');
 var PERMISSION_NAMES = require('modules/permission/constants/permissionNames');
 
 var agent;
@@ -316,7 +317,7 @@ describe('api', function() {
             }, done);
           });
 
-          it('should create a new project and create a new project user with permissions', function(done) {
+          it('should create a new project with default status and create a new project user with permissions', function(done) {
 
             agent
               .post('/projects')
@@ -337,6 +338,7 @@ describe('api', function() {
 
                 newProject.name.should.equal(projectName);
                 newProject.projectUsers.length.should.equal(1);
+                newProject.status.should.equal(PROJECT_STATUSES.DRAFT);
 
                 var projectUserId = newProject.projectUsers[0];
 

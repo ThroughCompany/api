@@ -11,6 +11,7 @@ var utils = require('utils/utils');
  * Constants
  * ========================================================================= */
 var LINK_TYPES = require('modules/common/constants/linkTypes');
+var PROJECT_STATUSES = require('modules/project/constants/projectStatuses');
 
 /* =========================================================================
  * Schema
@@ -20,6 +21,12 @@ var projectSchema = baseSchema.extend({
     type: String,
     trim: true,
     required: true
+  },
+  status: {
+    type: String,
+    trim: true,
+    required: true,
+    enum: _.values(PROJECT_STATUSES)
   },
   slug: {
     type: String,

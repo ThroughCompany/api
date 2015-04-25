@@ -27,8 +27,6 @@ var needValidator = require('./validators/needValidator');
  * Constants
  * ========================================================================= */
 var EVENTS = require('./constants/events');
-//var NEED_EMPLOYMENT_TYPES = require('./constants/needEmploymentTypes');
-var DURATION_AMOUNTS = require('./constants/durationAmounts');
 
 var UPDATEDABLE_PROJECT_NEED_PROPERTIES = [
   'name',

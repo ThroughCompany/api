@@ -24,6 +24,10 @@ var getProjects = {
     path: '/projects',
     summary: 'Get a list of projects',
     method: 'GET',
+    parameters: [
+      swagger.params.query('status', 'a project status', 'string'),
+      swagger.params.query('fields', 'csv of fields to select', 'string')
+    ],
     nickname: 'getProjects',
     type: 'Project',
     produces: ['application/json']
