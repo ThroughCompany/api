@@ -94,10 +94,10 @@ var projectSchema = baseSchema.extend({
     ref: 'ProjectNeed'
   }],
   //organization
-  organizationProject: [{
+  organizationProject: {
     type: String,
     ref: 'OrganizationProject'
-  }]
+  }
 }, {
   collection: 'projects'
 });
