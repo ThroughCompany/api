@@ -26,7 +26,8 @@ var getProjects = {
     method: 'GET',
     parameters: [
       swagger.params.query('status', 'a project status', 'string'),
-      swagger.params.query('fields', 'csv of fields to select', 'string')
+      swagger.params.query('fields', 'csv of fields to select', 'string'),
+      swagger.params.body('skills', 'csv of skills to filter by', 'string')
     ],
     nickname: 'getProjects',
     type: 'Project',

@@ -24,9 +24,11 @@ function Controller() {}
  */
 Controller.prototype.getProjects = function getProjects(req, res, next) {
   var status = req.query.status;
+  var skills = req.query.skills;
 
   projectService.getAll({
-    status: status
+    status: status,
+    skills: skills
   }, function(err, projects) {
     if (err) return next(err);
     return res.status(200).json(projects);

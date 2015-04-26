@@ -92,7 +92,7 @@ describe('api', function() {
         it('should return a list of users', function(done) {
 
           agent
-            .get('/projects')
+            .get('/projects?status=Draft')
             .end(function(err, response) {
               should.not.exist(err);
               should.exist(response);

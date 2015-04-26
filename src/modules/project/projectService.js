@@ -26,6 +26,7 @@ var ProjectUser = require('modules/project/data/userModel');
 var ProjectNeed = require('modules/project/data/needModel');
 var Organization = require('modules/organization/data/organizationModel');
 var OrganizationProject = require('modules/organization/data/projectModel');
+var Skill = require('modules/skill/data/model');
 
 //utils
 var patchUtils = require('utils/patchUtils');
@@ -407,18 +408,79 @@ ProjectService.prototype.getById = function(options, next) {
 ProjectService.prototype.getAll = function(options, next) {
   if (!options) return next(new errors.InvalidArgumentError('options is required'));
   if (options.status && !_.contains(_.values(PROJECT_STATUSES), options.status)) return next(new errors.InvalidArgumentError(options.status + ' is not a valid project status'));
+  if (options.skills && !_.isString(options.skills)) return next(new errors.InvalidArgumentError('Skills must be a string'));
 
   var conditions = {};
+  var steps = [];
+  var projects = null;
+  var projectNeeds = null;
 
-  if (options.status) {
-    conditions.status = options.status;
-  } else {
-    conditions.status = PROJECT_STATUSES.OPEN;
+  if (options.skills) {
+    options.skills = utils.arrayClean(options.skills.split(','));
+
+    steps.push(function findProjectNeeds_step(done) {
+      async.waterfall([
+        function findSkillsByName_step(cb) {
+          Skill.find({
+            name: {
+              $in: options.skills
+            }
+          }, cb);
+        },
+        function findProjectNeedsBySkillIds_step(skills, cb) {
+
+          //TODO: we should be filtering for only OPEN needs (need to add statuses to project needs)
+
+          ProjectNeed.find({
+            skills: {
+              $in: _.pluck(skills, '_id')
+            }
+          }, function(err, _projectNeeds) {
+            if (err) return next(err);
+
+            projectNeeds = _projectNeeds;
+
+            return done(err);
+          });
+        }
+      ], done);
+    });
   }
 
-  var query = Project.find(conditions);
+  steps.push(function findProjects_step(done) {
+    if (options.status) {
+      conditions.status = options.status;
+    } else {
+      conditions.status = PROJECT_STATUSES.OPEN;
+    }
 
-  return query.exec(next);
+    console.log('projectNeeds');
+    console.log(projectNeeds);
+
+    if (options.skills) {
+      conditions.projectNeeds = {
+        $in: _.pluck(projectNeeds, '_id')
+      };
+    }
+
+    console.log(conditions);
+
+    var query = Project.find(conditions);
+
+    return query.exec(function(err, _projects) {
+      if (err) return next(err);
+
+      projects = _projects;
+
+      return done(err);
+    });
+  });
+
+  async.series(steps, function(err) {
+    if (err) return next(err);
+
+    return next(null, projects);
+  });
 };
 
 /**
