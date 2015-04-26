@@ -6,7 +6,6 @@ var swagger = require('swagger-node-express');
 
 //middleware
 var authMiddleware = require('src/middleware/authMiddleware');
-var partialResponseMiddleware = require('src/middleware/partialResponseMiddleware');
 
 var controller = require('./controller');
 
@@ -28,13 +27,7 @@ var getSkills = {
     produces: ['application/json']
   },
   action: function(req, res, next) {
-    authMiddleware.authenticationRequired(req, res, function(err) {
-      if (err) return next(err);
-      partialResponseMiddleware(req, res, function(err) {
-        if (err) return next(err);
-        controller.getAll(req, res, next);
-      });
-    });
+    controller.getAll(req, res, next);
   }
 };
 

@@ -100,6 +100,10 @@ var projectSchema = baseSchema.extend({
     type: String,
     ref: 'ProjectNeed'
   }],
+  openProjectNeedsCount: {
+    type: Number,
+    default: 0
+  },
   //organization
   organizationProject: {
     type: String,

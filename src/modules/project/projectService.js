@@ -49,7 +49,8 @@ var UPDATEDABLE_PROJECT_PROPERTIES = [
   'description',
   'lastName',
   'location',
-  'socialLinks'
+  'socialLinks',
+  'status'
 ];
 
 /* =========================================================================

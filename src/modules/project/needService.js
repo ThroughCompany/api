@@ -123,6 +123,7 @@ ProjectNeedService.prototype.create = function create(options, next) {
       },
       function updateProjectWithNeed_step(projectNeed, done) {
         project.projectNeeds.push(projectNeed._id);
+        project.openProjectNeedsCount++;
 
         project.save(done);
       }
