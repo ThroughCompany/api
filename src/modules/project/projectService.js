@@ -17,7 +17,7 @@ var projectPopulateService = require('./populate/service');
 var projectApplicationService = require('./applicationService');
 var projectNeedService = require('./needService');
 var projectUserService = require('./userService');
-var organizationProjectService = require('modules/organization/ProjectService');
+var organizationProjectService = require('modules/organization/projectService');
 
 //models
 var User = require('modules/user/data/model');
@@ -121,7 +121,7 @@ ProjectService.prototype.create = function(options, next) {
       projectUser = new ProjectUser();
       projectUser.project = project._id;
       projectUser.user = user._id;
-      projectUser.email = user.email;
+      //projectUser.email = user.email;
       projectUser.permissions = projectUser.permissions.concat(permissions);
 
       projectUser.save(function(err, _projectUser) {
@@ -454,16 +454,11 @@ ProjectService.prototype.getAll = function(options, next) {
       conditions.status = PROJECT_STATUSES.OPEN;
     }
 
-    console.log('projectNeeds');
-    console.log(projectNeeds);
-
     if (options.skills) {
       conditions.projectNeeds = {
         $in: _.pluck(projectNeeds, '_id')
       };
     }
-
-    console.log(conditions);
 
     var query = Project.find(conditions);
 

@@ -75,7 +75,7 @@ SkillsService.prototype.getAll = function(options, next) {
 
   query.limit(options.take && options.take <= MAX_TAKE ? options.take : TAKE);
 
-  query.sort('projectUseCount');
+  query.sort('-projectUseCount');
 
   query.exec(function(err, skills) {
     if (err) return next(err);

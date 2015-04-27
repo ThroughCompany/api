@@ -20,11 +20,11 @@ var projectUserSchema = baseSchema.extend({
   permissions: [{
     type: String,
     ref: 'Permission'
-  }],
-  email: {
-    type: String,
-    required: true
-  }
+  }]
+  // email: {
+  //   type: String,
+  //   required: true
+  // }
 }, {
   collection: 'projectusers'
 });
