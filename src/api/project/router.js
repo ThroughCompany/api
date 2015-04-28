@@ -225,30 +225,6 @@ var createProjectApplication = {
   }
 };
 
-var acceptProjectApplication = {
-  spec: {
-    path: '/projects/{id}/applications/{projectApplicationId}/accept',
-    summary: 'App a project application',
-    method: 'POST',
-    parameters: [
-      swagger.params.path('id', 'project\'s id', 'string'),
-      swagger.params.body('projectApplicationId', 'application\'s id', 'string')
-    ],
-    nickname: 'acceptApplication',
-    type: 'ProjectApplication',
-    produces: ['application/json']
-  },
-  action: function(req, res, next) {
-    authMiddleware.authenticationRequired(req, res, function(err) {
-      if (err) return next(err);
-      authMiddleware.currentProjectPermissionParamRequired(PERMISSION_NAMES.ADD_PROJECT_USERS, 'id')(req, res, function(err) {
-        if (err) return next(err);
-        controller.acceptProjectApplication(req, res, next);
-      });
-    });
-  }
-};
-
 var getProjectApplications = {
   spec: {
     path: '/projects/{id}/applications',
@@ -334,7 +310,6 @@ swagger.addPost(createProjectNeed);
 swagger.addPatch(updateProjectNeedById);
 //project applications
 swagger.addPost(createProjectApplication);
-swagger.addPost(acceptProjectApplication);
 swagger.addGet(getProjectApplications);
 //wiki
 swagger.addPost(createWikiPage);

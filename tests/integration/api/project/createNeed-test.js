@@ -27,6 +27,7 @@ var Project = require('modules/project/data/projectModel');
 var ProjectNeed = require('modules/project/data/needModel');
 
 var PROJECT_EVENTS = require('modules/project/constants/events');
+var NEED_STATUSES = require('modules/project/constants/needStatuses');
 
 var agent;
 var sandbox;
@@ -436,6 +437,8 @@ describe('api', function() {
               projectNeed.name.should.equal(needName);
               projectNeed.description.should.equal(needDescription);
               projectNeed.locationSpecific.should.equal(needLocationSpecific);
+              projectNeed.status.should.equal(NEED_STATUSES.OPEN);
+
               should.exist(projectNeed.duration);
               should.exist(projectNeed.duration.startDate);
               should.exist(projectNeed.duration.endDate);

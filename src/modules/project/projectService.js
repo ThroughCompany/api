@@ -646,23 +646,6 @@ ProjectService.prototype.createApplication = function createApplication(options,
   });
 };
 
-// ProjectService.prototype.acceptApplication = function acceptApplication(options, next) {
-//   var _this = this;
-
-//   projectApplicationService.accept(options, function(err, projectApplication) {
-//     if (err) return next(err);
-
-//     //TODO: implement this - email the accepted user
-//     // _this.emit(EVENTS.APPLICATION_ACCEPTED, {
-//     //   projectApplicationId: projectApplication._id,
-//     //   projectId: projectApplication.project,
-//     //   userId: projectApplication.user
-//     // });
-
-//     next(null, projectApplication);
-//   });
-// };
-
 ProjectService.prototype.getApplications = function getApplications(options, next) {
   var _this = this;
 

@@ -11,6 +11,7 @@ var utils = require('utils/utils');
  * Constants
  * ========================================================================= */
 var LINK_TYPES = require('modules/common/constants/linkTypes');
+var NEED_STATUSES = require('../constants/needStatuses');
 
 /* =========================================================================
  * Schema
@@ -31,17 +32,15 @@ var needSchema = baseSchema.extend({
     trim: true,
     required: true
   },
+  status: {
+    type: String,
+    required: true,
+    enum: _.values(NEED_STATUSES)
+  },
   description: {
     type: String,
     trim: true
   },
-  // employmentType: {
-  //   type: String,
-  //   trim: true,
-  //   required: true,
-  //   enum: _.keys(NEED_EMPLOYMENT_TYPES),
-  //   default: NEED_EMPLOYMENT_TYPES.VOLUNTEER
-  // },
   duration: {
     startDate: {
       type: Date
@@ -63,14 +62,7 @@ var needSchema = baseSchema.extend({
   locationSpecific: {
     type: Boolean,
     default: false
-  },
-  // criteria: [{
-  //   description: {
-  //     type: String,
-  //     trim: true,
-  //     required: true
-  //   }
-  // }]
+  }
 }, {
   collection: 'projectneeds'
 });

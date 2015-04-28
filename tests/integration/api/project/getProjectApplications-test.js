@@ -20,6 +20,7 @@ var User = require('modules/user/data/model');
 var Admin = require('modules/admin/data/model');
 var Auth = require('modules/auth/data/model');
 var Project = require('modules/project/data/projectModel');
+var ProjectNeed = require('modules/project/data/needModel');
 var ProjectApplication = require('modules/project/data/applicationModel');
 
 var agent;
@@ -167,6 +168,7 @@ describe('api', function() {
         var user2 = null;
         var auth = null;
         var project = null;
+        var projectNeed = null;
         var projectApplication = null;
 
         before(function(done) {
@@ -216,10 +218,24 @@ describe('api', function() {
                 cb();
               });
             },
+            function createProjectNeed_step(cb) {
+              projectService.createNeed({
+                projectId: project._id,
+                name: 'Project 1',
+                description: 'FOobar',
+                skills: ['Programming']
+              }, function(err, _projectNeed) {
+                if (err) return cb(err);
+
+                projectNeed = _projectNeed;
+                cb();
+              });
+            },
             function createUserProjectApplications_step(cb) {
               projectService.createApplication({
                 projectId: project._id,
-                userId: user2._id
+                userId: user2._id,
+                projectNeedId: projectNeed._id
               }, function(err, _projectApplication) {
                 if (err) return cb(err);
 
@@ -248,6 +264,12 @@ describe('api', function() {
         after(function(done) {
           Project.remove({
             _id: project._id
+          }, done);
+        });
+
+        after(function(done) {
+          ProjectNeed.remove({
+            _id: projectNeed._id
           }, done);
         });
 

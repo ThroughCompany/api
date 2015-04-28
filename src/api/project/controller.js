@@ -177,10 +177,12 @@ Controller.prototype.getProjectUsers = function(req, res, next) {
 Controller.prototype.createProjectApplication = function(req, res, next) {
   var projectId = req.params.id;
   var userId = req.body.userId;
+  var projectNeedId = req.body.projectNeedId;
 
   projectService.createApplication({
     projectId: projectId,
-    userId: userId
+    userId: userId,
+    projectNeedId: projectNeedId
   }, function(err, projectApplication) {
     if (err) return next(err);
     return res.status(201).json(projectApplication);

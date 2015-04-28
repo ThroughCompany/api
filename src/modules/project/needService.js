@@ -27,6 +27,7 @@ var needValidator = require('./validators/needValidator');
  * Constants
  * ========================================================================= */
 var EVENTS = require('./constants/events');
+var NEED_STATUSES = require('./constants/needStatuses');
 
 var UPDATEDABLE_PROJECT_NEED_PROPERTIES = [
   'name',
@@ -101,6 +102,7 @@ ProjectNeedService.prototype.create = function create(options, next) {
         projectNeed.project = project._id;
         projectNeed.name = options.name;
         projectNeed.skills = skillIds;
+        projectNeed.status = NEED_STATUSES.OPEN;
         projectNeed.description = options.description;
         if (options.timeCommitment) {
           projectNeed.timeCommitment.hoursPerWeek = options.timeCommitment.hoursPerWeek;
@@ -111,7 +113,6 @@ ProjectNeedService.prototype.create = function create(options, next) {
           projectNeed.duration.endDate = options.duration.endDate;
         }
         projectNeed.locationSpecific = options.locationSpecific !== null && options.locationSpecific !== undefined ? options.locationSpecific : false;
-        //projectNeed.employmentType = options.employmentType || NEED_EMPLOYMENT_TYPES.VOLUNTEER;
 
         projectNeed.save(function(err, newProjectNeed) {
           if (err) return done(err);
