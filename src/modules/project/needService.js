@@ -172,7 +172,8 @@ ProjectNeedService.prototype.update = function update(options, next) {
         },
         function findProjectNeedById(cb) {
           ProjectNeed.findById({
-            _id: options.projectNeedId
+            _id: options.projectNeedId,
+            project: options.projectId
           }, function(err, _projectNeed) {
             if (!_projectNeed) return done(new errors.ObjectNotFoundError('No project need exists with the id ' + options.projectNeedId));
 

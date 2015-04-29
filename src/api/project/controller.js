@@ -177,27 +177,27 @@ Controller.prototype.getProjectUsers = function(req, res, next) {
 Controller.prototype.createProjectApplication = function(req, res, next) {
   var projectId = req.params.id;
   var userId = req.body.userId;
-  var projectNeedId = req.body.projectNeedId;
+  var needId = req.body.needId;
 
   projectService.createApplication({
     projectId: projectId,
     userId: userId,
-    projectNeedId: projectNeedId
+    needId: needId
   }, function(err, projectApplication) {
     if (err) return next(err);
     return res.status(201).json(projectApplication);
   });
 };
 
-Controller.prototype.acceptProjectApplication = function(req, res, next) {
+Controller.prototype.updateProjectApplicationById = function(req, res, next) {
   var projectId = req.params.id;
-  var projectApplicationId = req.params.projectApplicationId;
-  var userId = req.body.userId;
+  var projectApplicationId = req.params.applicationId;
+  var patches = req.body.patches;
 
-  projectService.acceptApplication({
+  projectService.updateApplicationById({
     projectId: projectId,
     projectApplicationId: projectApplicationId,
-    userId: userId
+    patches: patches
   }, function(err, projectApplication) {
     if (err) return next(err);
     return res.status(200).json(projectApplication);

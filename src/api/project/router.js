@@ -225,6 +225,31 @@ var createProjectApplication = {
   }
 };
 
+var updateProjectApplication = {
+  spec: {
+    path: '/projects/{id}/applications/{applicationId}',
+    summary: 'Update a project application',
+    method: 'PATCH',
+    parameters: [
+      swagger.params.path('id', 'project\'s id', 'string'),
+      swagger.params.path('applicationId', 'project application\'s id', 'string'),
+      swagger.params.body('userId', 'user\'s id', 'string')
+    ],
+    nickname: 'updateProjectApplication',
+    type: 'ProjectApplication',
+    produces: ['application/json']
+  },
+  action: function(req, res, next) {
+    authMiddleware.authenticationRequired(req, res, function(err) {
+      if (err) return next(err);
+      authMiddleware.currentUserProjectIdQueryParamRequired('id')(req, res, function(err) {
+        if (err) return next(err);
+        controller.updateProjectApplicationById(req, res, next);
+      });
+    });
+  }
+};
+
 var getProjectApplications = {
   spec: {
     path: '/projects/{id}/applications',
@@ -310,6 +335,7 @@ swagger.addPost(createProjectNeed);
 swagger.addPatch(updateProjectNeedById);
 //project applications
 swagger.addPost(createProjectApplication);
+swagger.addPatch(updateProjectApplication);
 swagger.addGet(getProjectApplications);
 //wiki
 swagger.addPost(createWikiPage);

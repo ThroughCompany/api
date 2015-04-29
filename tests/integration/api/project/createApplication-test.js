@@ -201,7 +201,7 @@ describe('api', function() {
             .set('x-access-token', auth.token)
             .send({
               userId: user._id,
-              projectNeedId: '12345'
+              needId: '12345'
             })
             .end(function(err, response) {
               should.not.exist(err);
@@ -308,7 +308,7 @@ describe('api', function() {
             .set('x-access-token', auth1.token)
             .send({
               userId: user2._id,
-              projectNeedId: '12345'
+              needId: '12345'
             })
             .end(function(err, response) {
               should.not.exist(err);
@@ -438,7 +438,7 @@ describe('api', function() {
             .set('x-access-token', auth1.token)
             .send({
               userId: user1._id,
-              projectNeedId: projectNeed._id
+              needId: projectNeed._id
             })
             .end(function(err, response) {
               should.not.exist(err);
@@ -565,7 +565,7 @@ describe('api', function() {
             .set('x-access-token', auth1.token)
             .send({
               userId: user1._id,
-              projectNeedId: projectNeed._id
+              needId: projectNeed._id
             })
             .end(function(err, response) {
               should.not.exist(err);
@@ -660,7 +660,7 @@ describe('api', function() {
             function createProjectApplication_step(cb) {
               projectService.createApplication({
                 projectId: project._id,
-                projectNeedId: projectNeed._id,
+                needId: projectNeed._id,
                 userId: user2._id
               }, function(err, _projectApplication) {
                 console.log(err);
@@ -712,7 +712,7 @@ describe('api', function() {
             .set('x-access-token', auth1.token)
             .send({
               userId: user2._id,
-              projectNeedId: projectNeed._id
+              needId: projectNeed._id
             })
             .end(function(err, response) {
               should.not.exist(err);
@@ -860,7 +860,7 @@ describe('api', function() {
             .set('x-access-token', auth2.token)
             .send({
               userId: user2._id,
-              projectNeedId: projectNeed._id
+              needId: projectNeed._id
             })
             .end(function(err, response) {
               should.not.exist(err);

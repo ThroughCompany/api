@@ -619,11 +619,11 @@ ProjectService.prototype.createNeed = function createNeed(options, next) {
 /**
  * @param {object} options
  * @param {string} projectId
- * @param {string} name
+ * @param {string} projectNeedId
  * @param {object} updates
  * @param {function} next - callback
  */
-ProjectService.prototype.updateNeedById = function createNeed(options, next) {
+ProjectService.prototype.updateNeedById = function updateNeedById(options, next) {
   projectNeedService.update(options, next);
 };
 
@@ -644,6 +644,17 @@ ProjectService.prototype.createApplication = function createApplication(options,
 
     return next(null, projectApplication);
   });
+};
+
+/**
+ * @param {object} options
+ * @param {string} projectId
+ * @param {string} projectApplicationId
+ * @param {object} updates
+ * @param {function} next - callback
+ */
+ProjectService.prototype.updateApplicationById = function updateApplicationById(options, next) {
+  projectApplicationService.update(options, next);
 };
 
 ProjectService.prototype.getApplications = function getApplications(options, next) {

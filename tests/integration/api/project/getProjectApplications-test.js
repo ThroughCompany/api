@@ -235,7 +235,7 @@ describe('api', function() {
               projectService.createApplication({
                 projectId: project._id,
                 userId: user2._id,
-                projectNeedId: projectNeed._id
+                needId: projectNeed._id
               }, function(err, _projectApplication) {
                 if (err) return cb(err);
 

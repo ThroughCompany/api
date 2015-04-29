@@ -84,7 +84,7 @@ EventOrchestrator.prototype.registerHandlers = function() {
         logger.info('Module \'' + eventGroup.module + '\' listening to \'' + event.name + '\' event - ' + event.handlers.length + ' handlers');
 
         module.on(event.name, function() {
-          logger.debug('starting handling event : \'' + event.name + '\'');
+          logger.debug('started handling event : \'' + event.name + '\'...');
 
           var args = Array.prototype.slice.call(arguments);
           args.push(function(err) {

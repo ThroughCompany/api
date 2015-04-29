@@ -92,6 +92,7 @@ ProjectNotificationService.prototype.sendApplicationCreatedNotifications = funct
         return done(null);
       }
 
+      //TODO: email does not live on the projectUser - it's on the user object - NEED TO FIX THIS!!!
       var emailAddresses = _.pluck(projectUsersWithPermissions, 'email');
 
       sendUsersEmail(emailAddresses, emailText, done);
