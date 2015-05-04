@@ -63,7 +63,7 @@ steps.push(function loadDependencies_step(done) {
 
   logger = require('modules/logger');
 
-  ROLE_NAMES = require('modules/role/constants/role-names');
+  ROLE_NAMES = require('modules/role/constants/roleNames');
   PERMISSION_NAMES = require('modules/permission/constants/permissionNames');
 
   done();
@@ -108,7 +108,10 @@ steps.push(function createRolesAndPermissions_step(done) {
   //permission names
   //var PROJECT_ADD_USERS_PERMISSION_NAME = 'Add Project Users';
 
+  var organizationAdminRole;
   var projectAdminRole;
+
+  var addOrganizationUsersPermission;
   var addProjectUsersPermission;
 
   //look for existing roles and permissions
@@ -116,23 +119,49 @@ steps.push(function createRolesAndPermissions_step(done) {
     async.series([
       //find roles
       function findProjectAdminRole_step(cb2) {
-        Role.findOne({
-          name: ROLE_NAMES.PROJECT_ADMIN
-        }, function(err, role) {
-          if (err) return cb2(err);
-          if (role) projectAdminRole = role;
-          cb2()
-        });
+        async.parallel([
+          function(cb3) {
+            Role.findOne({
+              name: ROLE_NAMES.ORGANIZATION_ADMIN
+            }, function(err, role) {
+              if (err) return cb3(err);
+              if (role) organizationAdminRole = role;
+              cb3()
+            });
+          },
+          function(cb3) {
+            Role.findOne({
+              name: ROLE_NAMES.PROJECT_ADMIN
+            }, function(err, role) {
+              if (err) return cb3(err);
+              if (role) projectAdminRole = role;
+              cb3()
+            });
+          }
+        ], cb2);
       },
       //find permissions
       function findAddProjectUserPermission_step(cb2) {
-        Permission.findOne({
-          name: PERMISSION_NAMES.ADD_PROJECT_USERS
-        }, function(err, permission) {
-          if (err) return cb2(err);
-          if (permission) addProjectUsersPermission = permission;
-          cb2()
-        });
+        async.parallel([
+          function(cb3) {
+            Permission.findOne({
+              name: PERMISSION_NAMES.ADD_ORGANIZATION_USERS
+            }, function(err, permission) {
+              if (err) return cb3(err);
+              if (permission) addOrganizationUsersPermission = permission;
+              cb3()
+            });
+          },
+          function(cb3) {
+            Permission.findOne({
+              name: PERMISSION_NAMES.ADD_PROJECT_USERS
+            }, function(err, permission) {
+              if (err) return cb3(err);
+              if (permission) addProjectUsersPermission = permission;
+              cb3()
+            });
+          }
+        ], cb2);
       }
     ], cb1);
   });
@@ -140,6 +169,23 @@ steps.push(function createRolesAndPermissions_step(done) {
   //create roles
   _steps.push(function createRoles_step(cb1) {
     async.series([
+      function createOrganizationAdminRole_step(cb2) {
+        if (!organizationAdminRole) {
+          logger.info('creating role: ' + ROLE_NAMES.ORGANIZATION_ADMIN);
+
+          var _organizationAdminRole = new Role();
+          _organizationAdminRole.name = ROLE_NAMES.ORGANIZATION_ADMIN;
+
+          _organizationAdminRole.save(function(err, role) {
+            if (err) return cb2(err);
+            organizationAdminRole = role;
+            cb2();
+          });
+        } else {
+          logger.info('role: ' + ROLE_NAMES.ORGANIZATION_ADMIN + ' found, skipping...');
+          cb2();
+        }
+      },
       function createProjectAdminRole_step(cb2) {
         if (!projectAdminRole) {
           logger.info('creating role: ' + ROLE_NAMES.PROJECT_ADMIN);
@@ -163,6 +209,25 @@ steps.push(function createRolesAndPermissions_step(done) {
   //create permissions and assign them roles
   _steps.push(function createPermissions_step(cb1) {
     async.series([
+      function createOrganizationAdminPermissions_step(cb2) {
+        if (!addOrganizationUsersPermission) {
+          logger.info('creating permission: ' + PERMISSION_NAMES.ADD_ORGANIZATION_USERS);
+
+          var _addOrganizationUsersPermission = new Permission();
+          _addOrganizationUsersPermission.name = PERMISSION_NAMES.ADD_ORGANIZATION_USERS;
+          _addOrganizationUsersPermission.roles = [];
+          _addOrganizationUsersPermission.roles.push(organizationAdminRole);
+
+          _addOrganizationUsersPermission.save(function(err, permission) {
+            if (err) return cb2(err);
+            addOrganizationUsersPermission = permission;
+            cb2();
+          });
+        } else {
+          logger.info('permission: ' + PERMISSION_NAMES.ADD_ORGANIZATION_USERS + ' found, skipping...');
+          cb2();
+        }
+      },
       function createProjectAdminPermissions_step(cb2) {
         if (!addProjectUsersPermission) {
           logger.info('creating permission: ' + PERMISSION_NAMES.ADD_PROJECT_USERS);

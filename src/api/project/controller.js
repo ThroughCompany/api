@@ -23,7 +23,13 @@ function Controller() {}
  * @description Get all projects
  */
 Controller.prototype.getProjects = function getProjects(req, res, next) {
-  projectService.getAll({}, function(err, projects) {
+  var status = req.query.status;
+  var skills = req.query.skills;
+
+  projectService.getAll({
+    status: status,
+    skills: skills
+  }, function(err, projects) {
     if (err) return next(err);
     return res.status(200).json(projects);
   });
@@ -79,20 +85,46 @@ Controller.prototype.updateProjectById = function(req, res, next) {
 };
 
 /** 
- * @description Create asset tag
+ * @description Create skill
  */
-Controller.prototype.createAssetTag = function(req, res, next) {
+Controller.prototype.createProjectNeed = function(req, res, next) {
   var projectId = req.params.id;
   var name = req.body.name;
   var description = req.body.description;
+  var skills = req.body.skills;
+  var locationSpecific = req.body.locationSpecific;
+  var timeCommitment = req.body.timeCommitment;
+  var duration = req.body.duration;
 
-  projectService.createAssetTag({
+  projectService.createNeed({
     projectId: projectId,
     name: name,
-    description: description
-  }, function(err, assetTag) {
+    description: description,
+    skills: skills,
+    locationSpecific: locationSpecific,
+    timeCommitment: timeCommitment,
+    duration: duration
+  }, function(err, projectNeed) {
     if (err) return next(err);
-    return res.status(201).json(assetTag);
+    return res.status(201).json(projectNeed);
+  });
+};
+
+/** 
+ * @description Create skill
+ */
+Controller.prototype.updateProjectNeedById = function(req, res, next) {
+  var projectId = req.params.id;
+  var projectNeedId = req.params.needId;
+  var patches = req.body.patches;
+
+  projectService.updateNeedById({
+    projectId: projectId,
+    projectNeedId: projectNeedId,
+    patches: patches
+  }, function(err, projectNeed) {
+    if (err) return next(err);
+    return res.status(200).json(projectNeed);
   });
 };
 
@@ -142,31 +174,44 @@ Controller.prototype.getProjectUsers = function(req, res, next) {
   });
 };
 
-Controller.prototype.createApplication = function(req, res, next) {
+Controller.prototype.createProjectApplication = function(req, res, next) {
   var projectId = req.params.id;
   var userId = req.body.userId;
+  var needId = req.body.needId;
 
   projectService.createApplication({
     projectId: projectId,
-    userId: userId
+    userId: userId,
+    needId: needId
   }, function(err, projectApplication) {
     if (err) return next(err);
     return res.status(201).json(projectApplication);
   });
 };
 
-Controller.prototype.acceptApplication = function(req, res, next) {
+Controller.prototype.updateProjectApplicationById = function(req, res, next) {
   var projectId = req.params.id;
-  var projectApplicationId = req.params.projectApplicationId;
-  var userId = req.body.userId;
+  var projectApplicationId = req.params.applicationId;
+  var patches = req.body.patches;
 
-  projectService.acceptApplication({
+  projectService.updateApplicationById({
     projectId: projectId,
     projectApplicationId: projectApplicationId,
-    userId: userId
+    patches: patches
   }, function(err, projectApplication) {
     if (err) return next(err);
     return res.status(200).json(projectApplication);
+  });
+};
+
+Controller.prototype.getProjectApplications = function(req, res, next) {
+  var projectId = req.params.id;
+
+  projectService.getApplications({
+    projectId: projectId
+  }, function(err, projectApplications) {
+    if (err) return next(err);
+    return res.status(200).json(projectApplications);
   });
 };
 

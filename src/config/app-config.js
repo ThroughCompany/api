@@ -79,7 +79,7 @@ var productionConfig = _.extend(_.clone(defaults), {
     api: 'api.mailgun.net/v2',
     key: 'key-3wk0o8uzj8ojudi9vql1hre3z2z3l060',
     domain: 'throughcompany.com'
-  },
+  }
 });
 
 /* =========================================================================
@@ -90,6 +90,11 @@ var developmentConfig = _.extend(_.clone(defaults), {
   newrelic: {
     name: 'throughcompany-api-dev',
     key: 'e7c5a21591fb5d706825572ef8cde21bb7cde86c'
+  },
+  mailgun: {
+    api: 'api.mailgun.net',
+    key: 'key-3wk0o8uzj8ojudi9vql1hre3z2z3l060',
+    domain: 'throughcompany.com'
   }
 });
 

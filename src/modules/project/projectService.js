@@ -11,19 +11,26 @@ var errors = require('modules/error');
 var CommonService = require('modules/common');
 var userService = require('modules/user');
 var permissionService = require('modules/permission');
-var assetTagService = require('modules/assetTag');
+var skillService = require('modules/skill');
 var imageService = require('modules/image');
 var projectPopulateService = require('./populate/service');
 var projectApplicationService = require('./applicationService');
+var projectNeedService = require('./needService');
 var projectUserService = require('./userService');
+var organizationProjectService = require('modules/organization/projectService');
 
 //models
 var User = require('modules/user/data/model');
-var Project = require('./data/projectModel');
+var Project = require('modules/project/data/projectModel');
 var ProjectUser = require('modules/project/data/userModel');
+var ProjectNeed = require('modules/project/data/needModel');
+var Organization = require('modules/organization/data/organizationModel');
+var OrganizationProject = require('modules/organization/data/projectModel');
+var Skill = require('modules/skill/data/model');
 
 //utils
 var patchUtils = require('utils/patchUtils');
+var utils = require('utils/utils');
 
 var projectValidator = require('./validators/projectValidator');
 
@@ -33,16 +40,18 @@ var partialResponseParser = require('modules/partialResponse/parser');
  * Constants
  * ========================================================================= */
 var EVENTS = require('./constants/events');
-var ROLES = require('modules/role/constants/role-names');
-var DEFAULTIMAGEURL = 'https://s3.amazonaws.com/throughcompany-assets/project-avatars/avatar';
+var ROLES = require('modules/role/constants/roleNames');
+var DEFAULT_IMAGEURL = 'https://s3.amazonaws.com/throughcompany-assets/project-avatars/avatar';
 var IMAGE_TYPES = require('modules/image/constants/image-types');
+var PROJECT_STATUSES = require('modules/project/constants/projectStatuses');
 
 var UPDATEDABLE_PROJECT_PROPERTIES = [
   'name',
   'description',
   'lastName',
   'location',
-  'socialLinks'
+  'socialLinks',
+  'status'
 ];
 
 /* =========================================================================
@@ -83,14 +92,15 @@ ProjectService.prototype.create = function(options, next) {
       generateProjectSlug(options.name, done);
     },
     function createProject_step(slug, done) {
+      project = new Project();
 
-      var project = new Project();
       project.name = options.name;
       project.created = new Date();
       project.modified = project.created;
       project.slug = slug
-      project.profilePic = DEFAULTIMAGEURL + randomNum(1, 4) + '.jpg';
+      project.profilePic = DEFAULT_IMAGEURL + randomNum(1, 4) + '.jpg';
       project.description = options.description;
+      project.status = PROJECT_STATUSES.DRAFT;
       project.wiki.pages.push({
         title: 'Start',
         text: 'Wiki for ' + options.name + '...'
@@ -108,17 +118,37 @@ ProjectService.prototype.create = function(options, next) {
     function createProjectUser_step(_permissions, done) {
       permissions = _permissions;
 
-      var projectUser = new ProjectUser();
+      projectUser = new ProjectUser();
       projectUser.project = project._id;
       projectUser.user = user._id;
-      projectUser.email = user.email;
+      //projectUser.email = user.email;
       projectUser.permissions = projectUser.permissions.concat(permissions);
 
-      projectUser.save(done);
-    },
-    function updateProject_step(_projectUser, numCreated, done) {
-      projectUser = _projectUser;
+      projectUser.save(function(err, _projectUser) {
+        if (err) return done(err);
 
+        projectUser = _projectUser;
+
+        return done(null);
+      });
+    },
+    function createOrganizationProject_step(done) {
+      if (!options.organizationId) {
+        return done(null);
+      } else {
+        organizationProjectService.create({
+          organizationId: options.organizationId,
+          projectId: project._id,
+        }, function(err, _organizationProject) {
+          if (err) return done(err);
+
+          project.organizationProject = _organizationProject._id;
+
+          return done(null);
+        });
+      }
+    },
+    function updateProject_step(done) {
       project.projectUsers.push(projectUser._id);
 
       project.save(function(err, updatedProject) {
@@ -155,6 +185,7 @@ ProjectService.prototype.create = function(options, next) {
  * @param {function} next - callback
  */
 ProjectService.prototype.update = function(options, next) {
+  if (!options) return next(new errors.InvalidArgumentError('options is required'));
   if (!options.projectId) return next(new errors.InvalidArgumentError('Project Id is required'));
   if (!options.patches && !options.updates) return next(new errors.InvalidArgumentError('patches or updates is required'));
   if (options.patches && _.isEmpty(options.patches)) return next(new errors.InvalidArgumentError('patches must contain values'));
@@ -226,68 +257,8 @@ ProjectService.prototype.update = function(options, next) {
 
       project.save(done);
     }
-  ], function finish(err, results) {
-    return next(err, project); //don't remove, callback needed because mongoose save returns 3rd arg
-  });
-};
-
-/**
- * @param {object} options
- * @param {string} projectId
- * @param {string} name
- * @param {object} updates
- * @param {function} next - callback
- */
-ProjectService.prototype.createAssetTag = function createAssetTag(options, next) {
-  if (!options) return next(new errors.InvalidArgumentError('options is required'));
-  if (!options.projectId) return next(new errors.InvalidArgumentError('Project Id is required'));
-  if (!options.name) return next(new errors.InvalidArgumentError('Name is required'));
-
-  var _this = this;
-  var project = null;
-  var assetTag = null;
-
-  async.waterfall([
-    function findProjectById_step(done) {
-      _this.getById({
-        projectId: options.projectId
-      }, done);
-    },
-    function findAssetTag_step(_project, done) {
-      if (!_project) return done(new errors.InvalidArgumentError('No project exists with the id ' + options.projectId));
-
-      project = _project;
-
-      assetTagService.getOrCreateByName({
-        name: options.name
-      }, done);
-    },
-    function addTagToProject_step(_assetTag, done) {
-
-      var existingAssetTag = _.find(project.assetTags, function(assetTag) {
-        return assetTag.slug === _assetTag.slug;
-      });
-
-      if (existingAssetTag) return done(new errors.InvalidArgumentError(options.name + ' tag already exists. Cannot have duplicate tags'));
-
-      assetTag = _assetTag;
-
-      project.assetTags.push({
-        name: assetTag.name,
-        slug: assetTag.slug,
-        description: options.description
-      });
-
-      project.save(done);
-    }
   ], function finish(err, project) {
-    if (err) return next(err);
-
-    _this.emit(EVENTS.ASSET_TAG_USED_BY_PROJECT, {
-      assetTagName: assetTag.name
-    });
-
-    return next(null, assetTag);
+    return next(err, project); //don't remove, callback needed because mongoose save returns 3rd arg
   });
 };
 
@@ -422,8 +393,6 @@ ProjectService.prototype.getById = function(options, next) {
     function populate_step(project, done) {
       if (!expands) return done(null, project);
 
-      console.log(project);
-
       projectPopulateService.populate({
         docs: project,
         expands: expands
@@ -438,10 +407,75 @@ ProjectService.prototype.getById = function(options, next) {
  */
 ProjectService.prototype.getAll = function(options, next) {
   if (!options) return next(new errors.InvalidArgumentError('options is required'));
+  if (options.status && !_.contains(_.values(PROJECT_STATUSES), options.status)) return next(new errors.InvalidArgumentError(options.status + ' is not a valid project status'));
+  if (options.skills && !_.isString(options.skills)) return next(new errors.InvalidArgumentError('Skills must be a string'));
 
-  var query = Project.find({});
+  var conditions = {};
+  var steps = [];
+  var projects = null;
+  var projectNeeds = null;
 
-  return query.exec(next);
+  if (options.skills) {
+    options.skills = utils.arrayClean(options.skills.split(','));
+
+    steps.push(function findProjectNeeds_step(done) {
+      async.waterfall([
+        function findSkillsByName_step(cb) {
+          Skill.find({
+            name: {
+              $in: options.skills
+            }
+          }, cb);
+        },
+        function findProjectNeedsBySkillIds_step(skills, cb) {
+
+          //TODO: we should be filtering for only OPEN needs (need to add statuses to project needs)
+
+          ProjectNeed.find({
+            skills: {
+              $in: _.pluck(skills, '_id')
+            }
+          }, function(err, _projectNeeds) {
+            if (err) return next(err);
+
+            projectNeeds = _projectNeeds;
+
+            return done(err);
+          });
+        }
+      ], done);
+    });
+  }
+
+  steps.push(function findProjects_step(done) {
+    if (options.status) {
+      conditions.status = options.status;
+    } else {
+      conditions.status = PROJECT_STATUSES.OPEN;
+    }
+
+    if (options.skills) {
+      conditions.projectNeeds = {
+        $in: _.pluck(projectNeeds, '_id')
+      };
+    }
+
+    var query = Project.find(conditions);
+
+    return query.exec(function(err, _projects) {
+      if (err) return next(err);
+
+      projects = _projects;
+
+      return done(err);
+    });
+  });
+
+  async.series(steps, function(err) {
+    if (err) return next(err);
+
+    return next(null, projects);
+  });
 };
 
 /**
@@ -555,39 +589,78 @@ ProjectService.prototype.uploadImage = function(options, next) {
 };
 
 /* =========================================================================
+ * Project Needs
+ * ========================================================================= */
+/**
+ * @param {object} options
+ * @param {string} projectId
+ * @param {string} name
+ * @param {object} updates
+ * @param {function} next - callback
+ */
+ProjectService.prototype.createNeed = function createNeed(options, next) {
+  var _this = this;
+
+  projectNeedService.create(options, function(err, projectNeed) {
+    if (err) return next(err);
+
+    console.log(projectNeed);
+
+    _.each(projectNeed.skills, function(skill) {
+      _this.emit(EVENTS.SKILL_USED_BY_PROJECT, {
+        skillId: skill
+      });
+    });
+
+    return next(null, projectNeed);
+  });
+};
+
+/**
+ * @param {object} options
+ * @param {string} projectId
+ * @param {string} projectNeedId
+ * @param {object} updates
+ * @param {function} next - callback
+ */
+ProjectService.prototype.updateNeedById = function updateNeedById(options, next) {
+  projectNeedService.update(options, next);
+};
+
+/* =========================================================================
  * Project Applications
  * ========================================================================= */
-ProjectService.prototype.createApplication = function(options, next) {
+ProjectService.prototype.createApplication = function createApplication(options, next) {
   var _this = this;
 
   projectApplicationService.create(options, function(err, projectApplication) {
     if (err) return next(err);
 
-    _this.emit(EVENTS.APPLICATION_CREATED, {
+    _this.emit(EVENTS.PROJECT_APPLICATION_CREATED, {
       projectApplicationId: projectApplication._id,
       projectId: projectApplication.project,
       userId: projectApplication.user
     });
 
-    next(null, projectApplication);
+    return next(null, projectApplication);
   });
 };
 
-ProjectService.prototype.acceptApplication = function(options, next) {
+/**
+ * @param {object} options
+ * @param {string} projectId
+ * @param {string} projectApplicationId
+ * @param {object} updates
+ * @param {function} next - callback
+ */
+ProjectService.prototype.updateApplicationById = function updateApplicationById(options, next) {
+  projectApplicationService.update(options, next);
+};
+
+ProjectService.prototype.getApplications = function getApplications(options, next) {
   var _this = this;
 
-  projectApplicationService.accept(options, function(err, projectApplication) {
-    if (err) return next(err);
-
-    //TODO: implement this - email the accepted user
-    // _this.emit(EVENTS.APPLICATION_ACCEPTED, {
-    //   projectApplicationId: projectApplication._id,
-    //   projectId: projectApplication.project,
-    //   userId: projectApplication.user
-    // });
-
-    next(null, projectApplication);
-  });
+  projectApplicationService.getByProjectId(options, next);
 };
 
 /* =========================================================================

@@ -5,6 +5,8 @@ var _ = require('underscore');
 
 var baseSchema = require('modules/common/data/base-schema');
 
+var utils = require('utils/utils');
+
 /* =========================================================================
  * Constants
  * ========================================================================= */
@@ -49,14 +51,6 @@ var userSchema = baseSchema.extend({
     type: String,
     trim: true
   },
-  projectUsers: [{
-    type: String,
-    ref: 'ProjectUser'
-  }],
-  projectApplications: [{
-    type: String,
-    ref: 'ProjectApplication'
-  }],
   facebook: {
     id: {
       type: String,
@@ -75,7 +69,11 @@ var userSchema = baseSchema.extend({
     trim: true
   },
   socialLinks: [{
-    _id: false,
+    _id: {
+      type: String,
+      default: utils.guid,
+      required: true
+    },
     type: {
       type: String,
       trim: true,
@@ -93,8 +91,13 @@ var userSchema = baseSchema.extend({
       required: true
     }
   }],
-  assetTags: [{
+  skills: [{
     _id: false,
+    skill: {
+      type: String,
+      ref: 'Skill',
+      required: true
+    },
     name: {
       type: String,
       trim: true,
@@ -109,6 +112,20 @@ var userSchema = baseSchema.extend({
       type: String,
       trim: true
     }
+  }],
+  //projects
+  projectUsers: [{
+    type: String,
+    ref: 'ProjectUser'
+  }],
+  projectApplications: [{
+    type: String,
+    ref: 'ProjectApplication'
+  }],
+  //organizations
+  organizationUsers: [{
+    type: String,
+    ref: 'OrganizationUser'
   }]
 });
 

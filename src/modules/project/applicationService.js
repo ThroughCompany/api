@@ -4,6 +4,7 @@
 var util = require('util');
 var _ = require('underscore');
 var async = require('async');
+var jsonPatch = require('fast-json-patch');
 
 //modules
 var errors = require('modules/error');
@@ -14,13 +15,23 @@ var userService = require('modules/user');
 var ProjectApplication = require('modules/project/data/applicationModel');
 var ProjectUser = require('modules/project/data/userModel');
 var Project = require('modules/project/data/projectModel');
+var ProjectNeed = require('modules/project/data/needModel');
+
+//utils
+var patchUtils = require('utils/patchUtils');
+var utils = require('utils/utils');
 
 var applicationValidator = require('./validators/applicationValidator');
 
 /* =========================================================================
  * Constants
  * ========================================================================= */
-var STATUSES = require('./constants/applicationStatuses');
+var APPLICATION_STATUSES = require('./constants/applicationStatuses');
+var NEED_STATUSES = require('./constants/needStatuses');
+
+var UPDATEDABLE_PROJECT_APPLICATION_PROPERTIES = [
+  'status'
+];
 
 /* =========================================================================
  * Constructor
@@ -39,9 +50,11 @@ ProjectApplicationService.prototype.create = function create(options, next) {
   if (!options) return next(new errors.InvalidArgumentError('options is required'));
   if (!options.projectId) return next(new errors.InvalidArgumentError('Project Id is required'));
   if (!options.userId) return next(new errors.InvalidArgumentError('User Id is required'));
+  if (!options.needId) return next(new errors.InvalidArgumentError('Need Id is required'));
 
   var _this = this;
   var project = null;
+  var projectNeed = null;
   var projectUsers = null;
   var projectApplications = null;
 
@@ -50,9 +63,16 @@ ProjectApplicationService.prototype.create = function create(options, next) {
 
   async.waterfall([
     function getProjectByData_step(done) {
+      //TODO: only select needed fields in these DB calls
       async.parallel([
         function getProjectById_step(cb) {
           Project.findById(options.projectId, cb);
+        },
+        function getProjectNeedById_step(cb) {
+          ProjectNeed.findOne({
+            _id: options.needId,
+            project: options.projectId
+          }, cb);
         },
         function getProjectUsersById_step(cb) {
           ProjectUser.find({
@@ -71,8 +91,13 @@ ProjectApplicationService.prototype.create = function create(options, next) {
 
         if (!project) return done(new errors.ObjectNotFoundError('Project not found'));
 
-        projectUsers = results[1];
-        projectApplications = results[2];
+        projectNeed = results[1];
+
+        if (!projectNeed) return done(new errors.ObjectNotFoundError('Project Need not found'));
+        if (projectNeed.status !== NEED_STATUSES.OPEN) return done(new errors.InvalidArgumentError('Can only apply to project needs that are open'));
+
+        projectUsers = results[2];
+        projectApplications = results[3];
 
         return done(null);
       });
@@ -95,7 +120,8 @@ ProjectApplicationService.prototype.create = function create(options, next) {
       var projectApplication = new ProjectApplication();
       projectApplication.project = project._id;
       projectApplication.user = user._id;
-      projectApplication.status = STATUSES.PENDING;
+      projectApplication.projectNeed = projectNeed._id;
+      projectApplication.status = APPLICATION_STATUSES.PENDING;
 
       projectApplication.save(function(err, application) {
         if (err) return done(err);
@@ -119,107 +145,124 @@ ProjectApplicationService.prototype.create = function create(options, next) {
         return done(null, projectApplication);
       });
     }
-  ], next);
+  ], function(err) {
+    if (err) return next(err);
+
+    return next(null, projectApplication);
+  });
 };
 
 /**
  * @param {object} options
- * @param {string} options.projectId
- * @param {string} options.projectApplicationId
  * @param {function} next - callback
  */
-ProjectApplicationService.prototype.accept = function accept(options, next) {
+ProjectApplicationService.prototype.update = function update(options, next) {
   if (!options) return next(new errors.InvalidArgumentError('options is required'));
   if (!options.projectId) return next(new errors.InvalidArgumentError('Project Id is required'));
   if (!options.projectApplicationId) return next(new errors.InvalidArgumentError('Project Application Id is required'));
+  if (!options.patches && !options.updates) return next(new errors.InvalidArgumentError('patches or updates is required'));
+  if (options.patches && _.isEmpty(options.patches)) return next(new errors.InvalidArgumentError('patches must contain values'));
+  if (options.updates && _.isEmpty(options.updates)) return next(new errors.InvalidArgumentError('updates must contain values'));
+  if (options.patches && !_.isArray(options.patches)) return next(new errors.InvalidArgumentError('patches must be an array'));
 
   var _this = this;
   var project = null;
-  var projectUsers = null;
-  var projectApplications = null;
-
-  var user = null;
   var projectApplication = null;
+  var patches = null;
 
-  return next(new errors.NotImplementedError('Not Implemented'));
+  async.waterfall([
+    function findProjectAndProjectApplication(done) {
+      async.parallel([
+        function findProjectById_step(cb) {
+          Project.findById({
+            _id: options.projectId
+          }, function(err, _project) {
+            if (!_project) return done(new errors.ObjectNotFoundError('No project exists with the id ' + options.projectId));
 
-  // async.waterfall([
-  //   function getProjectByData_step(done) {
-  //     async.parallel([
-  //       function getProjectById_step(cb) {
-  //         Project.findById(options.projectId, cb);
-  //       },
-  //       function getProjectUsersById_step(cb) {
-  //         ProjectUser.find({
-  //           project: options.projectId
-  //         }, cb);
-  //       },
-  //       function getProjectApplicationsById_step(cb) {
-  //         ProjectApplication.find({
-  //           project: options.projectId
-  //         }, cb);
-  //       }
-  //     ], function(err, results) {
-  //       if (err) return done(err);
+            project = _project;
 
-  //       project = results[0];
+            cb();
+          });
+        },
+        function findProjectApplicationById(cb) {
+          ProjectApplication.findById({
+            _id: options.projectApplicationId,
+            project: options.projectId
+          }, function(err, _projectApplication) {
+            if (!_projectApplication) return done(new errors.ObjectNotFoundError('No project application exists with the id ' + options.projectApplicationId));
 
-  //       if (!project) return done(new errors.ObjectNotFoundError('Project not found'));
+            projectApplication = _projectApplication;
 
-  //       projectUsers = results[1];
-  //       projectApplications = results[2];
+            cb();
+          });
+        },
+      ], function(err) {
+        if (err) return done(err);
+        return done(err);
+      });
+    },
+    function validateData_step(done) {
 
-  //       return done(null);
-  //     });
-  //   },
-  //   function getUserById_step(done) {
-  //     if (_.contains(_.pluck(projectUsers, 'user'), options.userId)) {
-  //       return done(new errors.InvalidArgumentError('User ' + options.userId + ' is already a member of this project'));
-  //     }
-  //     if (_.contains(_.pluck(projectApplications, 'user'), options.userId)) {
-  //       return done(new errors.InvalidArgumentError('User ' + options.userId + ' has already applied to this project'));
-  //     }
+      if (!_.contains(project.projectApplications, options.projectApplicationId)) return done(new errors.InvalidArgumentError(options.projectApplicationId + ' is not an application on this project'));
 
-  //     userService.getById({
-  //       userId: options.userId
-  //     }, done);
-  //   },
-  //   function createProjectApplication_step(_user, done) {
-  //     user = _user;
+      if (options.updates && !options.patches) patches = patchUtils.generatePatches(options.updates);
+      else patches = options.patches;
 
-  //     var projectApplication = new ProjectApplication();
-  //     projectApplication.project = project._id;
-  //     projectApplication.user = user._id;
-  //     projectApplication.status = STATUSES.PENDING;
+      patches = patchUtils.stripPatches(UPDATEDABLE_PROJECT_APPLICATION_PROPERTIES, patches);
 
-  //     projectApplication.save(function(err, application) {
-  //       if (err) return done(err);
-  //       return done(null, application);
-  //     });
-  //   },
-  //   function updateProjectWithApplications_step(_projectApplication, done) {
-  //     projectApplication = _projectApplication;
+      console.log('PROJECT NEED');
+      console.log(projectApplication);
 
-  //     project.projectApplications.push(projectApplication._id);
+      console.log('PATCHES:');
+      console.log(patches);
 
-  //     project.save(function(err) {
-  //       if (err) return done(err);
-  //       return done(null);
-  //     });
-  //   },
-  //   function updateUserWithApplications_step(done) {
-  //     user.projectApplications.push(projectApplication._id);
-  //     user.save(function(err) {
-  //       if (err) return done(err);
-  //       return done(null, projectApplication);
-  //     });
-  //   }
-  // ], next);
+      var projectApplicationClone = _.clone(projectApplication.toJSON());
+
+      var patchErrors = jsonPatch.validate(patches, projectApplicationClone);
+
+      if (patchErrors) {
+        return done(patchErrors && patchErrors.message ? new errors.InvalidArgumentError(patchErrors.message) : patchErrors);
+      }
+
+      try {
+        jsonPatch.apply(projectApplicationClone, patches);
+      } catch (err) {
+        logger.error(err);
+
+        return done(new errors.InvalidArgumentError('error applying patches'));
+      }
+
+      console.log('WITH PATCHES APPLIED:');
+      console.log(projectApplicationClone);
+
+      applicationValidator.validateUpdate(projectApplication, projectApplicationClone, done);
+    },
+    function updateProject(done) {
+
+      try {
+        console.log('APPLYING PATCHES:');
+        console.log(patches);
+
+        jsonPatch.apply(projectApplication, patches);
+      } catch (err) {
+        logger.error(err);
+
+        return done(new errors.InvalidArgumentError('error applying patches'));
+      }
+
+      console.log('AFTER PATCHES:');
+      console.log(projectApplication);
+
+      projectApplication.save(done);
+    }
+  ], function finish(err, projectApplication) {
+    return next(err, projectApplication); //don't remove, callback needed because mongoose save returns 3rd arg
+  });
 };
 
 /**
  * @param {object} options
- * @param {string} options.projectId
+ * @param {string} options.projectApplicationId
  * @param {function} next - callback
  */
 ProjectApplicationService.prototype.getById = function(options, next) {
@@ -237,6 +280,28 @@ ProjectApplicationService.prototype.getById = function(options, next) {
     if (!projectApplication) return next(new errors.ObjectNotFoundError('Project Application not found'));
 
     return next(null, projectApplication);
+  });
+};
+
+/**
+ * @param {object} options
+ * @param {string} options.projectId
+ * @param {function} next - callback
+ */
+ProjectApplicationService.prototype.getByProjectId = function(options, next) {
+  if (!options) return next(new errors.InvalidArgumentError('options is required'));
+  if (!options.projectId) return next(new errors.InvalidArgumentError('Project Id is required'));
+
+  var _this = this;
+
+  var query = ProjectApplication.find({
+    project: options.projectId
+  });
+
+  query.exec(function(err, projectApplications) {
+    if (err) return next(err);
+
+    return next(null, projectApplications);
   });
 };
 

@@ -27,10 +27,10 @@ AuthMiddleware.prototype.authenticationRequired = function authenticationRequire
     }, function(err, claims) {
       if (err) return next(err);
 
-      //attach the user and their claims to the request
+      //attach the user's claims to the request
       req.claims = claims;
 
-      return next();
+      return next(null);
     });
   }
 };
@@ -41,10 +41,12 @@ AuthMiddleware.prototype.currentUserIdQueryParamRequired = function currentUserI
   var param = paramName || 'id';
 
   return function _currentUserIdQueryParamRequired(req, res, next) {
-    if (!req.claims || !req.params[param] || (req.params[param] !== req.claims.userId && !req.claims.admin)) { //allow admins to bypass
+    if (!req.claims) return next(new errors.ForbiddenError('Access Denied'));
+    if (req.claims.admin) return next(); //allow admins to bypass
+    if (!req.params[param] || req.params[param] !== req.claims.userId) {
       return next(new errors.ForbiddenError('Current user id does not match user id param'));
     } else {
-      next();
+      return next(null);
     }
   };
 };
@@ -54,25 +56,76 @@ AuthMiddleware.prototype.currentUserIdBodyParamRequired = function currentUserId
   var param = paramName || 'id';
 
   return function _currentUserIdQueryBodyRequired(req, res, next) {
+    if (!req.claims) return next(new errors.ForbiddenError('Access Denied'));
     if (req.claims.admin) return next(); //allow admins to bypass
-
-    if (!req.claims || !req.body[param] || req.body[param] !== req.claims.userId) {
+    if (!req.body[param] || req.body[param] !== req.claims.userId) {
       return next(new errors.ForbiddenError('Current user id does not match user id body param'));
     }
-    return next();
+    return next(null);
   };
 };
+
+// ----------------------------------
+// Organization
+// ----------------------------------
+
+//verifies the user is an organization member - param
+AuthMiddleware.prototype.currentUserOrganizationIdQueryParamRequired = function currentUserOrganizationIdQueryParamRequired(paramName) {
+  var param = paramName || 'id';
+
+  return function _currentUserOrganizationIdQueryParamRequired(req, res, next) {
+    if (!req.claims) return next(new errors.ForbiddenError('Access Denied'));
+    if (req.claims.admin) return next(); //allow admins to bypass
+    if (!req.claims || !req.params[param] || !req.claims.organizationIds || !req.claims.organizationIds.length || !_.contains(req.claims.organizationIds, req.params[param])) {
+      return next(new errors.ForbiddenError('Access Denied'));
+    }
+    return next(null);
+  };
+};
+
+//verifies the user is an organization member - body
+AuthMiddleware.prototype.currentUserOrganizationIdBodyParamRequired = function currentUserOrganizationIdBodyParamRequired(paramName) {
+  var param = paramName || 'id';
+
+  return function _currentUserOrganizationIdBodyParamRequired(req, res, next) {
+    if (!req.claims) return next(new errors.ForbiddenError('Access Denied'));
+    if (req.claims.admin) return next(); //allow admins to bypass
+    if (!req.claims || !req.body[param] || !req.claims.organizationIds || !req.claims.organizationIds.length || !_.contains(req.claims.organizationIds, req.body[param])) {
+      return next(new errors.ForbiddenError('Access Denied'));
+    }
+    return next(null);
+  };
+};
+
+//verifies the user is an organization member - body - only checks if the body param exists
+AuthMiddleware.prototype.currentUserOrganizationIdBodyParamOptional = function currentUserOrganizationIdBodyParamOptional(paramName) {
+  var param = paramName || 'id';
+
+  return function _currentUserOrganizationIdBodyParamOptional(req, res, next) {
+    if (!req.claims) return next(new errors.ForbiddenError('Access Denied'));
+    if (req.claims.admin || !req.body[param]) return next(); //allow admins to bypass, or if the param doesn't exist
+    if (!req.claims || !req.claims.organizationIds || !req.claims.organizationIds.length || !_.contains(req.claims.organizationIds, req.body[param])) {
+      return next(new errors.ForbiddenError('Access Denied'));
+    }
+    return next(null);
+  };
+};
+
+// ----------------------------------
+// Projects
+// ----------------------------------
 
 //verifies the user is a project member - param
 AuthMiddleware.prototype.currentUserProjectIdQueryParamRequired = function currentUserProjectIdQueryParamRequired(paramName) {
   var param = paramName || 'id';
 
   return function _currentUserProjectIdParamRequired(req, res, next) {
+    if (!req.claims) return next(new errors.ForbiddenError('Access Denied'));
     if (req.claims.admin) return next(); //allow admins to bypass
     if (!req.claims || !req.params[param] || !req.claims.projectIds || !req.claims.projectIds.length || !_.contains(req.claims.projectIds, req.params[param])) {
       return next(new errors.ForbiddenError('Access Denied'));
     }
-    return next();
+    return next(null);
   };
 };
 

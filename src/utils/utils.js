@@ -4,6 +4,7 @@
 var async = require('async');
 var _ = require('underscore');
 var jsonPatch = require('fast-json-patch');
+var uuid = require('node-uuid');
 
 function Utils() {}
 
@@ -33,11 +34,25 @@ Utils.prototype.arraysAreEqual = function arraysAreEqual(array1, array2) {
   return true;
 };
 
+Utils.prototype.arrayClean = function arrayClean(array1) {
+  for (var i = 0; i < array1.length; i++) {
+    if (array1[i] == undefined || array1[i] == null || array1[i] == "") {
+      array1.splice(i, 1);
+      i--;
+    }
+  }
+  return array1;
+};
+
 Utils.prototype.getServerErrorMessage = function getServerErrorMessage(response) {
   if (!response || !response.body) return null;
   if (!response.body.errors || !response.body.errors.length) return null;
 
   return response.body.errors[0].message;
+};
+
+Utils.prototype.guid = function guid() {
+  return uuid.v4();
 };
 
 /* =========================================================================

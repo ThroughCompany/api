@@ -103,7 +103,7 @@ var createUser = {
 var getUserProjectsById = {
   spec: {
     path: '/users/{id}/projects',
-    summary: 'Get a user\'s project by id',
+    summary: 'Get a user\'s projects by id',
     method: 'GET',
     parameters: [
       swagger.params.path('id', 'user\'s id', 'string')
@@ -114,6 +114,23 @@ var getUserProjectsById = {
   },
   action: function(req, res, next) {
     controller.getUserProjectsById(req, res, next);
+  }
+};
+
+var getUserOrganizationsById = {
+  spec: {
+    path: '/users/{id}/organizations',
+    summary: 'Get a user\'s organizations by id',
+    method: 'GET',
+    parameters: [
+      swagger.params.path('id', 'user\'s id', 'string')
+    ],
+    nickname: 'getUserOrganizationsById',
+    type: 'User',
+    produces: ['application/json']
+  },
+  action: function(req, res, next) {
+    controller.getUserOrganizationsById(req, res, next);
   }
 };
 
@@ -166,16 +183,17 @@ var uploadImage = {
   }
 };
 
-var createAssetTag = {
+var createSkill = {
   spec: {
-    path: '/users/{id}/assettags',
-    summary: 'Add user asset tag',
+    path: '/users/{id}/skills',
+    summary: 'Add user skill',
     method: 'POST',
     parameters: [
       swagger.params.path('id', 'user\'s id', 'string'),
-      swagger.params.body('tags', 'asset tag', 'string')
+      swagger.params.body('name', 'skill name', 'string'),
+      swagger.params.body('description', 'skill description', 'string')
     ],
-    nickname: 'createAssetTag',
+    nickname: 'createSkill',
     type: 'User',
     produces: ['application/json']
   },
@@ -184,7 +202,7 @@ var createAssetTag = {
       if (err) return next(err);
       authMiddleware.currentUserIdQueryParamRequired('id')(req, res, function(err) {
         if (err) return next(err);
-        controller.createAssetTag(req, res, next);
+        controller.createSkill(req, res, next);
       });
     });
   }
@@ -195,9 +213,10 @@ swagger.addGet(getUserById);
 swagger.addGet(getUserClaimsById);
 swagger.addPost(createUser);
 swagger.addGet(getUserProjectsById);
+swagger.addGet(getUserOrganizationsById);
 swagger.addPatch(updateUserById);
 swagger.addPost(uploadImage);
-swagger.addPost(createAssetTag);
+swagger.addPost(createSkill);
 
 /* =========================================================================
  *   Swagger declarations

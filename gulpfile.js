@@ -7,6 +7,7 @@ var mocha = require('gulp-mocha');
 
 var sh = require('shelljs');
 var async = require('async');
+var childProcess = require('child_process');
 
 require('gulp-task-list')(gulp);
 
@@ -25,7 +26,7 @@ var MOCHA_SETTINGS = {
  * ========================================================================= */
 gulp.task('default');
 
-/**
+/*
  * List gulp tasks
  */
 gulp.task('?', function(next) {
@@ -35,18 +36,30 @@ gulp.task('?', function(next) {
 /* =========================================================================
  * Tests
  * ========================================================================= */
-gulp.task('test', ['test-int', 'test-unit'], function() {
-  process.exit(0); //hacky shit because gulp doesn't exit - causes wercker to timeout
+gulp.task('test', function(next) {
+  sh.exec('gulp test-unit', function(code, output) {
+    sh.exec('gulp test-int', function(code, output) {
+      next();
+    });
+  });
 });
 
-gulp.task('test-int', function() {
+gulp.task('test-int', function(next) {
   return gulp.src('tests/integration/**/**/**-test.js')
-    .pipe(mocha(MOCHA_SETTINGS));
+    .pipe(mocha(MOCHA_SETTINGS))
+    .on('close', function(e) {
+      process.exit(-1);
+      next();
+    });;
 });
 
-gulp.task('test-unit', function() {
+gulp.task('test-unit', function(next) {
   return gulp.src('tests/unit/**/**/**-test.js')
-    .pipe(mocha(MOCHA_SETTINGS));
+    .pipe(mocha(MOCHA_SETTINGS))
+    .on('close', function(e) {
+      process.exit(-1);
+      next();
+    });;
 });
 
 /* =========================================================================

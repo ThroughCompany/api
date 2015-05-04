@@ -5,7 +5,7 @@ require('tests/integration/before-all');
 
 var should = require('should');
 var async = require('async');
-var jsonPatch = require('fast-json-patch');
+var diff = require('rfc6902');
 var _ = require('underscore');
 
 var app = require('src');
@@ -246,15 +246,13 @@ describe('api', function() {
 
             var userClone = _.clone(user.toJSON());
 
-            var observer = jsonPatch.observe(userClone);
-
             userClone.socialLinks.push({
               type: 'FOOBAR',
               name: 'FOOBAR',
               link: 'http://wwwasfasd',
             });
 
-            var patches = jsonPatch.generate(observer);
+            var patches = diff.diff(user.toJSON(), userClone);
 
             agent
               .patch('/users/' + user._id)
@@ -283,15 +281,13 @@ describe('api', function() {
 
             var userClone = _.clone(user.toJSON());
 
-            var observer = jsonPatch.observe(userClone);
-
             userClone.socialLinks.push({
               type: 'GITHUB',
               name: 'FOOBAR',
               link: 'http://wwwasfasd'
             });
 
-            var patches = jsonPatch.generate(observer);
+            var patches = diff.diff(user.toJSON(), userClone);
 
             agent
               .patch('/users/' + user._id)
@@ -365,8 +361,6 @@ describe('api', function() {
 
           var userClone = _.clone(user.toJSON());
 
-          var observer = jsonPatch.observe(userClone);
-
           userClone._id = '123';
           userClone.email = 'FOOOBARRRR';
           userClone.userName = 'BARFOO';
@@ -376,7 +370,7 @@ describe('api', function() {
           userClone.projectApplications = [{
             bar: 1
           }];
-          userClone.assetTags = [{
+          userClone.skills = [{
             bar: 1
           }];
           userClone.images = [{
@@ -385,7 +379,7 @@ describe('api', function() {
           userClone.profilePic = '1111';
           userClone.active = false;
 
-          var patches = jsonPatch.generate(observer);
+          var patches = diff.diff(user.toJSON(), userClone);
 
           agent
             .patch('/users/' + user._id)
@@ -410,7 +404,7 @@ describe('api', function() {
                 foundUser.userName.should.equal(user.userName);
                 utils.arraysAreEqual(foundUser.projectUsers, user.projectUsers).should.equal(true);
                 utils.arraysAreEqual(foundUser.projectApplications, user.projectApplications).should.equal(true);
-                utils.arraysAreEqual(foundUser.assetTags, user.assetTags).should.equal(true);
+                utils.arraysAreEqual(foundUser.skills, user.skills).should.equal(true);
                 foundUser.profilePic.should.equal(user.profilePic);
                 foundUser.active.should.equal(user.active);
 
@@ -470,12 +464,10 @@ describe('api', function() {
 
             var userClone = _.clone(user.toJSON());
 
-            var observer = jsonPatch.observe(userClone);
-
             userClone.firstName = 'Larry';
             userClone.lastName = 'Peterson';
 
-            var patches = jsonPatch.generate(observer);
+            var patches = diff.diff(user.toJSON(), userClone);
 
             agent
               .patch('/users/' + user._id)
@@ -549,15 +541,13 @@ describe('api', function() {
 
             var userClone = _.clone(user.toJSON());
 
-            var observer = jsonPatch.observe(userClone);
-
             userClone.socialLinks.push({
               type: 'GITHUB',
               name: 'Codez',
               link: 'https://www.github.com'
             });
 
-            var patches = jsonPatch.generate(observer);
+            var patches = diff.diff(user.toJSON(), userClone);
 
             agent
               .patch('/users/' + user._id)
@@ -648,10 +638,9 @@ describe('api', function() {
 
             var userClone = _.clone(user.toJSON());
 
-            var patches = [{
-              op: 'remove',
-              path: '/socialLinks/0'
-            }];
+            userClone.socialLinks.splice(0, 1);
+
+            var patches = diff.diff(user.toJSON(), userClone);
 
             agent
               .patch('/users/' + user._id)
@@ -682,6 +671,105 @@ describe('api', function() {
               });
           });
         });
+
+        //does not current work due to an issue saving sub documents with mongoose
+        // describe.only('link is changed', function() {
+        //   var email = 'testuser@test.com';
+        //   var password = 'password';
+        //   var user = null;
+        //   var auth = null;
+
+        //   before(function(done) {
+        //     async.series([
+        //       function createUser_step(cb) {
+        //         userService.createUsingCredentials({
+        //           email: email,
+        //           password: password
+        //         }, function(err, _user) {
+        //           if (err) return cb(err);
+
+        //           user = _user;
+        //           user.socialLinks.push({
+        //             type: 'GITHUB',
+        //             name: 'Codez',
+        //             link: 'https://www.github.com'
+        //           });
+        //           user.socialLinks.push({
+        //             type: 'FACEBOOK',
+        //             name: 'FB',
+        //             link: 'https://www.facebook.com'
+        //           });
+        //           user.socialLinks.push({
+        //             type: 'LINKEDIN',
+        //             name: 'Resume',
+        //             link: 'https://www.linkedin.com'
+        //           });
+        //           user.save(cb);
+        //         });
+        //       },
+        //       function authenticateUser_step(cb) {
+        //         authService.authenticateCredentials({
+        //           email: email,
+        //           password: password
+        //         }, function(err, _auth) {
+        //           if (err) return cb(err);
+
+        //           auth = _auth;
+        //           cb();
+        //         });
+        //       }
+        //     ], done);
+        //   });
+
+        //   after(function(done) {
+        //     User.remove({
+        //       email: email
+        //     }, done);
+        //   });
+
+        //   after(function(done) {
+        //     Auth.remove({
+        //       user: user._id
+        //     }, done);
+        //   });
+
+        //   it('should update the link', function(done) {
+
+        //     var userClone = _.clone(user.toJSON());
+
+        //     userClone.socialLinks[0].link = 'http://www.foobar.com';
+
+        //     var patches = diff.diff(user.toJSON(), userClone);
+
+        //     agent
+        //       .patch('/users/' + user._id)
+        //       .send({
+        //         patches: patches
+        //       })
+        //       .set('x-access-token', auth.token)
+        //       .end(function(err, response) {
+        //         should.not.exist(err);
+
+        //         var status = response.status;
+        //         status.should.equal(200);
+
+        //         var user = response.body;
+        //         should.exist(user);
+
+        //         user.socialLinks.length.should.equal(2);
+
+        //         user.socialLinks[0].type.should.equal('FACEBOOK');
+        //         user.socialLinks[0].name.should.equal('FB');
+        //         user.socialLinks[0].link.should.equal('https://www.facebook.com');
+
+        //         user.socialLinks[1].type.should.equal('LINKEDIN');
+        //         user.socialLinks[1].name.should.equal('Resume');
+        //         user.socialLinks[1].link.should.equal('https://www.linkedin.com');
+
+        //         done();
+        //       });
+        //   });
+        // });
       });
 
     });

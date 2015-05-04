@@ -33,6 +33,18 @@ PopulateService.prototype.populate = function populate(options, next) {
     return next(null, options.doc);
   }
 
+  //run mongoose toJSON() *BEFORE* running any populate functions
+  //manually populating mongoose objects does not work right now, so we have to use toJSON() workaround
+  //but calling toJSON during populate functions breaks the object reference so we run into issues when populating multiple fields
+  //
+  if (_.isArray(options.doc)) {
+    _.each(options.doc, function(doc) {
+      doc = doc.toJSON ? doc.toJSON() : doc;
+    });
+  } else {
+    options.doc = options.doc.toJSON ? options.doc.toJSON() : options.doc;
+  }
+
   var _this = this;
   var steps = [];
 
@@ -99,8 +111,6 @@ function populateCollection(options, next) {
 
   logger.debug('running populate for ' + options.key);
 
-  var key = options.key;
-
   var objects = options.doc;
 
   var idsToPopulate = [];
@@ -159,15 +169,17 @@ function populateCollection(options, next) {
 
             _.each(propertyValue, function(val) {
               var found = foundObjs[val];
-              if (found) foundObj.push(found);
+              if (found) {
+                foundObj.push(found);
+              }
             });
           } else {
             foundObj = foundObjs[getProperty(object, options.key)];
           }
 
           if (object) {
-            object = (object && object.toJSON) ? object.toJSON() : object;
-            foundObj = (foundObj && foundObj.toJSON) ? foundObj.toJSON() : foundObj;
+            //object = (object && object.toJSON) ? object.toJSON() : object;
+            //foundObj = (foundObj && foundObj.toJSON) ? foundObj.toJSON() : foundObj;
             setProperty(object, options.key, foundObj);
           }
           objects[index] = object;
@@ -235,7 +247,6 @@ function getProperty(obj, propertyName) {
  *
  */
 function setProperty(obj, propertyName, value) {
-
   if (propertyName.indexOf('.') > 0) {
 
     var parts = propertyName.split('.');

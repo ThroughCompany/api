@@ -4,12 +4,14 @@
 var _ = require('underscore');
 
 var baseSchema = require('modules/common/data/base-schema');
-var wikiPageSchema = require('./wikiPageSchema');
+
+var utils = require('utils/utils');
 
 /* =========================================================================
  * Constants
  * ========================================================================= */
 var LINK_TYPES = require('modules/common/constants/linkTypes');
+var PROJECT_STATUSES = require('modules/project/constants/projectStatuses');
 
 /* =========================================================================
  * Schema
@@ -19,6 +21,12 @@ var projectSchema = baseSchema.extend({
     type: String,
     trim: true,
     required: true
+  },
+  status: {
+    type: String,
+    trim: true,
+    required: true,
+    enum: _.values(PROJECT_STATUSES)
   },
   slug: {
     type: String,
@@ -33,7 +41,17 @@ var projectSchema = baseSchema.extend({
     trim: true
   },
   wiki: {
-    pages: [wikiPageSchema]
+    pages: [{
+      title: {
+        type: String,
+        trim: true,
+        required: true
+      },
+      text: {
+        type: String,
+        trim: true
+      }
+    }]
   },
   profilePic: {
     type: String,
@@ -48,7 +66,11 @@ var projectSchema = baseSchema.extend({
     trim: true
   },
   socialLinks: [{
-    _id: false,
+    _id: {
+      type: String,
+      default: utils.guid,
+      required: true
+    },
     type: {
       type: String,
       trim: true,
@@ -74,23 +96,19 @@ var projectSchema = baseSchema.extend({
     type: String,
     ref: 'ProjectApplication'
   }],
-  assetTags: [{
-    _id: false,
-    name: {
-      type: String,
-      trim: true,
-      required: true
-    },
-    slug: {
-      type: String,
-      trim: true,
-      required: true
-    },
-    description: {
-      type: String,
-      trim: true
-    }
-  }]
+  projectNeeds: [{
+    type: String,
+    ref: 'ProjectNeed'
+  }],
+  openProjectNeedsCount: {
+    type: Number,
+    default: 0
+  },
+  //organization
+  organizationProject: {
+    type: String,
+    ref: 'OrganizationProject'
+  }
 }, {
   collection: 'projects'
 });

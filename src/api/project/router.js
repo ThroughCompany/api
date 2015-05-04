@@ -24,6 +24,11 @@ var getProjects = {
     path: '/projects',
     summary: 'Get a list of projects',
     method: 'GET',
+    parameters: [
+      swagger.params.query('status', 'a project status', 'string'),
+      swagger.params.query('fields', 'csv of fields to select', 'string'),
+      swagger.params.body('skills', 'csv of skills to filter by', 'string')
+    ],
     nickname: 'getProjects',
     type: 'Project',
     produces: ['application/json']
@@ -42,7 +47,7 @@ var getProjectById = {
       swagger.params.path('id', 'project\'s id', 'string'),
       swagger.params.query('fields', 'csv of fields to select', 'string')
     ],
-    nickname: 'getProjects',
+    nickname: 'getProjectById',
     type: 'Project',
     produces: ['application/json']
   },
@@ -66,30 +71,9 @@ var createProject = {
   action: function(req, res, next) {
     authMiddleware.authenticationRequired(req, res, function(err) {
       if (err) return next(err);
-      controller.createProject(req, res, next);
-    });
-  }
-};
-
-var createAssetTag = {
-  spec: {
-    path: '/projects/{id}/assettags',
-    summary: 'Add project asset tag',
-    method: 'POST',
-    parameters: [
-      swagger.params.path('id', 'project\'s id', 'string'),
-      swagger.params.body('tags', 'asset tag', 'string')
-    ],
-    nickname: 'createAssetTag',
-    type: 'User',
-    produces: ['application/json']
-  },
-  action: function(req, res, next) {
-    authMiddleware.authenticationRequired(req, res, function(err) {
-      if (err) return next(err);
-      authMiddleware.currentUserProjectIdQueryParamRequired('id')(req, res, function(err) {
+      authMiddleware.currentUserOrganizationIdBodyParamOptional('organizationId')(req, res, function(err) {
         if (err) return next(err);
-        controller.createAssetTag(req, res, next);
+        controller.createProject(req, res, next);
       });
     });
   }
@@ -112,12 +96,34 @@ var updateProjectById = {
       if (err) return next(err);
       authMiddleware.currentUserProjectIdQueryParamRequired('id')(req, res, function(err) {
         if (err) return next(err);
-        controller.updateProjectById(req, res, next);
+        authMiddleware.currentUserOrganizationIdBodyParamOptional('organizationId')(req, res, function(err) {
+          if (err) return next(err);
+          controller.updateProjectById(req, res, next);
+        });
       });
     });
   }
 };
 
+// ------- Project Users ------- //
+var getProjectUsers = {
+  spec: {
+    path: '/projects/{id}/users',
+    summary: 'Get a project\'s users',
+    method: 'GET',
+    parameters: [
+      swagger.params.path('id', 'project\'s id', 'string')
+    ],
+    nickname: 'getProjectUsers',
+    type: 'User',
+    produces: ['application/json']
+  },
+  action: function(req, res, next) {
+    controller.getProjectUsers(req, res, next);
+  }
+};
+
+// ------- Images ------- //
 var uploadImage = {
   spec: {
     path: '/projects/{id}/images',
@@ -144,24 +150,58 @@ var uploadImage = {
   }
 };
 
-var getProjectUsers = {
+// ------- Project Needs ------- //
+var createProjectNeed = {
   spec: {
-    path: '/projects/{id}/users',
-    summary: 'Get a project\'s users',
-    method: 'GET',
+    path: '/projects/{id}/needs',
+    summary: 'Add project needs',
+    method: 'POST',
     parameters: [
-      swagger.params.path('id', 'project\'s id', 'string')
+      swagger.params.path('id', 'project\'s id', 'string'),
+      swagger.params.body('name', 'need name', 'string'),
+      swagger.params.body('description', 'need description', 'string')
     ],
-    nickname: 'getProjectUsers',
-    type: 'User',
+    nickname: 'createNeed',
+    type: 'ProjectNeed',
     produces: ['application/json']
   },
   action: function(req, res, next) {
-    controller.getProjectUsers(req, res, next);
+    authMiddleware.authenticationRequired(req, res, function(err) {
+      if (err) return next(err);
+      authMiddleware.currentUserProjectIdQueryParamRequired('id')(req, res, function(err) {
+        if (err) return next(err);
+        controller.createProjectNeed(req, res, next);
+      });
+    });
   }
 };
 
-var createApplication = {
+var updateProjectNeedById = {
+  spec: {
+    path: '/projects/{id}/needs/{needId}',
+    summary: 'Update a project need',
+    method: 'PATCH',
+    parameters: [
+      swagger.params.path('id', 'project\'s id', 'string'),
+      swagger.params.path('needId', 'project need\'s id', 'string')
+    ],
+    nickname: 'updateProjectNeedById',
+    type: 'ProjectNeed',
+    produces: ['application/json']
+  },
+  action: function(req, res, next) {
+    authMiddleware.authenticationRequired(req, res, function(err) {
+      if (err) return next(err);
+      authMiddleware.currentUserProjectIdQueryParamRequired('id')(req, res, function(err) {
+        if (err) return next(err);
+        controller.updateProjectNeedById(req, res, next);
+      });
+    });
+  }
+};
+
+// ------- Project Applications ------- //
+var createProjectApplication = {
   spec: {
     path: '/projects/{id}/applications',
     summary: 'Apply to a project',
@@ -179,36 +219,61 @@ var createApplication = {
       if (err) return next(err);
       authMiddleware.currentUserIdBodyParamRequired('userId')(req, res, function(err) {
         if (err) return next(err);
-        controller.createApplication(req, res, next);
+        controller.createProjectApplication(req, res, next);
       });
     });
   }
 };
 
-var acceptApplication = {
+var updateProjectApplication = {
   spec: {
-    path: '/projects/{id}/applications/{projectApplicationId}/accept',
-    summary: 'App a project application',
-    method: 'POST',
+    path: '/projects/{id}/applications/{applicationId}',
+    summary: 'Update a project application',
+    method: 'PATCH',
     parameters: [
       swagger.params.path('id', 'project\'s id', 'string'),
-      swagger.params.body('projectApplicationId', 'application\'s id', 'string')
+      swagger.params.path('applicationId', 'project application\'s id', 'string'),
+      swagger.params.body('userId', 'user\'s id', 'string')
     ],
-    nickname: 'acceptApplication',
+    nickname: 'updateProjectApplication',
     type: 'ProjectApplication',
     produces: ['application/json']
   },
   action: function(req, res, next) {
     authMiddleware.authenticationRequired(req, res, function(err) {
       if (err) return next(err);
-      authMiddleware.currentProjectPermissionParamRequired(PERMISSION_NAMES.ADD_PROJECT_USERS, 'id')(req, res, function(err) {
+      authMiddleware.currentUserProjectIdQueryParamRequired('id')(req, res, function(err) {
         if (err) return next(err);
-        controller.acceptApplication(req, res, next);
+        controller.updateProjectApplicationById(req, res, next);
       });
     });
   }
 };
 
+var getProjectApplications = {
+  spec: {
+    path: '/projects/{id}/applications',
+    summary: 'Get a project\'s applications',
+    method: 'GET',
+    parameters: [
+      swagger.params.path('id', 'project\'s id', 'string')
+    ],
+    nickname: 'getApplications',
+    type: 'Application',
+    produces: ['application/json']
+  },
+  action: function(req, res, next) {
+    authMiddleware.authenticationRequired(req, res, function(err) {
+      if (err) return next(err);
+      authMiddleware.currentUserProjectIdQueryParamRequired('id')(req, res, function(err) {
+        if (err) return next(err);
+        controller.getProjectApplications(req, res, next);
+      });
+    });
+  }
+};
+
+// ------- Project Wiki ------- //
 var createWikiPage = {
   spec: {
     path: '/projects/{id}/wiki/pages',
@@ -262,14 +327,21 @@ var updateWikiPage = {
 swagger.addGet(getProjects);
 swagger.addGet(getProjectById);
 swagger.addPost(createProject);
-swagger.addPost(createAssetTag);
-swagger.addPost(uploadImage);
 swagger.addPatch(updateProjectById);
+//project users
 swagger.addGet(getProjectUsers);
-swagger.addPost(createApplication);
-swagger.addPost(acceptApplication);
+//project needs
+swagger.addPost(createProjectNeed);
+swagger.addPatch(updateProjectNeedById);
+//project applications
+swagger.addPost(createProjectApplication);
+swagger.addPatch(updateProjectApplication);
+swagger.addGet(getProjectApplications);
+//wiki
 swagger.addPost(createWikiPage);
 swagger.addPatch(updateWikiPage);
+//images
+swagger.addPost(uploadImage);
 
 /* =========================================================================
  *   Swagger declarations

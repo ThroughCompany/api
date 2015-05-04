@@ -9,6 +9,7 @@ var authService = require('modules/auth');
 var userService = require('modules/user');
 var projectService = require('modules/project');
 var imageService = require('modules/image');
+var organizationService = require('modules/organization');
 
 var errors = require('modules/error');
 
@@ -108,6 +109,20 @@ Controller.prototype.getUserProjectsById = function(req, res, next) {
 };
 
 /** 
+ * @description Get a user's organization
+ */
+Controller.prototype.getUserOrganizationsById = function(req, res, next) {
+  var userId = req.params.id;
+
+  organizationService.getByUserId({
+    userId: userId
+  }, function(err, organizations) {
+    if (err) return next(err);
+    return res.status(200).json(organizations);
+  });
+};
+
+/** 
  * @description Upload a user image
  */
 Controller.prototype.uploadImage = function(req, res, next) {
@@ -141,18 +156,18 @@ Controller.prototype.uploadImage = function(req, res, next) {
 /** 
  * @description Create asset tag
  */
-Controller.prototype.createAssetTag = function(req, res, next) {
+Controller.prototype.createSkill = function(req, res, next) {
   var userId = req.params.id;
   var name = req.body.name;
   var description = req.body.description;
 
-  userService.createAssetTag({
+  userService.createSkill({
     userId: userId,
     name: name,
     description: description
-  }, function(err, assetTag) {
+  }, function(err, skill) {
     if (err) return next(err);
-    return res.status(201).json(assetTag);
+    return res.status(201).json(skill);
   });
 };
 

@@ -26,6 +26,7 @@ var Admin = require('modules/admin/data/model');
 var Auth = require('modules/auth/data/model');
 var Project = require('modules/project/data/projectModel');
 var ProjectUser = require('modules/project/data/userModel');
+var ProjectNeed = require('modules/project/data/needModel');
 var ProjectApplication = require('modules/project/data/applicationModel');
 
 //libs
@@ -84,6 +85,7 @@ describe('modules', function() {
           var user1 = null;
           var auth = null;
           var project = null;
+          var projectNeed = null;
           var projectApplication = null;
 
           var sendApplicationCreatedNotificationsStub;
@@ -140,10 +142,24 @@ describe('modules', function() {
                   cb();
                 });
               },
+              function createProjectNeed_step(cb) {
+                projectService.createNeed({
+                  projectId: project._id,
+                  name: 'Project 1',
+                  description: 'FOobar',
+                  skills: ['Programming']
+                }, function(err, _projectNeed) {
+                  if (err) return cb(err);
+
+                  projectNeed = _projectNeed;
+                  cb();
+                });
+              },
               function applyToProject_step(cb) {
                 projectService.createApplication({
                   projectId: project._id,
                   userId: user2._id,
+                  needId: projectNeed._id
                 }, function(err, _projectApplication) {
                   if (err) return cb(err);
 
@@ -177,6 +193,12 @@ describe('modules', function() {
           });
 
           after(function(done) {
+            ProjectNeed.remove({
+              _id: projectNeed._id
+            }, done);
+          });
+
+          after(function(done) {
             ProjectApplication.remove({
               _id: projectApplication._id
             }, done);
@@ -206,6 +228,7 @@ describe('modules', function() {
           var user1 = null;
           var auth = null;
           var project = null;
+          var projectNeed = null;
           var projectApplication = null;
 
           var sendApplicationCreatedNotificationsStub;
@@ -267,10 +290,24 @@ describe('modules', function() {
                   cb();
                 });
               },
+              function createProjectNeed_step(cb) {
+                projectService.createNeed({
+                  projectId: project._id,
+                  name: 'Project 1',
+                  description: 'FOobar',
+                  skills: ['Programming']
+                }, function(err, _projectNeed) {
+                  if (err) return cb(err);
+
+                  projectNeed = _projectNeed;
+                  cb();
+                });
+              },
               function applyToProject_step(cb) {
                 projectService.createApplication({
                   projectId: project._id,
                   userId: user2._id,
+                  needId: projectNeed._id
                 }, function(err, _projectApplication) {
                   if (err) return cb(err);
 
@@ -311,6 +348,12 @@ describe('modules', function() {
           });
 
           after(function(done) {
+            ProjectNeed.remove({
+              _id: projectNeed._id
+            }, done);
+          });
+
+          after(function(done) {
             ProjectApplication.remove({
               _id: projectApplication._id
             }, done);
@@ -327,7 +370,7 @@ describe('modules', function() {
               should.not.exist(err);
               should.exist(notifiedUserIds);
 
-              mailGunApiSendEmailStub.callCount.should.equal(1);
+              mailGunApiSendEmailStub.callCount.should.equal(3);
 
               notifiedUserIds.length.should.equal(1);
 

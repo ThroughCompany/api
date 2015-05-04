@@ -24,12 +24,21 @@ var userEvents = {
 };
 
 //user event 1
-var assetTagUsedByUserEvent = {
-  name: USER_EVENTS.ASSET_TAG_USED_BY_USER,
+var skillUsedByUserEvent = {
+  name: USER_EVENTS.SKILL_USED_BY_USER,
   handlers: []
 };
-assetTagUsedByUserEvent.handlers.push(require('./handlers/user/assetTagUsedByUser'));
-userEvents.events.push(assetTagUsedByUserEvent);
+skillUsedByUserEvent.handlers.push(require('./handlers/user/skillUsedByUser'));
+userEvents.events.push(skillUsedByUserEvent);
+
+//user event 2
+var userCreatedEvent = {
+  name: USER_EVENTS.USER_CREATED,
+  handlers: []
+};
+userCreatedEvent.handlers.push(require('./handlers/user/userCreated'));
+userEvents.events.push(userCreatedEvent);
+
 
 EVENTS.push(userEvents);
 
@@ -42,16 +51,16 @@ var projectEvents = {
 };
 
 //project event 1
-var assetTagUsedByProjectEvent = {
-  name: PROJECT_EVENTS.ASSET_TAG_USED_BY_PROJECT,
+var skillUsedByProjectEvent = {
+  name: PROJECT_EVENTS.SKILL_USED_BY_PROJECT,
   handlers: []
 };
-assetTagUsedByProjectEvent.handlers.push(require('./handlers/project/assetTagUsedByProject'));
-projectEvents.events.push(assetTagUsedByProjectEvent);
+skillUsedByProjectEvent.handlers.push(require('./handlers/project/skillUsedByProject'));
+projectEvents.events.push(skillUsedByProjectEvent);
 
 //project event 2
 var applicationCreated = {
-  name: PROJECT_EVENTS.APPLICATION_CREATED,
+  name: PROJECT_EVENTS.PROJECT_APPLICATION_CREATED,
   handlers: []
 };
 applicationCreated.handlers.push(require('./handlers/project/applicationCreated'));
@@ -75,7 +84,7 @@ EventOrchestrator.prototype.registerHandlers = function() {
         logger.info('Module \'' + eventGroup.module + '\' listening to \'' + event.name + '\' event - ' + event.handlers.length + ' handlers');
 
         module.on(event.name, function() {
-          logger.debug('starting handling event : \'' + event.name + '\'');
+          logger.debug('started handling event : \'' + event.name + '\'...');
 
           var args = Array.prototype.slice.call(arguments);
           args.push(function(err) {

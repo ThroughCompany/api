@@ -4,7 +4,7 @@
  * Dependencies
  * ========================================================================= */
 var mongoose = require('mongoose');
-var organizationSchema = require('./userSchema');
+var organizationSchema = require('./organizationSchema');
 
 /* =========================================================================
  * Exports
