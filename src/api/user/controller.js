@@ -27,12 +27,7 @@ function Controller() {}
  * @description Get all users
  */
 Controller.prototype.getUsers = function(req, res, next) {
-  var select = req.fields ? req.fields.select : null;
-  var expands = req.expands;
-
-  userService.getAll({
-    select: select
-  }, function(err, users) {
+  userService.getAll({}, function(err, users) {
     if (err) return next(err);
     return res.status(200).json(users);
   });
@@ -55,9 +50,11 @@ Controller.prototype.createUser = function(req, res, next) {
  */
 Controller.prototype.getUserById = function(req, res, next) {
   var userId = req.params.id;
+  var fields = req.query.fields;
 
   userService.getById({
-    userId: userId
+    userId: userId,
+    fields: fields
   }, function(err, user) {
     if (err) return next(err);
     else res.status(200).json(user);

@@ -48,7 +48,8 @@ var getUserById = {
     summary: 'Get a user by id',
     method: 'GET',
     parameters: [
-      swagger.params.path('id', 'user\s id', 'string')
+      swagger.params.path('id', 'user\s id', 'string'),
+      swagger.params.query('fields', 'csv of fields to select', 'string')
     ],
     nickname: 'getUserById',
     type: 'User',

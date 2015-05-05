@@ -24,10 +24,26 @@ var applicationSchema = baseSchema.extend({
     ref: 'User',
     required: true
   },
+  userName: {
+    type: String,
+    trim: true
+  },
+  userFirstName: {
+    type: String,
+    trim: true
+  },
+  userLastName: {
+    type: String,
+    trim: true
+  },
   projectNeed: {
     type: String,
     ref: 'ProjectNeed',
     required: true
+  },
+  projectName: {
+    type: String,
+    trim: true
   },
   status: {
     type: String,

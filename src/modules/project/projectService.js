@@ -108,31 +108,9 @@ ProjectService.prototype.create = function(options, next) {
 
       project.save(done);
     },
-    function getProjectUserPermissions_step(_project, numCreated, done) {
+    function createOrganizationProject_step(_project, numCreated, done) {
       project = _project;
 
-      permissionService.getByRoleName({
-        roleName: ROLES.PROJECT_ADMIN
-      }, done);
-    },
-    function createProjectUser_step(_permissions, done) {
-      permissions = _permissions;
-
-      projectUser = new ProjectUser();
-      projectUser.project = project._id;
-      projectUser.user = user._id;
-      //projectUser.email = user.email;
-      projectUser.permissions = projectUser.permissions.concat(permissions);
-
-      projectUser.save(function(err, _projectUser) {
-        if (err) return done(err);
-
-        projectUser = _projectUser;
-
-        return done(null);
-      });
-    },
-    function createOrganizationProject_step(done) {
       if (!options.organizationId) {
         return done(null);
       } else {
@@ -148,26 +126,15 @@ ProjectService.prototype.create = function(options, next) {
         });
       }
     },
-    function updateProject_step(done) {
-      project.projectUsers.push(projectUser._id);
-
-      project.save(function(err, updatedProject) {
+    function createProjectUser_step(done) {
+      projectUserService.create({
+        project: project,
+        user: user,
+        role: ROLES.PROJECT_ADMIN
+      }, function(err, projectUser) {
         if (err) return done(err);
 
-        project = updatedProject;
-
-        done();
-      });
-    },
-    function updateUser_step(done) {
-      user.projectUsers.push(projectUser._id);
-
-      user.save(function(err, updatedUser) {
-        if (err) return done(err);
-
-        user = updatedUser;
-
-        done();
+        return done(null);
       });
     }
   ], function(err) {
@@ -321,7 +288,11 @@ ProjectService.prototype.updateWikiPage = function updateWikiPage(options, next)
 
       project = _project;
 
+      console.log(options.pageId);
+      console.log(project.wiki.pages);
+
       var page = _.find(project.wiki.pages, function(page) {
+        console.log(typeof(page._id));
         return page._id === options.pageId;
       });
 
@@ -601,19 +572,7 @@ ProjectService.prototype.uploadImage = function(options, next) {
 ProjectService.prototype.createNeed = function createNeed(options, next) {
   var _this = this;
 
-  projectNeedService.create(options, function(err, projectNeed) {
-    if (err) return next(err);
-
-    console.log(projectNeed);
-
-    _.each(projectNeed.skills, function(skill) {
-      _this.emit(EVENTS.SKILL_USED_BY_PROJECT, {
-        skillId: skill
-      });
-    });
-
-    return next(null, projectNeed);
-  });
+  projectNeedService.create(options, next);
 };
 
 /**
@@ -631,19 +590,7 @@ ProjectService.prototype.updateNeedById = function updateNeedById(options, next)
  * Project Applications
  * ========================================================================= */
 ProjectService.prototype.createApplication = function createApplication(options, next) {
-  var _this = this;
-
-  projectApplicationService.create(options, function(err, projectApplication) {
-    if (err) return next(err);
-
-    _this.emit(EVENTS.PROJECT_APPLICATION_CREATED, {
-      projectApplicationId: projectApplication._id,
-      projectId: projectApplication.project,
-      userId: projectApplication.user
-    });
-
-    return next(null, projectApplication);
-  });
+  projectApplicationService.create(options, next);
 };
 
 /**

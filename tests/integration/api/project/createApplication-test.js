@@ -76,79 +76,6 @@ describe('api', function() {
         });
       });
 
-      describe('when the user id passed is not the authenticated user\'s id', function() {
-        var email = 'testuser@test.com';
-        var password = 'password';
-        var user = null;
-        var auth = null;
-
-        before(function(done) {
-          async.series([
-            function createUser_step(cb) {
-              userService.createUsingCredentials({
-                email: email,
-                password: password
-              }, function(err, _user) {
-                if (err) return cb(err);
-
-                user = _user;
-                cb();
-              });
-            },
-            function authenticateUser_step(cb) {
-              authService.authenticateCredentials({
-                email: email,
-                password: password
-              }, function(err, _auth) {
-                if (err) return cb(err);
-
-                auth = _auth;
-                cb();
-              });
-            }
-          ], done);
-        });
-
-        after(function(done) {
-          User.remove({
-            email: email
-          }, done);
-        });
-
-        after(function(done) {
-          Auth.remove({
-            user: user._id
-          }, done);
-        });
-
-        it('should return a 400', function(done) {
-
-          agent
-            .post('/projects/123/applications')
-            .set('x-access-token', auth.token)
-            .send({
-              userId: '456'
-            })
-            .end(function(err, response) {
-              should.not.exist(err);
-              should.exist(response);
-
-              var error = response.body;
-              should.exist(error);
-
-              var status = response.status;
-              status.should.equal(403);
-
-              var errorMessage = testUtils.getServerErrorMessage(response);
-
-              should.exist(errorMessage);
-              errorMessage.should.equal('Current user id does not match user id body param');
-
-              done();
-            });
-        });
-      });
-
       describe('when project does not exist', function() {
         var email = 'testuser@test.com';
         var password = 'password';
@@ -580,7 +507,7 @@ describe('api', function() {
               var errorMessage = testUtils.getServerErrorMessage(response);
 
               should.exist(errorMessage);
-              errorMessage.should.equal('User ' + user1._id + ' is already a member of this project');
+              errorMessage.should.equal('You are already a member of this project');
 
               done();
             });
@@ -727,7 +654,7 @@ describe('api', function() {
               var errorMessage = testUtils.getServerErrorMessage(response);
 
               should.exist(errorMessage);
-              errorMessage.should.equal('User ' + user2._id + ' has already applied to this project');
+              errorMessage.should.equal('You have already applied to this project and cannot apply again');
 
               done();
             });

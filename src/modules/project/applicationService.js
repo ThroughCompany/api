@@ -10,6 +10,7 @@ var jsonPatch = require('fast-json-patch');
 var errors = require('modules/error');
 var CommonService = require('modules/common');
 var userService = require('modules/user');
+var projectUserService = require('./userService');
 
 //models
 var ProjectApplication = require('modules/project/data/applicationModel');
@@ -26,8 +27,10 @@ var applicationValidator = require('./validators/applicationValidator');
 /* =========================================================================
  * Constants
  * ========================================================================= */
+var EVENTS = require('./constants/events');
 var APPLICATION_STATUSES = require('./constants/applicationStatuses');
 var NEED_STATUSES = require('./constants/needStatuses');
+var ROLES = require('modules/role/constants/roleNames');
 
 var UPDATEDABLE_PROJECT_APPLICATION_PROPERTIES = [
   'status'
@@ -104,10 +107,16 @@ ProjectApplicationService.prototype.create = function create(options, next) {
     },
     function getUserById_step(done) {
       if (_.contains(_.pluck(projectUsers, 'user'), options.userId)) {
-        return done(new errors.InvalidArgumentError('User ' + options.userId + ' is already a member of this project'));
+        return done(new errors.InvalidArgumentError('You are already a member of this project'));
       }
-      if (_.contains(_.pluck(projectApplications, 'user'), options.userId)) {
-        return done(new errors.InvalidArgumentError('User ' + options.userId + ' has already applied to this project'));
+
+      //checks if the user has a PENDING application already
+      var userProjectApplications = _.filter(projectApplications, function(projectApplication) {
+        return projectApplication.user === options.userId && projectApplication.status === APPLICATION_STATUSES.PENDING;
+      });
+
+      if (userProjectApplications && userProjectApplications.length) {
+        return done(new errors.InvalidArgumentError('You have already applied to this project and cannot apply again'));
       }
 
       userService.getById({
@@ -120,7 +129,11 @@ ProjectApplicationService.prototype.create = function create(options, next) {
       var projectApplication = new ProjectApplication();
       projectApplication.project = project._id;
       projectApplication.user = user._id;
+      projectApplication.userName = user.userName;
+      projectApplication.userFirstName = user.firstName;
+      projectApplication.userLastName = user.lastName;
       projectApplication.projectNeed = projectNeed._id;
+      projectApplication.projectName = project.name;
       projectApplication.status = APPLICATION_STATUSES.PENDING;
 
       projectApplication.save(function(err, application) {
@@ -147,6 +160,12 @@ ProjectApplicationService.prototype.create = function create(options, next) {
     }
   ], function(err) {
     if (err) return next(err);
+
+    _this.emit(EVENTS.PROJECT_APPLICATION_CREATED, {
+      projectApplicationId: projectApplication._id,
+      projectId: projectApplication.project,
+      userId: projectApplication.user
+    });
 
     return next(null, projectApplication);
   });
@@ -210,7 +229,7 @@ ProjectApplicationService.prototype.update = function update(options, next) {
 
       patches = patchUtils.stripPatches(UPDATEDABLE_PROJECT_APPLICATION_PROPERTIES, patches);
 
-      console.log('PROJECT NEED');
+      console.log('PROJECT APPLICATION');
       console.log(projectApplication);
 
       console.log('PATCHES:');
@@ -237,7 +256,7 @@ ProjectApplicationService.prototype.update = function update(options, next) {
 
       applicationValidator.validateUpdate(projectApplication, projectApplicationClone, done);
     },
-    function updateProject(done) {
+    function updateProjectApplication(done) {
 
       try {
         console.log('APPLYING PATCHES:');
@@ -254,9 +273,38 @@ ProjectApplicationService.prototype.update = function update(options, next) {
       console.log(projectApplication);
 
       projectApplication.save(done);
+    },
+    function addProjectUser_step(updateProjectApplication, numUpdated, done) {
+      projectApplication = updateProjectApplication;
+
+      if (options.status === APPLICATION_STATUSES.APPROVED) {
+        projectUserService.create({
+          projectId: projectApplication.project,
+          userId: projectApplication.user,
+          role: ROLES.PROJECT_MEMBER
+        }, done);;
+      } else {
+        done();
+      }
     }
-  ], function finish(err, projectApplication) {
-    return next(err, projectApplication); //don't remove, callback needed because mongoose save returns 3rd arg
+  ], function finish(err) {
+    if (err) return next(err);
+
+    if (options.status === APPLICATION_STATUSES.APPROVED) {
+      _this.emit(EVENTS.PROJECT_APPLICATION_APPROVED, {
+        projectId: project._id,
+        userId: user._id,
+        projectApplicationId: projectApplication._id
+      });
+    } else if (options.status === APPLICATION_STATUSES.DECLINED) {
+      _this.emit(EVENTS.PROJECT_APPLICATION_DECLINED, {
+        projectId: project._id,
+        userId: user._id,
+        projectApplicationId: projectApplication._id
+      });
+    }
+
+    return next(null, projectApplication);
   });
 };
 

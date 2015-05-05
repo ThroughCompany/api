@@ -132,6 +132,12 @@ ProjectNeedService.prototype.create = function create(options, next) {
     function finish(err, project) {
       if (err) return next(err);
 
+      _.each(projectNeed.skills, function(skill) {
+        _this.emit(EVENTS.SKILL_USED_BY_PROJECT, {
+          skillId: skill
+        });
+      });
+
       return next(null, projectNeed);
     });
 };

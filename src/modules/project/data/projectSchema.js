@@ -42,6 +42,13 @@ var projectSchema = baseSchema.extend({
   },
   wiki: {
     pages: [{
+      _id: {
+        type: String,
+        default: utils.guid,
+        index: {
+          unique: true
+        }
+      },
       title: {
         type: String,
         trim: true,

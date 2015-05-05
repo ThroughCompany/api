@@ -176,7 +176,7 @@ Controller.prototype.getProjectUsers = function(req, res, next) {
 
 Controller.prototype.createProjectApplication = function(req, res, next) {
   var projectId = req.params.id;
-  var userId = req.body.userId;
+  var userId = req.claims.userId;
   var needId = req.body.needId;
 
   projectService.createApplication({

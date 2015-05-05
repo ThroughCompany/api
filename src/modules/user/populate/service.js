@@ -4,10 +4,10 @@
 var util = require('util');
 
 //modules
-var partialResponse = require('modules/partial-response');
+var partialResponse = require('modules/partialResponse');
 
 //models
-//var City = require(path.join(config.paths.models, 'city'));
+var ProjectApplication = require('modules/project/data/applicationModel');
 
 //services
 var PopulateService = partialResponse.service;
@@ -25,10 +25,10 @@ var userPopulateService = new UserPopulateService();
 /* =========================================================================
  * Populates
  * ========================================================================= */
-// venuePopulateService.addPopulate({
-//   key: 'location.city',
-//   model: City
-// });
+userPopulateService.addPopulate({
+  key: 'projectApplications',
+  model: ProjectApplication
+});
 
 /* =========================================================================
  * Expose

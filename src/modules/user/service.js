@@ -12,6 +12,7 @@ var CommonService = require('modules/common');
 var imageService = require('modules/image');
 var skillService = require('modules/skill');
 var logger = require('modules/logger');
+var userPopulateService = require('./populate/service');
 
 //models
 var User = require('./data/model');
@@ -19,8 +20,9 @@ var Auth = require('modules/auth/data/model');
 
 //utils
 var patchUtils = require('utils/patchUtils');
-
 var authUtil = require('modules/auth/util');
+
+var partialResponseParser = require('modules/partialResponse/parser');
 
 var validator = require('./validator');
 
@@ -334,20 +336,56 @@ UserService.prototype.getById = function(options, next) {
   if (!options) return next(new errors.InvalidArgumentError('options is required'));
   if (!options.userId) return next(new errors.InvalidArgumentError('User Id is required'));
 
-  var query = User.findOne({
-    $or: [{
-      _id: options.userId
-    }, {
-      userName: options.userId
-    }]
-  });
+  var _this = this;
+  var fields = null;
+  var expands = null;
 
-  query.exec(function(err, user) {
-    if (err) return next(err);
-    if (!user) return next(new errors.ObjectNotFoundError('User not found'));
+  async.waterfall([
+    function parseFieldsAndExpands(done) {
+      if (options.fields) {
+        partialResponseParser.parse({
+          fields: options.fields
+        }, function(err, results) {
+          if (err) return done(err);
 
-    next(null, user);
-  });
+          fields = results.fields;
+          expands = results.expands;
+
+          return done();
+        });
+      } else {
+        return done(null);
+      }
+    },
+    function getUserById_step(done) {
+      var query = User.findOne({
+        $or: [{
+          _id: options.userId
+        }, {
+          userName: options.userId
+        }]
+      });
+
+      if (fields) {
+        query.select(fields.select);
+      }
+
+      query.exec(function(err, user) {
+        if (err) return done(err);
+        if (!user) return done(new errors.ObjectNotFoundError('User not found'));
+
+        return done(null, user);
+      });
+    },
+    function populate_step(user, done) {
+      if (!expands) return done(null, user);
+
+      userPopulateService.populate({
+        docs: user,
+        expands: expands
+      }, done);
+    }
+  ], next);
 };
 
 /**
