@@ -30,7 +30,12 @@ Validator.prototype.validateUpdate = function(projectApplication, data, next) {
 function baseValidate(projectApplication, data, next) {
   var steps = [];
 
-  if (data.status && !_.contains(_.values(APPLICATION_STATUSES), data.status)) return next(new errors.InvalidArgumentError(data.status + ' is not a valid project application status'));
+  if (data.status) {
+    if (!_.contains(_.values(APPLICATION_STATUSES), data.status)) return next(new errors.InvalidArgumentError(data.status + ' is not a valid project application status'));
+    if (projectApplication) {
+      if (projectApplication.status === APPLICATION_STATUSES.APPROVED || projectApplication.status === APPLICATION_STATUSES.DECLINED) return next(new errors.InvalidArgumentError(APPLICATION_STATUSES.APPROVED + ' or ' + APPLICATION_STATUSES.DECLINED + ' application status cannot be updated'));
+    }
+  }
 
   async.series(steps, function(err) {
     return next(err);

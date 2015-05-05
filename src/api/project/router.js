@@ -217,10 +217,7 @@ var createProjectApplication = {
   action: function(req, res, next) {
     authMiddleware.authenticationRequired(req, res, function(err) {
       if (err) return next(err);
-      authMiddleware.currentUserIdBodyParamRequired('userId')(req, res, function(err) {
-        if (err) return next(err);
-        controller.createProjectApplication(req, res, next);
-      });
+      controller.createProjectApplication(req, res, next);
     });
   }
 };
