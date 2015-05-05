@@ -19,9 +19,11 @@ Controller.prototype.getAll = function getAll(req, res, next) {
   var select = req.fields ? req.fields.select : null;
   var expands = req.expands;
   var take = req.query.take;
+  var projectNeedId = req.query.projectNeedId;
 
   skillService.getAll({
     name: name,
+    projectNeedId: projectNeedId,
     select: select,
     take: take
   }, function(err, skills) {
