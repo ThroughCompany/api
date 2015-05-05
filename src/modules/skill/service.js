@@ -11,6 +11,7 @@ var CommonService = require('modules/common');
 
 //models
 var Skill = require('./data/model');
+var ProjectNeed = require('modules/project/data/needModel');
 
 /* =========================================================================
  * Constants
@@ -57,30 +58,67 @@ SkillsService.prototype.getByName = function(options, next) {
 SkillsService.prototype.getAll = function(options, next) {
   if (!options) return next(new errors.InvalidArgumentError('options is required'));
 
-  var conditions = {};
+  var steps = [];
+  var skills = null;
+  var projectNeed = null;
 
-  if (options.name) {
-    var nameRegex = new RegExp(options.name, 'ig');
+  console.log(options);
 
-    conditions.name = {
-      $regex: nameRegex
-    };
+  if (options.projectNeedId) {
+    steps.push(function getByProjectNeed_step(done) {
+      ProjectNeed.findById(options.projectNeedId, function(err, _projectNeed) {
+        if (err) return next(err);
+        if (!_projectNeed) return next(new errors.ObjectNotFoundError('Project Need not found'));
+
+        projectNeed = _projectNeed;
+
+        return done(null);
+      });
+    });
   }
 
-  var query = Skill.find(conditions);
+  steps.push(function findSkills_step(done) {
+    var conditions = {};
 
-  if (options.select) {
-    query.select(options.select);
-  }
+    if (options.name) {
+      var nameRegex = new RegExp(options.name, 'ig');
 
-  query.limit(options.take && options.take <= MAX_TAKE ? options.take : TAKE);
+      conditions.name = {
+        $regex: nameRegex
+      };
+    }
 
-  query.sort('-projectUseCount');
+    if (projectNeed) {
+      var skillIds = projectNeed.skills;
 
-  query.exec(function(err, skills) {
+      conditions._id = {
+        $in: skillIds
+      };
+    }
+
+    var query = Skill.find(conditions);
+
+    if (options.select) {
+      query.select(options.select);
+    }
+
+    query.limit(options.take && options.take <= MAX_TAKE ? options.take : TAKE);
+
+    query.sort('-projectUseCount');
+
+    query.exec(function(err, _skills) {
+      if (err) return done(err);
+
+      skills = _skills;
+
+      done();
+    });
+  });
+
+  async.series(steps, function(err) {
     if (err) return next(err);
 
-    next(null, skills);
+    return next(null, skills);
   });
 };
 
