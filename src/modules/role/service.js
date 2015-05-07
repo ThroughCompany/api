@@ -35,7 +35,7 @@ RoleService.prototype.getByName = function getByName(options, next) {
 
   query.exec(function(err, role) {
     if (err) return next(err);
-    if (!role) return next(new errors.ObjectNotFoundError(options.roleName + ' not found'));
+    if (!role) return next(new errors.ObjectNotFoundError('Role \'' + options.roleName + '\' not found'));
 
     next(null, role);
   });

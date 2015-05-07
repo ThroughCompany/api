@@ -51,6 +51,22 @@ PatchUtils.prototype.stripPatches = function stripPatches(allowedProperties, pat
   });
 };
 
+PatchUtils.prototype.patchesContains = function(patches, path) {
+  var foundPatch = _.find(patches, function(patch) {
+    return patch.path === path;
+  });
+
+  return foundPatch ? true : false;
+};
+
+PatchUtils.prototype.patchesContainsWithValue = function(patches, path, value) {
+  var foundPatch = _.find(patches, function(patch) {
+    return patch.path === path && patch.value === value;
+  });
+
+  return foundPatch ? true : false;
+};
+
 /* =========================================================================
  * Private Helpers
  * ========================================================================= */

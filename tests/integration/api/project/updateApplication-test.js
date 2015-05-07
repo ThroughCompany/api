@@ -26,6 +26,7 @@ var Admin = require('modules/admin/data/model');
 var Project = require('modules/project/data/projectModel');
 var ProjectNeed = require('modules/project/data/needModel');
 var ProjectApplication = require('modules/project/data/applicationModel');
+var ProjectUser = require('modules/project/data/userModel');
 
 var APPLICATION_STATUSES = require('modules/project/constants/applicationStatuses');
 
@@ -422,7 +423,7 @@ describe('api', function() {
         });
       });
 
-      describe('when updates are valid', function() {
+      describe('when application status is updated to APPROVED', function() {
         var email1 = 'testuser1@test.com';
         var email2 = 'testuser2@test.com';
         var password = 'password';
@@ -554,7 +555,7 @@ describe('api', function() {
           }, done);
         });
 
-        it('should update properties', function(done) {
+        it('should update the application status to APPROVED and add a new project user to the project', function(done) {
 
           var projectApplicationClone = _.clone(projectApplication.toJSON());
 
@@ -582,7 +583,28 @@ describe('api', function() {
 
                 foundProjectApplication.status.should.equal(APPLICATION_STATUSES.APPROVED);
 
-                done();
+                Project.findById(foundProjectApplication.project, function(err, project) {
+                  if (err) return done(err);
+
+                  project._id.should.equal(foundProjectApplication.project);
+                  project.projectUsers.length.should.equal(2);
+
+                  ProjectUser.find({
+                    project: foundProjectApplication.project
+                  }, function(err, projectUsers) {
+                    if (err) return done(err);
+
+                    projectUsers.length.should.equal(2);
+
+                    var newProjectUser = _.find(projectUsers, function(projectUser) {
+                      return projectUser.user === foundProjectApplication.user;
+                    });
+
+                    should.exist(newProjectUser);
+
+                    done();
+                  });
+                });
               });
             });
         });

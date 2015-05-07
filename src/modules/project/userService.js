@@ -97,7 +97,6 @@ ProjectUserService.prototype.create = function(options, next) {
       projectUser = new ProjectUser();
       projectUser.project = project._id;
       projectUser.user = user._id;
-      //projectUser.email = user.email;
       projectUser.permissions = projectUser.permissions.concat(permissions);
 
       projectUser.save(function(err, _projectUser) {
@@ -116,7 +115,7 @@ ProjectUserService.prototype.create = function(options, next) {
 
         project = updatedProject;
 
-        done();
+        return done();
       });
     },
     function updateUser_step(done) {
@@ -127,7 +126,7 @@ ProjectUserService.prototype.create = function(options, next) {
 
         user = updatedUser;
 
-        done();
+        return done();
       });
     }
   ], function(err) {

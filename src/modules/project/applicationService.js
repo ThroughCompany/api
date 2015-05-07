@@ -277,7 +277,12 @@ ProjectApplicationService.prototype.update = function update(options, next) {
     function addProjectUser_step(updateProjectApplication, numUpdated, done) {
       projectApplication = updateProjectApplication;
 
-      if (options.status === APPLICATION_STATUSES.APPROVED) {
+      console.log('\n\n GOT HERE \n\n');
+      console.log(options);
+
+      if (patchUtils.patchesContainsWithValue(patches, '/status', APPLICATION_STATUSES.APPROVED)) {
+        console.log('GOT HERE');
+
         projectUserService.create({
           projectId: projectApplication.project,
           userId: projectApplication.user,
