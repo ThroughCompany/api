@@ -460,10 +460,10 @@ describe('api', function() {
           projectClone.projectUsers = [{
             foo: 1
           }];
-          projectClone.projectApplications = [{
+          projectClone.applications = [{
             bar: 1
           }];
-          projectClone.projectNeeds = [{
+          projectClone.needs = [{
             bar: 1
           }];
           projectClone.profilePic = '1111';
@@ -492,8 +492,8 @@ describe('api', function() {
                 foundProject.slug.should.equal(project.slug);
                 utils.arraysAreEqual(foundProject.wiki, project.wiki).should.equal(true);
                 utils.arraysAreEqual(foundProject.projectUsers, project.projectUsers).should.equal(true);
-                utils.arraysAreEqual(foundProject.projectApplications, project.projectApplications).should.equal(true);
-                utils.arraysAreEqual(foundProject.projectNeeds, project.projectNeeds).should.equal(true);
+                utils.arraysAreEqual(foundProject.applications, project.applications).should.equal(true);
+                utils.arraysAreEqual(foundProject.needs, project.needs).should.equal(true);
                 foundProject.profilePic.should.equal(project.profilePic);
 
                 done();

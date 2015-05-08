@@ -21,13 +21,11 @@ var applicationSchema = baseSchema.extend({
   },
   user: {
     type: String,
-    ref: 'User',
-    required: true
+    ref: 'User'
   },
   project: {
     type: String,
-    ref: 'Project',
-    required: true
+    ref: 'Project'
   },
   type: {
     type: String,

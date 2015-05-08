@@ -5,47 +5,58 @@
 
 // var should = require('should');
 // var async = require('async');
-// var diff = require('rfc6902');
-// var _ = require('underscore');
+// var sinon = require('sinon');
 // var moment = require('moment');
 
 // var app = require('src');
 // var appConfig = require('src/config/app-config');
 
-// var utils = require('utils/utils');
 // var testUtils = require('tests/lib/test-utils');
 
 // var userService = require('modules/user');
 // var authService = require('modules/auth');
 // var adminService = require('modules/admin');
+// var skillService = require('modules/skill');
 // var projectService = require('modules/project');
+// var needService = require('modules/need');
 
 // var User = require('modules/user/data/model');
 // var Auth = require('modules/auth/data/model');
 // var Admin = require('modules/admin/data/model');
+// var Skill = require('modules/skill/data/model');
 // var Project = require('modules/project/data/projectModel');
 // var Need = require('modules/need/data/needModel');
 
+// var PROJECT_EVENTS = require('modules/project/constants/events');
+// var NEED_STATUSES = require('modules/need/constants/needStatuses');
+
 // var agent;
+// var sandbox;
 
 // /* =========================================================================
 //  * Before All
 //  * ========================================================================= */
-
 // before(function(done) {
 //   agent = require('tests/lib/agent').getAgent();
+//   sandbox = sinon.sandbox.create();
 
 //   done();
 // });
 
 // describe('api', function() {
 //   describe('project', function() {
-//     describe('PATCH - /projects/{id}/needs/{needId}', function() {
+//     describe('POST - /projects/{id}/needs', function() {
+//       after(function(next) {
+//         sandbox.restore();
+
+//         next();
+//       });
+
 //       describe('when user is not authenticated', function() {
 //         it('should return a 401', function(done) {
 
 //           agent
-//             .patch('/projects/123/needs/345')
+//             .post('/projects/123/needs')
 //             .end(function(err, response) {
 //               should.not.exist(err);
 //               should.exist(response);
@@ -61,7 +72,72 @@
 //         });
 //       });
 
-//       describe('when trying to update a project need when they aren\'t a member of the project and is not an admin', function() {
+//       describe('when user id is not the user\'s id', function() {
+//         var email = 'testuser@test.com';
+//         var password = 'password';
+//         var user = null;
+//         var auth = null;
+
+//         before(function(done) {
+//           async.series([
+//             function createUser_step(cb) {
+//               userService.createUsingCredentials({
+//                 email: email,
+//                 password: password
+//               }, function(err, _user) {
+//                 if (err) return cb(err);
+
+//                 user = _user;
+//                 cb();
+//               });
+//             },
+//             function authenticateUser_step(cb) {
+//               authService.authenticateCredentials({
+//                 email: email,
+//                 password: password
+//               }, function(err, _auth) {
+//                 if (err) return cb(err);
+
+//                 auth = _auth;
+//                 cb();
+//               });
+//             }
+//           ], done);
+//         });
+
+//         after(function(done) {
+//           User.remove({
+//             email: email
+//           }, done);
+//         });
+
+//         after(function(done) {
+//           Auth.remove({
+//             user: user._id
+//           }, done);
+//         });
+
+//         it('should return a 403', function(done) {
+
+//           agent
+//             .post('/projects/123/needs')
+//             .set('x-access-token', auth.token)
+//             .end(function(err, response) {
+//               should.not.exist(err);
+//               should.exist(response);
+
+//               var error = response.body;
+//               should.exist(error);
+
+//               var status = response.status;
+//               status.should.equal(403);
+
+//               done();
+//             });
+//         });
+//       });
+
+//       describe('when trying to update a project they aren\'t a member of and is not an admin', function() {
 //         var email1 = 'testuser1@test.com';
 //         var email2 = 'testuser2@test.com';
 //         var password = 'password';
@@ -142,7 +218,7 @@
 
 //         it('should return a 403', function(done) {
 //           agent
-//             .patch('/projects/' + project._id + '/needs/345')
+//             .post('/projects/' + project._id + '/needs')
 //             .set('x-access-token', auth.token)
 //             .end(function(err, response) {
 //               should.not.exist(err);
@@ -163,7 +239,7 @@
 //         });
 //       });
 
-//       describe('when no updates are passed', function() {
+//       describe('when not all required data is passed', function() {
 //         var email = 'testuser@test.com';
 //         var password = 'password';
 //         var user = null;
@@ -229,10 +305,7 @@
 
 //         it('should return a 400', function(done) {
 //           agent
-//             .patch('/projects/' + project._id + '/needs/345')
-//             .send({
-//               patches: []
-//             })
+//             .post('/projects/' + project._id + '/needs')
 //             .set('x-access-token', auth.token)
 //             .end(function(err, response) {
 //               should.not.exist(err);
@@ -243,25 +316,41 @@
 //               var status = response.status;
 //               status.should.equal(400);
 
-//               var errorMessage = utils.getServerErrorMessage(response);
+//               var errorMessage = testUtils.getServerErrorMessage(response);
 
-//               should.exist(errorMessage);
-//               errorMessage.should.equal('patches must contain values');
+//               errorMessage.should.equal('Name is required');
 
 //               done();
 //             });
 //         });
 //       });
 
-//       describe('when trying to update non-updateable properties', function() {
+//       describe('when all required data is passed', function() {
 //         var email = 'testuser@test.com';
 //         var password = 'password';
 //         var user = null;
 //         var auth = null;
 //         var project = null;
-//         var projectNeed = null;
+//         var needName = 'Node JS Programmer';
+//         var needDescription = 'We need an awesome Node JS programmer';
+//         var needSkills = ['Programmer', 'Node JS'];
+//         var needLocationSpecific = true;
+//         var needTimeCommitment = {
+//           totalHours: 200
+//         };
+//         var needDuration = {
+//           startDate: moment(),
+//           endDate: moment().add(6, 'month')
+//         };
+
+//         var createSkillSpy;
 
 //         before(function(done) {
+
+//           createSkillSpy = sandbox.spy();
+
+//           projectService.on(PROJECT_EVENTS.SKILL_USED_BY_PROJECT, createSkillSpy);
+
 //           async.series([
 //             function createUser_step(cb) {
 //               userService.createUsingCredentials({
@@ -285,7 +374,7 @@
 //                 cb();
 //               });
 //             },
-//             function createProject_step(cb) {
+//             function createUserProjectStep_step(cb) {
 //               projectService.create({
 //                 createdByUserId: user._id,
 //                 name: 'Project 1',
@@ -294,19 +383,6 @@
 //                 if (err) return cb(err);
 
 //                 project = _project;
-//                 cb();
-//               });
-//             },
-//             function createProjectNeed_step(cb) {
-//               projectService.createNeed({
-//                 projectId: project._id,
-//                 name: 'Programmer',
-//                 description: 'Node js programmer',
-//                 skills: ['HTML5']
-//               }, function(err, _projectNeed) {
-//                 if (err) return cb(err);
-
-//                 projectNeed = _projectNeed;
 //                 cb();
 //               });
 //             }
@@ -332,178 +408,49 @@
 //         });
 
 //         after(function(done) {
-//           ProjectNeed.remove({
-//             _id: projectNeed._id
+//           Need.remove({
+//             project: project._id
 //           }, done);
 //         });
 
-//         it('should ignore any non-updateable properties', function(done) {
-
-//           var projectNeedClone = _.clone(projectNeed.toJSON());
-
-//           projectNeedClone._id = '123';
-
-//           var patches = diff.diff(projectNeed.toJSON(), projectNeedClone);
-
+//         it('should create a new need and bump the skills user count', function(done) {
 //           agent
-//             .patch('/projects/' + project._id + '/needs/' + projectNeed._id)
-//             .send({
-//               patches: patches
-//             })
+//             .post('/projects/' + project._id + '/needs')
 //             .set('x-access-token', auth.token)
+//             .send({
+//               name: needName,
+//               description: needDescription,
+//               skills: needSkills,
+//               locationSpecific: needLocationSpecific,
+//               duration: needDuration,
+//               timeCommitment: needTimeCommitment
+//             })
 //             .end(function(err, response) {
 //               should.not.exist(err);
+//               should.exist(response);
 
 //               var status = response.status;
-//               status.should.equal(200);
+//               status.should.equal(201);
 
-//               var updatedProjectNeed = response.body;
-//               should.exist(updatedProjectNeed);
+//               var projectNeed = response.body;
+//               should.exist(projectNeed);
 
-//               ProjectNeed.findById(projectNeed._id, function(err, foundProjectNeed) {
-//                 if (err) return done(err);
+//               projectNeed.name.should.equal(needName);
+//               projectNeed.description.should.equal(needDescription);
+//               projectNeed.locationSpecific.should.equal(needLocationSpecific);
+//               projectNeed.status.should.equal(NEED_STATUSES.OPEN);
 
-//                 foundProjectNeed._id.should.equal(projectNeed._id);
+//               should.exist(projectNeed.duration);
+//               should.exist(projectNeed.duration.startDate);
+//               should.exist(projectNeed.duration.endDate);
+//               new Date(projectNeed.duration.startDate).getTime().should.equal(needDuration.startDate.toDate().getTime());
+//               new Date(projectNeed.duration.endDate).getTime().should.equal(needDuration.endDate.toDate().getTime());
+//               should.exist(projectNeed.timeCommitment);
+//               projectNeed.timeCommitment.totalHours.should.equal(needTimeCommitment.totalHours);
 
-//                 done();
-//               });
-//             });
-//         });
-//       });
+//               createSkillSpy.callCount.should.equal(needSkills.length);
 
-//       describe('when updates are valid', function() {
-//         var email = 'testuser@test.com';
-//         var password = 'password';
-//         var user = null;
-//         var auth = null;
-//         var project = null;
-//         var projectNeed = null;
-
-//         before(function(done) {
-//           async.series([
-//             function createUser_step(cb) {
-//               userService.createUsingCredentials({
-//                 email: email,
-//                 password: password
-//               }, function(err, _user) {
-//                 if (err) return cb(err);
-
-//                 user = _user;
-//                 cb();
-//               });
-//             },
-//             function authenticateUser_step(cb) {
-//               authService.authenticateCredentials({
-//                 email: email,
-//                 password: password
-//               }, function(err, _auth) {
-//                 if (err) return cb(err);
-
-//                 auth = _auth;
-//                 cb();
-//               });
-//             },
-//             function createProject_step(cb) {
-//               projectService.create({
-//                 createdByUserId: user._id,
-//                 name: 'Project 1',
-//                 shortDescription: 'short desc'
-//               }, function(err, _project) {
-//                 if (err) return cb(err);
-
-//                 project = _project;
-//                 cb();
-//               });
-//             },
-//             function createProjectNeed_step(cb) {
-//               projectService.createNeed({
-//                 projectId: project._id,
-//                 name: 'Programmer',
-//                 description: 'Node js programmer',
-//                 timeCommitment: {
-//                   hoursPerWeek: 20
-//                 },
-//                 // duration: {
-//                 //   startDate: new Date(),
-//                 //   endDate: new Date()
-//                 // },
-//                 skills: ['HTML5']
-//               }, function(err, _projectNeed) {
-//                 if (err) return cb(err);
-
-//                 projectNeed = _projectNeed;
-//                 cb();
-//               });
-//             }
-//           ], done);
-//         });
-
-//         after(function(done) {
-//           User.remove({
-//             email: email
-//           }, done);
-//         });
-
-//         after(function(done) {
-//           Auth.remove({
-//             user: user._id
-//           }, done);
-//         });
-
-//         after(function(done) {
-//           Project.remove({
-//             _id: project._id
-//           }, done);
-//         });
-
-//         after(function(done) {
-//           ProjectNeed.remove({
-//             _id: projectNeed._id
-//           }, done);
-//         });
-
-//         it('should update properties', function(done) {
-
-//           var projectNeedClone = _.clone(projectNeed.toJSON());
-
-//           //var newNeedStartDate = moment().add(1, 'month');
-
-//           projectNeedClone.name = '123';
-//           projectNeedClone.description = 'new description';
-//           projectNeedClone.locationSpecific = true;
-//           projectNeedClone.timeCommitment.totalHours = 200;
-//           projectNeedClone.timeCommitment.hoursPerWeek = 0;
-//           //projectNeedClone.duration.startDate = newNeedStartDate;
-
-//           var patches = diff.diff(projectNeed.toJSON(), projectNeedClone);
-
-//           agent
-//             .patch('/projects/' + project._id + '/needs/' + projectNeed._id)
-//             .send({
-//               patches: patches
-//             })
-//             .set('x-access-token', auth.token)
-//             .end(function(err, response) {
-//               should.not.exist(err);
-
-//               var status = response.status;
-//               status.should.equal(200);
-
-//               var updatedProjectNeed = response.body;
-//               should.exist(updatedProjectNeed);
-
-//               ProjectNeed.findById(projectNeed._id, function(err, foundProjectNeed) {
-//                 if (err) return done(err);
-
-//                 foundProjectNeed.name.should.equal('123');
-//                 foundProjectNeed.description.should.equal('new description');
-//                 foundProjectNeed.locationSpecific.should.equal(true);
-//                 foundProjectNeed.timeCommitment.totalHours.should.equal(200);
-//                 foundProjectNeed.timeCommitment.hoursPerWeek.should.equal(0);
-//                 // foundProjectNeed.duration.startDate.should.equal(newNeedStartDate);
-
-//                 done();
-//               });
+//               done();
 //             });
 //         });
 //       });

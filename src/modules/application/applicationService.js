@@ -31,6 +31,7 @@ var applicationValidator = require('./validators/applicationValidator');
  * ========================================================================= */
 var EVENTS = require('./constants/events');
 var APPLICATION_STATUSES = require('./constants/applicationStatuses');
+var APPLICATION_TYPES = require('./constants/applicationTypes');
 var NEED_STATUSES = require('modules/need/constants/needStatuses');
 var ROLES = require('modules/role/constants/roleNames');
 
@@ -55,7 +56,7 @@ ApplicationService.prototype.create = function create(options, next) {
   if (!options) return next(new errors.InvalidArgumentError('options is required'));
   if (!options.projectId && !options.userId && !options.organization) return next(new errors.InvalidArgumentError('Organization Id, User Id, or Project Id is required'));
   if (!options.createdByUserId) return next(new errors.InvalidArgumentError('Created By User Id is required'));
-  if (!options.needId) return next(new errors.InvalidArgumentError('Need Id is required'));
+  if (!options.needId) return next(new errors.InvkalidArgumentError('Need Id is required'));
 
   var _this = this;
   var organization = null;
@@ -119,7 +120,7 @@ ApplicationService.prototype.create = function create(options, next) {
             if (err) return cb(err);
 
             if (!_need) return cb(new errors.ObjectNotFoundError('Need not found'));
-            if (need.status !== NEED_STATUSES.OPEN) return cb(new errors.InvalidArgumentError('Can only apply to needs that are open'));
+            if (_need.status !== NEED_STATUSES.OPEN) return cb(new errors.InvalidArgumentError('Can only apply to needs that are open'));
 
             need = _need;
 
@@ -177,7 +178,7 @@ ApplicationService.prototype.create = function create(options, next) {
             if (err) return cb(err);
 
             if (_applications && _applications.length) {
-              return cb(new errors.InvalidArgumentError('You have already applied to this project and cannot apply again'));
+              return cb(new errors.InvalidArgumentError('You have already applied and cannot apply again'));
             }
 
             return cb(null);
@@ -199,9 +200,18 @@ ApplicationService.prototype.create = function create(options, next) {
 
       var application = new Application();
 
-      if (organization) application.organization = organization._id;
-      if (user) application.user = user._id;
-      if (project) application.project = project._id;
+      if (organization) {
+        application.organization = organization._id;
+        application.type = APPLICATION_TYPES.ORGANIZATION;
+      }
+      if (user) {
+        application.user = user._id;
+        application.type = APPLICATION_TYPES.USER;
+      }
+      if (project) {
+        application.project = project._id;
+        application.type = APPLICATION_TYPES.PROJECT;
+      }
 
       application.createdByUser = createdByUser._id;
       application.createdByUserName = createdByUser.userName;

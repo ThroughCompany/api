@@ -115,8 +115,6 @@ NeedService.prototype.create = function create(options, next) {
         }
       },
       function validateData_step(done) {
-        project = _project;
-
         needValidator.validateCreate(options, done);
       },
       function findOrCreateSkills_step(done) {

@@ -367,7 +367,10 @@ describe('api', function() {
           userClone.projectUsers = [{
             foo: 1
           }];
-          userClone.projectApplications = [{
+          userClone.applications = [{
+            bar: 1
+          }];
+          userClone.needs = [{
             bar: 1
           }];
           userClone.skills = [{
@@ -403,7 +406,8 @@ describe('api', function() {
                 foundUser.email.should.equal(user.email);
                 foundUser.userName.should.equal(user.userName);
                 utils.arraysAreEqual(foundUser.projectUsers, user.projectUsers).should.equal(true);
-                utils.arraysAreEqual(foundUser.projectApplications, user.projectApplications).should.equal(true);
+                utils.arraysAreEqual(foundUser.applications, user.applications).should.equal(true);
+                utils.arraysAreEqual(foundUser.needs, user.needs).should.equal(true);
                 utils.arraysAreEqual(foundUser.skills, user.skills).should.equal(true);
                 foundUser.profilePic.should.equal(user.profilePic);
                 foundUser.active.should.equal(user.active);

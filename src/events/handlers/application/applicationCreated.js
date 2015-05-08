@@ -17,15 +17,21 @@ var projectNotificationService = require('modules/project/notificationService');
  * ========================================================================= */
 function eventHandler(options, next) {
   if (!options) return next(new errors.InternalServiceError('options is required'));
-  if (!options.projectId) return next(new errors.InternalServiceError('Project Id is required'));
-  if (!options.userId) return next(new errors.InternalServiceError('User Id is required'));
-  if (!options.projectApplicationId) return next(new errors.InternalServiceError('Project Application Id is required'));
+  if (!options.projectId && !options.userId && !options.organization) return next(new errors.InvalidArgumentError('Organization Id, User Id, or Project Id is required'));
+  if (!options.createdByUserId) return next(new errors.InternalServiceError('Created By User Id is required'));
+  if (!options.applicationId) return next(new errors.InternalServiceError('Application Id is required'));
 
-  projectNotificationService.sendApplicationDeclinedNotifications({
-    projectId: options.projectId,
-    userId: options.userId,
-    projectApplicationId: options.projectApplicationId
-  }, next);
+  if (options.organizationId) {
+    return next(new errors.NotImplementedError());
+  } else if (options.userId) {
+    return next(new errors.NotImplementedError());
+  } else {
+    projectNotificationService.sendApplicationCreatedNotifications({
+      projectId: options.projectId,
+      createdByUserId: options.createdByUserId,
+      projectApplicationId: options.projectApplicationId
+    }, next);
+  }
 }
 
 /* =========================================================================
