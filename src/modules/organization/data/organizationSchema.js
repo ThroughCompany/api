@@ -67,6 +67,20 @@ var organizationSchema = baseSchema.extend({
   organizationProjects: [{
     type: String,
     ref: 'OrganizationProject'
+  }],
+  //needs
+  needs: [{
+    type: String,
+    ref: 'Need'
+  }],
+  openNeedsCount: {
+    type: Number,
+    default: 0
+  },
+  //applications
+  applications: [{
+    type: String,
+    ref: 'Application'
   }]
 });
 

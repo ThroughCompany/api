@@ -7,7 +7,6 @@ var util = require('util');
 var partialResponse = require('modules/partialResponse');
 
 //models
-var Application = require('modules/application/data/applicationModel');
 
 //services
 var PopulateService = partialResponse.service;
@@ -15,22 +14,18 @@ var PopulateService = partialResponse.service;
 /* =========================================================================
  * Constructor
  * ========================================================================= */
-function UserPopulateService() {
+function NeedPopulateService() {
   PopulateService.call(this);
 }
-util.inherits(UserPopulateService, PopulateService);
+util.inherits(NeedPopulateService, PopulateService);
 
-var userPopulateService = new UserPopulateService();
+var needPopulateService = new NeedPopulateService();
 
 /* =========================================================================
  * Populates
  * ========================================================================= */
-userPopulateService.addPopulate({
-  key: 'applications',
-  model: Application
-});
 
 /* =========================================================================
  * Expose
  * ========================================================================= */
-module.exports = userPopulateService;
+module.exports = needPopulateService;

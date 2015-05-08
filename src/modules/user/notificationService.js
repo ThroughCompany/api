@@ -11,7 +11,6 @@ var appConfig = require('src/config/app-config');
 var errors = require('modules/error');
 var logger = require('modules/logger');
 var userService = require('modules/user');
-var projectApplicationService = require('modules/project/applicationService');
 var projectUserService = require('modules/project/userService');
 var permissionService = require('modules/permission');
 var templateService = require('modules/template');

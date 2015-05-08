@@ -26,7 +26,7 @@ var Admin = require('modules/admin/data/model');
 var Auth = require('modules/auth/data/model');
 var Project = require('modules/project/data/projectModel');
 var ProjectUser = require('modules/project/data/userModel');
-var ProjectNeed = require('modules/project/data/needModel');
+var Need = require('modules/need/data/needModel');
 var ProjectApplication = require('modules/project/data/applicationModel');
 
 //libs

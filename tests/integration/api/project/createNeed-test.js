@@ -18,16 +18,17 @@ var authService = require('modules/auth');
 var adminService = require('modules/admin');
 var skillService = require('modules/skill');
 var projectService = require('modules/project');
+var needService = require('modules/need');
 
 var User = require('modules/user/data/model');
 var Auth = require('modules/auth/data/model');
 var Admin = require('modules/admin/data/model');
 var Skill = require('modules/skill/data/model');
 var Project = require('modules/project/data/projectModel');
-var ProjectNeed = require('modules/project/data/needModel');
+var Need = require('modules/need/data/needModel');
 
 var PROJECT_EVENTS = require('modules/project/constants/events');
-var NEED_STATUSES = require('modules/project/constants/needStatuses');
+var NEED_STATUSES = require('modules/need/constants/needStatuses');
 
 var agent;
 var sandbox;
@@ -407,7 +408,7 @@ describe('api', function() {
         });
 
         after(function(done) {
-          ProjectNeed.remove({
+          Need.remove({
             project: project._id
           }, done);
         });

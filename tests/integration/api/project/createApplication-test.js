@@ -17,18 +17,19 @@ var userService = require('modules/user');
 var adminService = require('modules/admin');
 var authService = require('modules/auth');
 var projectService = require('modules/project');
+var needService = require('modules/need');
 
 var User = require('modules/user/data/model');
 var Admin = require('modules/admin/data/model');
 var Auth = require('modules/auth/data/model');
 var Project = require('modules/project/data/projectModel');
 var ProjectApplication = require('modules/project/data/applicationModel');
-var ProjectNeed = require('modules/project/data/needModel');
+var Need = require('modules/need/data/needModel');
 var Permission = require('modules/permission/data/model');
 
 var PROJECT_APPLICATION_STATUSES = require('modules/project/constants/applicationStatuses');
 var PROJECT_EVENTS = require('modules/project/constants/events');
-var NEED_STATUSES = require('modules/project/constants/needStatuses');
+var NEED_STATUSES = require('modules/need/constants/needStatuses');
 
 var agent;
 var sandbox;
@@ -46,7 +47,7 @@ before(function(done) {
 
 describe('api', function() {
   describe('project', function() {
-    describe('POST - /projects/{id}/applications', function() {
+    describe.only('POST - /projects/{id}/applications', function() {
       after(function(next) {
         sandbox.restore();
 
@@ -257,7 +258,7 @@ describe('api', function() {
         });
       });
 
-      describe('when project need is not OPEN', function() {
+      describe('when need is not OPEN', function() {
         var email1 = 'testuser1@test.com';
         var email2 = 'testuser2@test.com';
         var password = 'password';
@@ -265,7 +266,7 @@ describe('api', function() {
         var user2 = null;
         var auth1 = null;
         var project = null;
-        var projectNeed = null;
+        var need = null;
 
         before(function(done) {
           async.series([
@@ -313,20 +314,20 @@ describe('api', function() {
                 cb();
               });
             },
-            function createProjectNeed_step(cb) {
-              projectService.createNeed({
+            function createNeed_step(cb) {
+              needService.create({
                 projectId: project._id,
                 name: 'Project 1',
                 description: 'FOobar',
                 skills: ['Programming']
-              }, function(err, _projectNeed) {
+              }, function(err, _need) {
                 if (err) return cb(err);
 
-                projectNeed = _projectNeed;
+                need = _need;
 
-                projectNeed.status = NEED_STATUSES.CLOSED;
+                need.status = NEED_STATUSES.CLOSED;
 
-                projectNeed.save(cb);
+                need.save(cb);
               });
             }
           ], done);
@@ -353,8 +354,8 @@ describe('api', function() {
         });
 
         after(function(done) {
-          ProjectNeed.remove({
-            _id: projectNeed._id
+          Need.remove({
+            _id: need._id
           }, done);
         });
 
@@ -365,7 +366,7 @@ describe('api', function() {
             .set('x-access-token', auth1.token)
             .send({
               userId: user1._id,
-              needId: projectNeed._id
+              needId: need._id
             })
             .end(function(err, response) {
               should.not.exist(err);
@@ -380,7 +381,7 @@ describe('api', function() {
               var errorMessage = testUtils.getServerErrorMessage(response);
 
               should.exist(errorMessage);
-              errorMessage.should.equal('Can only apply to project needs that are open');
+              errorMessage.should.equal('Can only apply to needs that are open');
 
               done();
             });
@@ -395,7 +396,7 @@ describe('api', function() {
         var user2 = null;
         var auth1 = null;
         var project = null;
-        var projectNeed = null;
+        var need = null;
 
         before(function(done) {
           async.series([
@@ -443,16 +444,16 @@ describe('api', function() {
                 cb();
               });
             },
-            function createProjectNeed_step(cb) {
-              projectService.createNeed({
+            function createNeed_step(cb) {
+              needService.create({
                 projectId: project._id,
                 name: 'Project 1',
                 description: 'FOobar',
                 skills: ['Programming']
-              }, function(err, _projectNeed) {
+              }, function(err, _need) {
                 if (err) return cb(err);
 
-                projectNeed = _projectNeed;
+                need = _need;
                 cb();
               });
             }
@@ -480,8 +481,8 @@ describe('api', function() {
         });
 
         after(function(done) {
-          ProjectNeed.remove({
-            _id: projectNeed._id
+          Need.remove({
+            _id: need._id
           }, done);
         });
 
@@ -492,7 +493,7 @@ describe('api', function() {
             .set('x-access-token', auth1.token)
             .send({
               userId: user1._id,
-              needId: projectNeed._id
+              needId: need._id
             })
             .end(function(err, response) {
               should.not.exist(err);
@@ -522,7 +523,7 @@ describe('api', function() {
         var user2 = null;
         var auth1 = null;
         var project = null;
-        var projectNeed = null;
+        var need = null;
         var projectApplication = null;
 
         before(function(done) {
@@ -571,23 +572,23 @@ describe('api', function() {
                 cb();
               });
             },
-            function createProjectNeed_step(cb) {
-              projectService.createNeed({
+            function createNeed_step(cb) {
+              needService.create({
                 projectId: project._id,
                 name: 'Project 1',
                 description: 'FOobar',
                 skills: ['Programming']
-              }, function(err, _projectNeed) {
+              }, function(err, _need) {
                 if (err) return cb(err);
 
-                projectNeed = _projectNeed;
+                need = _need;
                 cb();
               });
             },
             function createProjectApplication_step(cb) {
               projectService.createApplication({
                 projectId: project._id,
-                needId: projectNeed._id,
+                needId: need._id,
                 userId: user2._id
               }, function(err, _projectApplication) {
                 console.log(err);
@@ -621,8 +622,8 @@ describe('api', function() {
         });
 
         after(function(done) {
-          ProjectNeed.remove({
-            _id: projectNeed._id
+          Need.remove({
+            _id: need._id
           }, done);
         });
 
@@ -639,7 +640,7 @@ describe('api', function() {
             .set('x-access-token', auth1.token)
             .send({
               userId: user2._id,
-              needId: projectNeed._id
+              needId: need._id
             })
             .end(function(err, response) {
               should.not.exist(err);
@@ -670,7 +671,7 @@ describe('api', function() {
         var auth1 = null;
         var auth2 = null;
         var project = null;
-        var projectNeed = null;
+        var need = null;
 
         var createApplicationSpy;
 
@@ -736,16 +737,16 @@ describe('api', function() {
                 cb();
               });
             },
-            function createProjectNeed_step(cb) {
-              projectService.createNeed({
+            function createNeed_step(cb) {
+              needService.create({
                 projectId: project._id,
                 name: 'Project 1',
                 description: 'FOobar',
                 skills: ['Programming']
-              }, function(err, _projectNeed) {
+              }, function(err, _need) {
                 if (err) return cb(err);
 
-                projectNeed = _projectNeed;
+                need = _need;
                 cb();
               });
             }
@@ -775,8 +776,8 @@ describe('api', function() {
         });
 
         after(function(done) {
-          ProjectNeed.remove({
-            _id: projectNeed._id
+          Need.remove({
+            _id: need._id
           }, done);
         });
 
@@ -787,7 +788,7 @@ describe('api', function() {
             .set('x-access-token', auth2.token)
             .send({
               userId: user2._id,
-              needId: projectNeed._id
+              needId: need._id
             })
             .end(function(err, response) {
               should.not.exist(err);
@@ -801,7 +802,7 @@ describe('api', function() {
               projectApplication.status.should.equal(PROJECT_APPLICATION_STATUSES.PENDING);
               projectApplication.user.should.equal(user2._id);
               projectApplication.project.should.equal(project._id);
-              projectApplication.projectNeed.should.equal(projectNeed._id);
+              projectApplication.need.should.equal(need._id);
 
               createApplicationSpy.callCount.should.equal(1);
 

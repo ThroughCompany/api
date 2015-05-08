@@ -3,7 +3,7 @@
  * ========================================================================= */
 var mongoose = require('mongoose');
 
-var projectNeedSchema = require('./needSchema');
+var applicationSchema = require('./applicationSchema');
 
 /* =========================================================================
  * Private Helpers
@@ -12,4 +12,4 @@ var projectNeedSchema = require('./needSchema');
 /* =========================================================================
  * Exports
  * ========================================================================= */
-module.exports = mongoose.model('ProjectNeed', projectNeedSchema);
+module.exports = mongoose.model('Application', applicationSchema);

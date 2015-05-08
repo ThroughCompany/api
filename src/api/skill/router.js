@@ -19,7 +19,7 @@ var getSkills = {
     method: 'GET',
     parameters: [
       swagger.params.query('name', 'skill name', 'string'),
-      swagger.params.query('projectNeedId', 'project need id', 'string'),
+      swagger.params.query('needId', 'need id', 'string'),
       swagger.params.query('fields', 'csv of fields to select', 'string'),
       swagger.params.query('take', 'number of results to take', 'int')
     ],

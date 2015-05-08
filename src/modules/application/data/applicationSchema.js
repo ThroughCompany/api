@@ -9,41 +9,52 @@ var baseSchema = require('modules/common/data/base-schema');
  * Constants
  * ========================================================================= */
 var APPLICATION_STATUSES = require('../constants/applicationStatuses');
+var APPLICATION_TYPES = require('../constants/applicationTypes');
 
 /* =========================================================================
  * Schema
  * ========================================================================= */
 var applicationSchema = baseSchema.extend({
-  project: {
+  organization: {
     type: String,
-    ref: 'Project',
-    required: true
+    ref: 'Organization'
   },
   user: {
     type: String,
     ref: 'User',
     required: true
   },
-  userName: {
+  project: {
     type: String,
-    trim: true
-  },
-  userFirstName: {
-    type: String,
-    trim: true
-  },
-  userLastName: {
-    type: String,
-    trim: true
-  },
-  projectNeed: {
-    type: String,
-    ref: 'ProjectNeed',
+    ref: 'Project',
     required: true
   },
-  projectName: {
+  type: {
+    type: String,
+    required: true,
+    enum: _.values(APPLICATION_TYPES)
+  },
+  createdByUser: {
+    type: String,
+    ref: 'User',
+    required: true
+  },
+  createdByUserName: {
     type: String,
     trim: true
+  },
+  createdByUserFirstName: {
+    type: String,
+    trim: true
+  },
+  createdByUserLastName: {
+    type: String,
+    trim: true
+  },
+  need: {
+    type: String,
+    ref: 'Need',
+    required: true
   },
   status: {
     type: String,
@@ -51,14 +62,31 @@ var applicationSchema = baseSchema.extend({
     enum: _.values(APPLICATION_STATUSES)
   }
 }, {
-  collection: 'projectapplications'
+  collection: 'applications'
+});
+
+applicationSchema.index({
+  organization: 1,
+  createdByUser: 1
+}, {
+  unique: true,
+  sparse: true
 });
 
 applicationSchema.index({
   project: 1,
-  user: 1
+  createdByUser: 1
 }, {
-  unique: true
+  unique: true,
+  sparse: true
+});
+
+applicationSchema.index({
+  user: 1,
+  createdByUser: 1
+}, {
+  unique: true,
+  sparse: true
 });
 
 /* =========================================================================

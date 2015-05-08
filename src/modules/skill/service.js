@@ -11,7 +11,7 @@ var CommonService = require('modules/common');
 
 //models
 var Skill = require('./data/model');
-var ProjectNeed = require('modules/project/data/needModel');
+var Need = require('modules/need/data/needModel');
 
 /* =========================================================================
  * Constants
@@ -60,17 +60,17 @@ SkillsService.prototype.getAll = function(options, next) {
 
   var steps = [];
   var skills = null;
-  var projectNeed = null;
+  var need = null;
 
   console.log(options);
 
-  if (options.projectNeedId) {
-    steps.push(function getByProjectNeed_step(done) {
-      ProjectNeed.findById(options.projectNeedId, function(err, _projectNeed) {
+  if (options.needId) {
+    steps.push(function getByNeed_step(done) {
+      Need.findById(options.needId, function(err, _need) {
         if (err) return next(err);
-        if (!_projectNeed) return next(new errors.ObjectNotFoundError('Project Need not found'));
+        if (!_need) return next(new errors.ObjectNotFoundError('Need not found'));
 
-        projectNeed = _projectNeed;
+        need = _need;
 
         return done(null);
       });
@@ -88,8 +88,8 @@ SkillsService.prototype.getAll = function(options, next) {
       };
     }
 
-    if (projectNeed) {
-      var skillIds = projectNeed.skills;
+    if (need) {
+      var skillIds = need.skills;
 
       conditions._id = {
         $in: skillIds
@@ -104,7 +104,7 @@ SkillsService.prototype.getAll = function(options, next) {
 
     query.limit(options.take && options.take <= MAX_TAKE ? options.take : TAKE);
 
-    query.sort('-projectUseCount');
+    query.sort('-organizationUseCount');
 
     query.exec(function(err, _skills) {
       if (err) return done(err);
@@ -182,6 +182,30 @@ SkillsService.prototype.getOrCreateByName = function getOrCreateByName(options, 
   ], function(err, skill) {
     next(err, skill);
   });
+};
+
+/**
+ * @param {object} options
+ * @param {string} options.name
+ * @param {function} next - callback
+ */
+SkillsService.prototype.updateSkillOrganizationUseCount = function updateSkillOrganizationUseCount(options, next) {
+  if (!options) return next(new errors.InvalidArgumentError('options is required'));
+  if (!options.skillId) return next(new errors.InvalidArgumentError('Skill Id is required'));
+
+  var _this = this;
+
+  async.waterfall([
+    function findTagById_step(done) {
+      _this.getById({
+        skillId: options.skillId
+      }, done);
+    },
+    function updateSkill_step(skill, done) {
+      skill.organizationUseCount = skill.organizationUseCount + 1;
+      skill.save(done);
+    }
+  ], next);
 };
 
 /**
