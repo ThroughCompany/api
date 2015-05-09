@@ -89,18 +89,25 @@ Controller.prototype.createNeed = function(req, res, next) {
 /** 
  * @description Create skill
  */
-// Controller.prototype.updateNeedById = function(req, res, next) {
-//   var needId = req.params.id;
-//   var patches = req.body.patches;
+Controller.prototype.updateNeedById = function(req, res, next) {
+  var needId = req.params.id;
+  var patches = req.body.patches;
 
-//   needService.updateNeedById({
-//     needId: needId,
-//     patches: patches
-//   }, function(err, need) {
-//     if (err) return next(err);
-//     return res.status(200).json(need);
-//   });
-// };
+  var organizationId = req.body.organizationId;
+  var userId = req.body.userId;
+  var projectId = req.body.projectId;
+
+  needService.update({
+    organizationId: organizationId,
+    userId: userId,
+    projectId: projectId,
+    needId: needId,
+    patches: patches
+  }, function(err, need) {
+    if (err) return next(err);
+    return res.status(200).json(need);
+  });
+};
 
 /* =========================================================================
  * Expose

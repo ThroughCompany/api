@@ -94,34 +94,48 @@ var createNeed = {
   }
 };
 
-// var updateNeedById = {
-//   spec: {
-//     path: '/needs/{id}',
-//     summary: 'Update a need',
-//     method: 'PATCH',
-//     parameters: [
-//       swagger.params.path('id', 'need\'s id', 'string')
-//     ],
-//     nickname: 'updateNeedById',
-//     type: 'Need',
-//     produces: ['application/json']
-//   },
-//   action: function(req, res, next) {
-//     authMiddleware.authenticationRequired(req, res, function(err) {
-//       if (err) return next(err);
-//       //TODO: replace this will middleware that checks for optional org id, user id, or project id
-//       authMiddleware.currentUserProjectIdQueryParamRequired('id')(req, res, function(err) {
-//         if (err) return next(err);
-//         controller.updateProjectNeedById(req, res, next);
-//       });
-//     });
-//   }
-// };
+var updateNeedById = {
+  spec: {
+    path: '/needs/{id}',
+    summary: 'Update a need',
+    method: 'PATCH',
+    parameters: [
+      swagger.params.path('id', 'need\'s id', 'string'),
+      swagger.params.body('organizationId', 'organization\'s id', 'string'),
+      swagger.params.body('userId', 'user\'s id', 'string'),
+      swagger.params.body('projectId', 'project\'s id', 'string')
+    ],
+    nickname: 'updateNeedById',
+    type: 'Need',
+    produces: ['application/json']
+  },
+  action: function(req, res, next) {
+    authMiddleware.authenticationRequired(req, res, function(err) {
+      if (err) return next(err);
+      //optional organization id
+      authMiddleware.currentUserOrganizationIdBodyParamOptional('organizationId')(req, res, function(err) {
+        if (err) console.log('FAILED ORG CHECK');
+        if (err) return next(err);
+        //optional user id
+        authMiddleware.currentUserIdBodyParamOptional('userId')(req, res, function(err) {
+          if (err) console.log('FAILED USER CHECK');
+          if (err) return next(err);
+          //optional project id
+          authMiddleware.currentUserProjectIdBodyParamOptional('projectId')(req, res, function(err) {
+            if (err) console.log('FAILED PROJECT CHECK');
+            if (err) return next(err);
+            controller.updateNeedById(req, res, next);
+          });
+        });
+      });
+    });
+  }
+};
 
 swagger.addGet(getNeeds);
 swagger.addGet(getNeedById);
 swagger.addPost(createNeed);
-// swagger.addPatch(updateNeedById);
+swagger.addPatch(updateNeedById);
 
 /* =========================================================================
  *   Swagger declarations
