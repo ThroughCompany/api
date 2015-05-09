@@ -67,7 +67,7 @@ util.inherits(NeedService, CommonService);
  */
 NeedService.prototype.create = function create(options, next) {
   if (!options) return next(new errors.InvalidArgumentError('options is required'));
-  if (!options.projectId && !options.userId && !options.organization) return next(new errors.InvalidArgumentError('Organization Id, User Id, or Project Id is required'));
+  if (!options.projectId && !options.userId && !options.organizationId) return next(new errors.InvalidArgumentError('Organization Id, User Id, or Project Id is required'));
   if (!options.name) return next(new errors.InvalidArgumentError('Name is required'));
   if (!options.description) return next(new errors.InvalidArgumentError('Description is required'));
   if (!options.skills || !_.isArray(options.skills)) return next(new errors.InvalidArgumentError('Skills is required'));
@@ -208,14 +208,9 @@ NeedService.prototype.create = function create(options, next) {
     function finish(err) {
       if (err) return next(err);
 
-      var skills;
       var event;
 
-      if (organization) skills = organization.skills;
-      if (user) skills = user.skills;
-      if (project) skills = project.skills;
-
-      _.each(skills, function(skill) {
+      _.each(need.skills, function(skill) {
         _this.emit(EVENTS.SKILL_USED, {
           skillId: skill,
           type: need.type

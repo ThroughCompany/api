@@ -68,7 +68,9 @@ Controller.prototype.createNeed = function(req, res, next) {
   var timeCommitment = req.body.timeCommitment;
   var duration = req.body.duration;
 
-  needService.createNeed({
+  console.log('GOT HERE');
+
+  needService.create({
     organizationId: organizationId,
     projectId: projectId,
     userId: userId,

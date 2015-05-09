@@ -17,7 +17,7 @@ var projectNotificationService = require('modules/project/notificationService');
  * ========================================================================= */
 function eventHandler(options, next) {
   if (!options) return next(new errors.InternalServiceError('options is required'));
-  if (!options.projectId && !options.userId && !options.organization) return next(new errors.InvalidArgumentError('Organization Id, User Id, or Project Id is required'));
+  if (!options.projectId && !options.userId && !options.organizationId) return next(new errors.InvalidArgumentError('Organization Id, User Id, or Project Id is required'));
   if (!options.createdByUserId) return next(new errors.InternalServiceError('Created By User Id is required'));
   if (!options.applicationId) return next(new errors.InternalServiceError('Application Id is required'));
 

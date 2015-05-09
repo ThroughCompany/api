@@ -74,10 +74,21 @@ var createNeed = {
   action: function(req, res, next) {
     authMiddleware.authenticationRequired(req, res, function(err) {
       if (err) return next(err);
-      //TODO: replace this will middleware that checks for optional org id, user id, or project id
-      authMiddleware.currentUserProjectIdQueryParamRequired('id')(req, res, function(err) {
+      //optional organization id
+      authMiddleware.currentUserOrganizationIdBodyParamOptional('organizationId')(req, res, function(err) {
+        if (err) console.log('FAILED ORG CHECK');
         if (err) return next(err);
-        controller.createNeed(req, res, next);
+        //optional user id
+        authMiddleware.currentUserIdBodyParamOptional('userId')(req, res, function(err) {
+          if (err) console.log('FAILED USER CHECK');
+          if (err) return next(err);
+          //optional project id
+          authMiddleware.currentUserProjectIdBodyParamOptional('projectId')(req, res, function(err) {
+            if (err) console.log('FAILED PROJECT CHECK');
+            if (err) return next(err);
+            controller.createNeed(req, res, next);
+          });
+        });
       });
     });
   }
