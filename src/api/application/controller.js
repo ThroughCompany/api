@@ -36,18 +36,24 @@ Controller.prototype.createApplication = function(req, res, next) {
   });
 };
 
-// Controller.prototype.updateApplicationById = function(req, res, next) {
-//   var applicationId = req.params.id;
-//   var patches = req.body.patches;
+Controller.prototype.updateApplicationById = function(req, res, next) {
+  var applicationId = req.params.id;
+  var organizationId = req.body.organizationId;
+  var userId = req.body.userId;
+  var projectId = req.body.projectId;
+  var patches = req.body.patches;
 
-//   applicationService.updateApplicationById({
-//     applicationId: applicationId,
-//     patches: patches
-//   }, function(err, application) {
-//     if (err) return next(err);
-//     return res.status(200).json(application);
-//   });
-// };
+  applicationService.update({
+    organizationId: organizationId,
+    projectId: projectId,
+    userId: userId,
+    applicationId: applicationId,
+    patches: patches
+  }, function(err, application) {
+    if (err) return next(err);
+    return res.status(200).json(application);
+  });
+};
 
 /* =========================================================================
  * Expose

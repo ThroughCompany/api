@@ -175,8 +175,6 @@ ApplicationService.prototype.create = function create(options, next) {
           if (options.userId) conditions.user = options.userId;
           if (options.projectId) conditions.project = options.projectId;
 
-          console.log(conditions);
-
           Application.find(conditions, function(err, _applications) {
             if (err) return cb(err);
 
@@ -222,7 +220,7 @@ ApplicationService.prototype.create = function create(options, next) {
       application.createdByUserLastName = createdByUser.lastName;
       application.need = need._id;
       application.status = APPLICATION_STATUSES.PENDING;
-      
+
       application.save(function(err, application) {
         if (err) return done(err);
         return done(null, application);
@@ -239,14 +237,14 @@ ApplicationService.prototype.create = function create(options, next) {
           return done(null);
         });
       } else if (user) {
-        user.applications.push(user._id);
+        user.applications.push(application._id);
 
         user.save(function(err) {
           if (err) return done(err);
           return done(null);
         });
       } else {
-        project.applications.push(project._id);
+        project.applications.push(application._id);
 
         project.save(function(err) {
           if (err) return done(err);
@@ -280,144 +278,176 @@ ApplicationService.prototype.create = function create(options, next) {
  * @param {object} options
  * @param {function} next - callback
  */
-// ApplicationService.prototype.update = function update(options, next) {
-//   if (!options) return next(new errors.InvalidArgumentError('options is required'));
-//   if (!options.projectId) return next(new errors.InvalidArgumentError('Project Id is required'));
-//   if (!options.projectApplicationId) return next(new errors.InvalidArgumentError('Project Application Id is required'));
-//   if (!options.patches && !options.updates) return next(new errors.InvalidArgumentError('patches or updates is required'));
-//   if (options.patches && _.isEmpty(options.patches)) return next(new errors.InvalidArgumentError('patches must contain values'));
-//   if (options.updates && _.isEmpty(options.updates)) return next(new errors.InvalidArgumentError('updates must contain values'));
-//   if (options.patches && !_.isArray(options.patches)) return next(new errors.InvalidArgumentError('patches must be an array'));
+ApplicationService.prototype.update = function update(options, next) {
+  console.log(options);
+  if (!options) return next(new errors.InvalidArgumentError('options is required'));
+  if (!options.projectId && !options.userId && !options.organizationId) return next(new errors.InvalidArgumentError('Organization Id, User Id, or Project Id is required'));
+  if (!options.applicationId) return next(new errors.InvalidArgumentError('Application Id is required'));
+  if (!options.patches && !options.updates) return next(new errors.InvalidArgumentError('patches or updates is required'));
+  if (options.patches && _.isEmpty(options.patches)) return next(new errors.InvalidArgumentError('patches must contain values'));
+  if (options.updates && _.isEmpty(options.updates)) return next(new errors.InvalidArgumentError('updates must contain values'));
+  if (options.patches && !_.isArray(options.patches)) return next(new errors.InvalidArgumentError('patches must be an array'));
 
-//   var _this = this;
-//   var project = null;
-//   var projectApplication = null;
-//   var patches = null;
+  var _this = this;
+  var organization = null;
+  var user = null;
+  var project = null;
 
-//   async.waterfall([
-//     function findProjectAndProjectApplication(done) {
-//       async.parallel([
-//         function findProjectById_step(cb) {
-//           Project.findById({
-//             _id: options.projectId
-//           }, function(err, _project) {
-//             if (!_project) return done(new errors.ObjectNotFoundError('No project exists with the id ' + options.projectId));
+  async.waterfall([
+    function findEntityAndApplication(done) {
+      async.parallel([
+        function findEntityById_step(cb) {
+          if (options.organizationId) {
+            Organization.findById(options.organizationId, function(err, _organization) {
+              if (err) return cb(err);
 
-//             project = _project;
+              if (!_organization) return cb(new errors.ObjectNotFoundError('No organization exists with the id ' + options.organizationId));
 
-//             cb();
-//           });
-//         },
-//         function findProjectApplicationById(cb) {
-//           ProjectApplication.findById({
-//             _id: options.projectApplicationId,
-//             project: options.projectId
-//           }, function(err, _projectApplication) {
-//             if (!_projectApplication) return done(new errors.ObjectNotFoundError('No project application exists with the id ' + options.projectApplicationId));
+              organization = _organization;
 
-//             projectApplication = _projectApplication;
+              return cb(null);
+            });
+          } else if (options.userId) {
+            User.findById(options.userId, function(err, _user) {
+              if (err) return cb(err);
 
-//             cb();
-//           });
-//         },
-//       ], function(err) {
-//         if (err) return done(err);
-//         return done(err);
-//       });
-//     },
-//     function validateData_step(done) {
+              if (!_user) return cb(new errors.ObjectNotFoundError('No user exists with the id ' + options.userId));
 
-//       if (!_.contains(project.projectApplications, options.projectApplicationId)) return done(new errors.InvalidArgumentError(options.projectApplicationId + ' is not an application on this project'));
+              user = _user;
 
-//       if (options.updates && !options.patches) patches = patchUtils.generatePatches(options.updates);
-//       else patches = options.patches;
+              return cb(null);
+            });
+          } else {
+            Project.findById(options.projectId, function(err, _project) {
+              if (err) return cb(err);
 
-//       patches = patchUtils.stripPatches(UPDATEDABLE_APPLICATION_PROPERTIES, patches);
+              if (!_project) return cb(new errors.ObjectNotFoundError('No project exists with the id ' + options.projectId));
 
-//       console.log('PROJECT APPLICATION');
-//       console.log(projectApplication);
+              project = _project;
 
-//       console.log('PATCHES:');
-//       åå
-//       console.log(patches);
+              return cb(null);
+            });
+          }
+        },
+        function findApplicationById(cb) {
+          var conditions = {
+            _id: options.applicationId
+          };
 
-//       var projectApplicationClone = _.clone(projectApplication.toJSON());
+          if (options.organizationId) conditions.organization = options.organizationId;
+          if (options.userId) conditions.user = options.userId;
+          if (options.projectId) conditions.project = options.projectId;
 
-//       var patchErrors = jsonPatch.validate(patches, projectApplicationClone);
+          Application.findById(conditions, function(err, _application) {
+            if (!_application) return done(new errors.ObjectNotFoundError('No application exists with the id ' + options.applicationId));
 
-//       if (patchErrors) {
-//         return done(patchErrors && patchErrors.message ? new errors.InvalidArgumentError(patchErrors.message) : patchErrors);
-//       }
+            application = _application;
 
-//       try {
-//         jsonPatch.apply(projectApplicationClone, patches);
-//       } catch (err) {
-//         logger.error(err);
+            cb();
+          });
+        },
+      ], function(err) {
+        if (err) return done(err);
+        return done(err);
+      });
+    },
+    function validateData_step(done) {
 
-//         return done(new errors.InvalidArgumentError('error applying patches'));
-//       }
+      var applications;
 
-//       console.log('WITH PATCHES APPLIED:');
-//       console.log(projectApplicationClone);
+      if (organization) applications = organization.applications;
+      if (user) applications = user.applications;
+      if (project) applications = project.applications;
 
-//       applicationValidator.validateUpdate(projectApplication, projectApplicationClone, done);
-//     },
-//     function updateProjectApplication(done) {
+      console.log('applications');
+      console.log(applications);
+      console.log(options);
 
-//       try {
-//         console.log('APPLYING PATCHES:');
-//         console.log(patches);
+      if (!_.contains(applications, options.applicationId)) return done(new errors.InvalidArgumentError(options.applicationId + ' is not an application for this ' + (organization ? 'organization' : (project ? 'project' : 'user'))));
 
-//         jsonPatch.apply(projectApplication, patches);
-//       } catch (err) {
-//         logger.error(err);
+      if (options.updates && !options.patches) patches = patchUtils.generatePatches(options.updates);
+      else patches = options.patches;
 
-//         return done(new errors.InvalidArgumentError('error applying patches'));
-//       }
+      patches = patchUtils.stripPatches(UPDATEDABLE_APPLICATION_PROPERTIES, patches);
 
-//       console.log('AFTER PATCHES:');
-//       console.log(projectApplication);
+      console.log('APPLICATION');
+      console.log(application);
 
-//       projectApplication.save(done);
-//     },
-//     function addProjectUser_step(updateProjectApplication, numUpdated, done) {
-//       projectApplication = updateProjectApplication;
+      console.log('PATCHES:');
+      console.log(patches);
 
-//       console.log('\n\n GOT HERE \n\n');
-//       console.log(options);
+      var applicationClone = _.clone(application.toJSON());
 
-//       if (patchUtils.patchesContainsWithValue(patches, '/status', APPLICATION_STATUSES.APPROVED)) {
-//         console.log('GOT HERE');
+      var patchErrors = jsonPatch.validate(patches, applicationClone);
 
-//         projectUserService.create({
-//           projectId: projectApplication.project,
-//           userId: projectApplication.user,
-//           role: ROLES.PROJECT_MEMBER
-//         }, done);;
-//       } else {
-//         done();
-//       }
-//     }
-//   ], function finish(err) {
-//     if (err) return next(err);
+      if (patchErrors) {
+        return done(patchErrors && patchErrors.message ? new errors.InvalidArgumentError(patchErrors.message) : patchErrors);
+      }
 
-//     if (options.status === APPLICATION_STATUSES.APPROVED) {
-//       _this.emit(EVENTS.PROJECT_APPLICATION_APPROVED, {
-//         projectId: project._id,
-//         userId: user._id,
-//         projectApplicationId: projectApplication._id
-//       });
-//     } else if (options.status === APPLICATION_STATUSES.DECLINED) {
-//       _this.emit(EVENTS.PROJECT_APPLICATION_DECLINED, {
-//         projectId: project._id,
-//         userId: user._id,
-//         projectApplicationId: projectApplication._id
-//       });
-//     }
+      try {
+        jsonPatch.apply(applicationClone, patches);
+      } catch (err) {
+        logger.error(err);
 
-//     return next(null, projectApplication);
-//   });
-// };
+        return done(new errors.InvalidArgumentError('error applying patches'));
+      }
+
+      console.log('WITH PATCHES APPLIED:');
+      console.log(applicationClone);
+
+      applicationValidator.validateUpdate(application, applicationClone, done);
+    },
+    function updateApplication(done) {
+
+      try {
+        console.log('APPLYING PATCHES:');
+        console.log(patches);
+
+        jsonPatch.apply(application, patches);
+      } catch (err) {
+        logger.error(err);
+
+        return done(new errors.InvalidArgumentError('error applying patches'));
+      }
+
+      console.log('AFTER PATCHES:');
+      console.log(application);
+
+      application.save(done);
+    },
+    function addProjectUser_step(updatedApplication, numUpdated, done) {
+      application = updatedApplication;
+
+      if (application.type === APPLICATION_TYPES.PROJECT && patchUtils.patchesContainsWithValue(patches, '/status', APPLICATION_STATUSES.APPROVED)) {
+        projectUserService.create({
+          projectId: application.project,
+          userId: application.createdByUser,
+          role: ROLES.PROJECT_MEMBER
+        }, done);;
+      } else {
+        done();
+      }
+    }
+  ], function finish(err) {
+    if (err) return next(err);
+
+    if (options.status === APPLICATION_STATUSES.APPROVED) {
+      _this.emit(EVENTS.APPLICATION_APPROVED, {
+        projectId: project._id,
+        userId: user._id,
+        projectApplicationId: projectApplication._id
+      });
+    } else if (options.status === APPLICATION_STATUSES.DECLINED) {
+      _this.emit(EVENTS.PROJECT_APPLICATION_DECLINED, {
+        projectId: project._id,
+        userId: user._id,
+        applicationId: application._id
+      });
+    }
+
+    return next(null, application);
+  });
+};
 
 /**
  * @param {object} options

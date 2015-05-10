@@ -39,32 +39,43 @@ var createApplication = {
   }
 };
 
-// var updateApplication = {
-//   spec: {
-//     path: '/applications/{id}',
-//     summary: 'Update an application',
-//     method: 'PATCH',
-//     parameters: [
-//       swagger.params.path('id', 'application\'s id', 'string')
-//     ],
-//     nickname: 'updateApplication',
-//     type: 'Application',
-//     produces: ['application/json']
-//   },
-//   action: function(req, res, next) {
-//     authMiddleware.authenticationRequired(req, res, function(err) {
-//       if (err) return next(err);
-//       //TODO: replace this will middleware that checks for optional org id, user id, or project id
-//       authMiddleware.currentUserProjectIdQueryParamRequired('id')(req, res, function(err) {
-//         if (err) return next(err);
-//         controller.updateApplicationById(req, res, next);
-//       });
-//     });
-//   }
-// };
+var updateApplication = {
+  spec: {
+    path: '/applications/{id}',
+    summary: 'Update an application',
+    method: 'PATCH',
+    parameters: [
+      swagger.params.path('id', 'application\'s id', 'string')
+    ],
+    nickname: 'updateApplication',
+    type: 'Application',
+    produces: ['application/json']
+  },
+  action: function(req, res, next) {
+    authMiddleware.authenticationRequired(req, res, function(err) {
+      if (err) return next(err);
+      //optional organization id
+      authMiddleware.currentUserOrganizationIdBodyParamOptional('organizationId')(req, res, function(err) {
+        if (err) console.log('FAILED ORG CHECK');
+        if (err) return next(err);
+        //optional user id
+        authMiddleware.currentUserIdBodyParamOptional('userId')(req, res, function(err) {
+          if (err) console.log('FAILED USER CHECK');
+          if (err) return next(err);
+          //optional project id
+          authMiddleware.currentUserProjectIdBodyParamOptional('projectId')(req, res, function(err) {
+            if (err) console.log('FAILED PROJECT CHECK');
+            if (err) return next(err);
+            controller.updateApplicationById(req, res, next);
+          });
+        });
+      });
+    });
+  }
+};
 
 swagger.addPost(createApplication);
-//swagger.addPatch(updateApplication);
+swagger.addPatch(updateApplication);
 
 /* =========================================================================
  *   Swagger declarations
