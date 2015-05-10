@@ -24,7 +24,7 @@ Controller.prototype.createApplication = function(req, res, next) {
   var projectId = req.body.projectId;
   var needId = req.body.needId;
 
-  projectService.createApplication({
+  applicationService.create({
     createdByUserId: createdByUserId,
     organizationId: organizationId,
     projectId: projectId,

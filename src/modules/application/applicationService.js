@@ -18,6 +18,7 @@ var Organization = require('modules/organization/data/organizationModel');
 var OrganizationUser = require('modules/organization/data/userModel');
 var Project = require('modules/project/data/projectModel');
 var ProjectUser = require('modules/project/data/userModel');
+var User = require('modules/user/data/model');
 var Need = require('modules/need/data/needModel');
 
 //utils
@@ -56,7 +57,7 @@ ApplicationService.prototype.create = function create(options, next) {
   if (!options) return next(new errors.InvalidArgumentError('options is required'));
   if (!options.projectId && !options.userId && !options.organizationId) return next(new errors.InvalidArgumentError('Organization Id, User Id, or Project Id is required'));
   if (!options.createdByUserId) return next(new errors.InvalidArgumentError('Created By User Id is required'));
-  if (!options.needId) return next(new errors.InvkalidArgumentError('Need Id is required'));
+  if (!options.needId) return next(new errors.InvalidArgumentError('Need Id is required'));
 
   var _this = this;
   var organization = null;
@@ -79,7 +80,7 @@ ApplicationService.prototype.create = function create(options, next) {
             Organization.findById(options.organizationId, function(err, _organization) {
               if (err) return cb(err);
 
-              if (!_organization) return cb(new errors.InvalidArgumentError('No organization exists with the id ' + options.organizationId));
+              if (!_organization) return cb(new errors.ObjectNotFoundError('No organization exists with the id ' + options.organizationId));
 
               organization = _organization;
 
@@ -89,7 +90,7 @@ ApplicationService.prototype.create = function create(options, next) {
             User.findById(options.userId, function(err, _user) {
               if (err) return cb(err);
 
-              if (!_user) return cb(new errors.InvalidArgumentError('No user exists with the id ' + options.userId));
+              if (!_user) return cb(new errors.ObjectNotFoundError('No user exists with the id ' + options.userId));
 
               user = _user;
 
@@ -99,7 +100,7 @@ ApplicationService.prototype.create = function create(options, next) {
             Project.findById(options.projectId, function(err, _project) {
               if (err) return cb(err);
 
-              if (!_project) return cb(new errors.InvalidArgumentError('No project exists with the id ' + options.projectId));
+              if (!_project) return cb(new errors.ObjectNotFoundError('No project exists with the id ' + options.projectId));
 
               project = _project;
 
@@ -167,12 +168,14 @@ ApplicationService.prototype.create = function create(options, next) {
         function getApplicationsById_step(cb) {
           var conditions = {
             status: APPLICATION_STATUSES.PENDING,
-            createdByUser: options.userId
+            createdByUser: options.createdByUserId
           };
 
           if (options.organizationId) conditions.organization = options.organizationId;
           if (options.userId) conditions.user = options.userId;
           if (options.projectId) conditions.project = options.projectId;
+
+          console.log(conditions);
 
           Application.find(conditions, function(err, _applications) {
             if (err) return cb(err);
@@ -219,7 +222,7 @@ ApplicationService.prototype.create = function create(options, next) {
       application.createdByUserLastName = createdByUser.lastName;
       application.need = need._id;
       application.status = APPLICATION_STATUSES.PENDING;
-
+      
       application.save(function(err, application) {
         if (err) return done(err);
         return done(null, application);

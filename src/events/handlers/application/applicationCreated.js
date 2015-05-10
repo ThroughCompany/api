@@ -29,7 +29,7 @@ function eventHandler(options, next) {
     projectNotificationService.sendApplicationCreatedNotifications({
       projectId: options.projectId,
       createdByUserId: options.createdByUserId,
-      projectApplicationId: options.projectApplicationId
+      applicationId: options.applicationId
     }, next);
   }
 }
