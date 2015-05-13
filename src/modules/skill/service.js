@@ -51,8 +51,6 @@ SkillsService.prototype.getByName = function(options, next) {
 /**
  * @param {object} options
  * @param {object} [options.name]
- * @param {object} [options.select]
- * @param {object} [options.take]
  * @param {function} next - callback
  */
 SkillsService.prototype.getAll = function(options, next) {
@@ -61,8 +59,6 @@ SkillsService.prototype.getAll = function(options, next) {
   var steps = [];
   var skills = null;
   var need = null;
-
-  console.log(options);
 
   if (options.needId) {
     steps.push(function getByNeed_step(done) {
@@ -97,12 +93,6 @@ SkillsService.prototype.getAll = function(options, next) {
     }
 
     var query = Skill.find(conditions);
-
-    if (options.select) {
-      query.select(options.select);
-    }
-
-    query.limit(options.take && options.take <= MAX_TAKE ? options.take : TAKE);
 
     query.sort('-organizationUseCount');
 

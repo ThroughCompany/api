@@ -8,6 +8,7 @@ var fs = require('fs');
 var authService = require('modules/auth');
 var projectService = require('modules/project');
 var imageService = require('modules/image');
+var applicationService = require('modules/application');
 
 /* =========================================================================
  * Constants
@@ -159,6 +160,20 @@ Controller.prototype.updateWikiPage = function(req, res, next) {
   }, function(err, project) {
     if (err) return next(err);
     return res.status(200).json(project);
+  });
+};
+
+/** 
+ * @description Get project applications
+ */
+Controller.prototype.getProjectApplications = function(req, res, next) {
+  var projectId = req.params.id;
+
+  applicationService.getProjectApplications({
+    projectId: projectId
+  }, function(err, applications) {
+    if (err) return next(err);
+    return res.status(200).json(applications);
   });
 };
 

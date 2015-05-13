@@ -56,10 +56,12 @@ ProjectNotificationService.prototype.sendApplicationCreatedNotifications = funct
   var _this = this;
   var project = null;
   var projectUsers = null;
+  var users = null;
   var applicationId = null;
   var createdByUser = null;
   var addProjectUsersPermission = null;
   var projectUsersWithPermissions = null;
+  var usersWithPermissions = null;
 
   async.waterfall([
     function getNotificationData_step(done) {
@@ -68,6 +70,7 @@ ProjectNotificationService.prototype.sendApplicationCreatedNotifications = funct
 
         project = data.project;
         projectUsers = data.projectUsers;
+        users = data.users;
         applicationId = data.applicationId;
         createdByUser = data.createdByUser;
         addProjectUsersPermission = data.addProjectUsersPermission;
@@ -94,20 +97,28 @@ ProjectNotificationService.prototype.sendApplicationCreatedNotifications = funct
         return hasPermission;
       });
 
-      if (!projectUsersWithPermissions || !projectUsersWithPermissions.length) {
+      usersWithPermissions = _.filter(users, function(user) {
+        var projectUser = _.find(projectUsers, function(projectUser) {
+          return projectUser.user === user._id;
+        });
+
+        return projectUser ? projectUser : null;
+      });
+
+      if (!usersWithPermissions || !usersWithPermissions.length) {
         logger.warn('Project does not have users with ADD_PROJECT_USERS permission');
         return done(null);
       }
 
       //TODO: email does not live on the projectUser - it's on the user object - NEED TO FIX THIS!!!
-      var emailAddresses = _.pluck(projectUsersWithPermissions, 'email');
+      var emailAddresses = _.pluck(usersWithPermissions, 'email');
 
       sendUsersEmail(emailAddresses, emailText, APPLICATION_CREATED_EMAIL_SUBJECT, done);
     }
   ], function(err) {
     if (err) return next(err);
 
-    var notifiedUserIds = _.pluck(projectUsersWithPermissions, 'user');
+    var notifiedUserIds = _.pluck(usersWithPermissions, '_id');
 
     return next(null, notifiedUserIds);
   });
@@ -227,7 +238,7 @@ ProjectNotificationService.prototype.sendApplicationDeclinedNotifications = func
  * Private Helpers
  * ========================================================================= */
 function getApplicationCreatedData(options, next) {
-  async.parallel({
+  async.auto({
     application: function findApplicationById_step(done) {
       applicationService.getById({
         applicationId: options.applicationId
@@ -246,6 +257,15 @@ function getApplicationCreatedData(options, next) {
         projectId: options.projectId
       }, done);
     },
+    users: ['projectUsers', function findUsers_step(done, results) {
+      var userIds = _.pluck(results.projectUsers, 'user');
+
+      User.find({
+        _id: {
+          $in: userIds
+        }
+      }, done);
+    }],
     addProjectUsersPermission: function findPermissionById_step(done) {
       permissionService.getByName({
         name: PERMISSION_NAMES.ADD_PROJECT_USERS

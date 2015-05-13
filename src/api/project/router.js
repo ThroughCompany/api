@@ -150,29 +150,6 @@ var uploadImage = {
   }
 };
 
-var getProjectApplications = {
-  spec: {
-    path: '/projects/{id}/applications',
-    summary: 'Get a project\'s applications',
-    method: 'GET',
-    parameters: [
-      swagger.params.path('id', 'project\'s id', 'string')
-    ],
-    nickname: 'getApplications',
-    type: 'Application',
-    produces: ['application/json']
-  },
-  action: function(req, res, next) {
-    authMiddleware.authenticationRequired(req, res, function(err) {
-      if (err) return next(err);
-      authMiddleware.currentUserProjectIdQueryParamRequired('id')(req, res, function(err) {
-        if (err) return next(err);
-        controller.getProjectApplications(req, res, next);
-      });
-    });
-  }
-};
-
 // ------- Project Wiki ------- //
 var createWikiPage = {
   spec: {
@@ -224,6 +201,30 @@ var updateWikiPage = {
   }
 };
 
+// ------- Project Applications ------- //
+var getProjectApplications = {
+  spec: {
+    path: '/projects/{id}/applications',
+    summary: 'Get a project\'s applications',
+    method: 'GET',
+    parameters: [
+      swagger.params.path('id', 'project\'s id', 'string')
+    ],
+    nickname: 'getProjectApplications',
+    type: 'Application',
+    produces: ['application/json']
+  },
+  action: function(req, res, next) {
+    authMiddleware.authenticationRequired(req, res, function(err) {
+      if (err) return next(err);
+      authMiddleware.currentUserProjectIdQueryParamRequired('id')(req, res, function(err) {
+        if (err) return next(err);
+        controller.getProjectApplications(req, res, next);
+      });
+    });
+  }
+};
+
 swagger.addGet(getProjects);
 swagger.addGet(getProjectById);
 swagger.addPost(createProject);
@@ -235,6 +236,8 @@ swagger.addPost(createWikiPage);
 swagger.addPatch(updateWikiPage);
 //images
 swagger.addPost(uploadImage);
+//applications
+swagger.addGet(getProjectApplications);
 
 /* =========================================================================
  *   Swagger declarations

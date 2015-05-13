@@ -209,6 +209,30 @@ var createSkill = {
   }
 };
 
+// ------- User Applications ------- //
+var getUserApplications = {
+  spec: {
+    path: '/users/{id}/applications',
+    summary: 'Get a user\'s applications',
+    method: 'GET',
+    parameters: [
+      swagger.params.path('id', 'user\'s id', 'string')
+    ],
+    nickname: 'getUserApplications',
+    type: 'Application',
+    produces: ['application/json']
+  },
+  action: function(req, res, next) {
+    authMiddleware.authenticationRequired(req, res, function(err) {
+      if (err) return next(err);
+      authMiddleware.currentUserIdQueryParamRequired('id')(req, res, function(err) {
+        if (err) return next(err);
+        controller.getUserApplications(req, res, next);
+      });
+    });
+  }
+};
+
 swagger.addGet(getUsers);
 swagger.addGet(getUserById);
 swagger.addGet(getUserClaimsById);
@@ -218,6 +242,7 @@ swagger.addGet(getUserOrganizationsById);
 swagger.addPatch(updateUserById);
 swagger.addPost(uploadImage);
 swagger.addPost(createSkill);
+swagger.addGet(getUserApplications);
 
 /* =========================================================================
  *   Swagger declarations

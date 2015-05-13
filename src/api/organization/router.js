@@ -57,8 +57,33 @@ var createOrganization = {
   }
 };
 
+// ------- Organization Applications ------- //
+var getOrganizationApplications = {
+  spec: {
+    path: '/organizations/{id}/applications',
+    summary: 'Get a organization\'s applications',
+    method: 'GET',
+    parameters: [
+      swagger.params.path('id', 'organization\'s id', 'string')
+    ],
+    nickname: 'getOrganizationApplications',
+    type: 'Application',
+    produces: ['application/json']
+  },
+  action: function(req, res, next) {
+    authMiddleware.authenticationRequired(req, res, function(err) {
+      if (err) return next(err);
+      authMiddleware.currentUserOrganizationIdQueryParamRequired('id')(req, res, function(err) {
+        if (err) return next(err);
+        controller.getOrganizationApplications(req, res, next);
+      });
+    });
+  }
+};
+
 swagger.addGet(getOrganizationById);
 swagger.addPost(createOrganization);
+swagger.addGet(getOrganizationApplications);
 
 /* =========================================================================
  *   Swagger declarations

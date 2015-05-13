@@ -44,19 +44,6 @@ OrganizationUserService.prototype.getByUserId = function(options, next) {
   query.exec(next);
 };
 
-// OrganizationUserService.prototype.getByOrganizationId = function(options, next) {
-//   if (!options) return next(new errors.InvalidArgumentError('options is required'));
-//   if (!options.organizationId) return next(new errors.InvalidArgumentError('Organization Id is required'));
-
-//   var _this = this;
-
-//   var query = OrganizationUser.find({
-//     organization: options.organizationId
-//   });
-
-//   query.exec(next);
-// };
-
 /* =========================================================================
  * Private Helpers
  * ========================================================================= */

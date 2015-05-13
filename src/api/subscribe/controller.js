@@ -15,7 +15,7 @@ var errors = require('modules/error');
 function Controller() {}
 
 /** 
- * @description Get all users
+ * @description
  */
 Controller.prototype.subscribe = function(req, res, next) {
   var email = req.body.email;

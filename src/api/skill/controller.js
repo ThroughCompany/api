@@ -16,16 +16,11 @@ function Controller() {}
  */
 Controller.prototype.getAll = function getAll(req, res, next) {
   var name = req.query.name;
-  var select = req.fields ? req.fields.select : null;
-  var expands = req.expands;
-  var take = req.query.take;
   var needId = req.query.needId;
 
   skillService.getAll({
     name: name,
-    needId: needId,
-    select: select,
-    take: take
+    needId: needId
   }, function(err, skills) {
     if (err) return next(err);
     return res.status(200).json(skills);

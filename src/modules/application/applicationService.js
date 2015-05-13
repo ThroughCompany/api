@@ -91,6 +91,7 @@ ApplicationService.prototype.create = function create(options, next) {
               if (err) return cb(err);
 
               if (!_user) return cb(new errors.ObjectNotFoundError('No user exists with the id ' + options.userId));
+              if (_user._id === options.createdByUserId) return cb(new errors.InvalidArgumentError('Cannot apply to your own need'));
 
               user = _user;
 
@@ -418,6 +419,7 @@ ApplicationService.prototype.update = function update(options, next) {
     function addProjectUser_step(updatedApplication, numUpdated, done) {
       application = updatedApplication;
 
+      //project application accepted
       if (application.type === APPLICATION_TYPES.PROJECT && patchUtils.patchesContainsWithValue(patches, '/status', APPLICATION_STATUSES.APPROVED)) {
         projectUserService.create({
           projectId: application.project,
@@ -470,6 +472,60 @@ ApplicationService.prototype.getById = function(options, next) {
 
     return next(null, application);
   });
+};
+
+/**
+ * @param {object} options
+ * @param {string} options.projectId
+ * @param {function} next - callback
+ */
+ApplicationService.prototype.getOrganizationApplications = function(options, next) {
+  if (!options) return next(new errors.InvalidArgumentError('options is required'));
+  if (!options.organizationId) return next(new errors.InvalidArgumentError('Organization Id is required'));
+
+  var _this = this;
+
+  var query = Application.find({
+    organization: options.organizationId
+  });
+
+  query.exec(next);
+};
+
+/**
+ * @param {object} options
+ * @param {string} options.userId
+ * @param {function} next - callback
+ */
+ApplicationService.prototype.getUserApplications = function(options, next) {
+  if (!options) return next(new errors.InvalidArgumentError('options is required'));
+  if (!options.userId) return next(new errors.InvalidArgumentError('User Id is required'));
+
+  var _this = this;
+
+  var query = Application.find({
+    user: options.userId
+  });
+
+  query.exec(next);
+};
+
+/**
+ * @param {object} options
+ * @param {string} options.projectId
+ * @param {function} next - callback
+ */
+ApplicationService.prototype.getProjectApplications = function(options, next) {
+  if (!options) return next(new errors.InvalidArgumentError('options is required'));
+  if (!options.projectId) return next(new errors.InvalidArgumentError('Project Id is required'));
+
+  var _this = this;
+
+  var query = Application.find({
+    project: options.projectId
+  });
+
+  query.exec(next);
 };
 
 /**
