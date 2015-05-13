@@ -216,7 +216,8 @@ var getUserApplications = {
     summary: 'Get a user\'s applications',
     method: 'GET',
     parameters: [
-      swagger.params.path('id', 'user\'s id', 'string')
+      swagger.params.path('id', 'user\'s id', 'string'),
+      swagger.params.query('type', 'type of user applications to get', 'string')
     ],
     nickname: 'getUserApplications',
     type: 'Application',

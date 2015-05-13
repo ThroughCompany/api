@@ -174,13 +174,27 @@ Controller.prototype.createSkill = function(req, res, next) {
  */
 Controller.prototype.getUserApplications = function(req, res, next) {
   var userId = req.params.id;
+  var type = req.query.type;
 
-  applicationService.getUserApplications({
-    userId: userId
-  }, function(err, applications) {
-    if (err) return next(err);
-    return res.status(200).json(applications);
-  });
+  if (!type) return next(new errors.InvalidArgumentError('Type is required'));
+
+  if (type === 'User') {
+    applicationService.getUserApplications({
+      userId: userId
+    }, function(err, applications) {
+      if (err) return next(err);
+      return res.status(200).json(applications);
+    });
+  } else if (type === 'UserCreated') {
+    applicationService.getUserCreatedApplications({
+      userId: userId
+    }, function(err, applications) {
+      if (err) return next(err);
+      return res.status(200).json(applications);
+    });
+  } else {
+    return next(new errors.InvalidArgumentError(type + ' is not a valid user application type'));
+  }
 };
 
 /* =========================================================================

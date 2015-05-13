@@ -512,6 +512,24 @@ ApplicationService.prototype.getUserApplications = function(options, next) {
 
 /**
  * @param {object} options
+ * @param {string} options.userId
+ * @param {function} next - callback
+ */
+ApplicationService.prototype.getUserCreatedApplications = function(options, next) {
+  if (!options) return next(new errors.InvalidArgumentError('options is required'));
+  if (!options.userId) return next(new errors.InvalidArgumentError('User Id is required'));
+
+  var _this = this;
+
+  var query = Application.find({
+    createdByUser: options.userId
+  });
+
+  query.exec(next);
+};
+
+/**
+ * @param {object} options
  * @param {string} options.projectId
  * @param {function} next - callback
  */
