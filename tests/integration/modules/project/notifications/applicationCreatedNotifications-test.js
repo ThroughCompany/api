@@ -19,6 +19,8 @@ var adminService = require('modules/admin');
 var authService = require('modules/auth');
 var projectService = require('modules/project');
 var projectNotificationService = require('modules/project/notificationService');
+var needService = require('modules/need');
+var applicationService = require('modules/application');
 
 //models
 var User = require('modules/user/data/model');
@@ -26,8 +28,8 @@ var Admin = require('modules/admin/data/model');
 var Auth = require('modules/auth/data/model');
 var Project = require('modules/project/data/projectModel');
 var ProjectUser = require('modules/project/data/userModel');
-var ProjectNeed = require('modules/project/data/needModel');
-var ProjectApplication = require('modules/project/data/applicationModel');
+var Need = require('modules/need/data/needModel');
+var Application = require('modules/application/data/applicationModel');
 
 //libs
 var mailgunApi = require('lib/mailgun-api');
@@ -65,13 +67,13 @@ describe('modules', function() {
         describe('when project application does not exist', function() {
           it('should return an error', function(done) {
             projectNotificationService.sendApplicationCreatedNotifications({
-              projectApplicationId: '12345',
+              applicationId: '12345',
               projectId: '12345',
-              userId: '12345'
+              createdByUserId: '12345'
             }, function(err) {
               should.exist(err);
 
-              err.message.should.equal('Project Application not found');
+              err.message.should.equal('Application not found');
 
               done();
             });
@@ -85,8 +87,8 @@ describe('modules', function() {
           var user1 = null;
           var auth = null;
           var project = null;
-          var projectNeed = null;
-          var projectApplication = null;
+          var need = null;
+          var application = null;
 
           var sendApplicationCreatedNotificationsStub;
 
@@ -142,28 +144,28 @@ describe('modules', function() {
                   cb();
                 });
               },
-              function createProjectNeed_step(cb) {
-                projectService.createNeed({
+              function createNeed_step(cb) {
+                needService.create({
                   projectId: project._id,
                   name: 'Project 1',
                   description: 'FOobar',
                   skills: ['Programming']
-                }, function(err, _projectNeed) {
+                }, function(err, _need) {
                   if (err) return cb(err);
 
-                  projectNeed = _projectNeed;
+                  need = _need;
                   cb();
                 });
               },
               function applyToProject_step(cb) {
-                projectService.createApplication({
+                applicationService.create({
                   projectId: project._id,
-                  userId: user2._id,
-                  needId: projectNeed._id
-                }, function(err, _projectApplication) {
+                  createdByUserId: user2._id,
+                  needId: need._id
+                }, function(err, _application) {
                   if (err) return cb(err);
 
-                  projectApplication = _projectApplication;
+                  application = _application;
                   cb();
                 });
               }
@@ -193,14 +195,14 @@ describe('modules', function() {
           });
 
           after(function(done) {
-            ProjectNeed.remove({
-              _id: projectNeed._id
+            Need.remove({
+              _id: need._id
             }, done);
           });
 
           after(function(done) {
-            ProjectApplication.remove({
-              _id: projectApplication._id
+            Application.remove({
+              _id: application._id
             }, done);
           });
 
@@ -208,9 +210,9 @@ describe('modules', function() {
             projectNotificationService.sendApplicationCreatedNotifications.restore();
 
             projectNotificationService.sendApplicationCreatedNotifications({
-              projectApplicationId: projectApplication._id,
+              applicationId: application._id,
               projectId: project._id,
-              userId: '12345'
+              createdByUserId: '12345'
             }, function(err) {
               should.exist(err);
 
@@ -228,8 +230,8 @@ describe('modules', function() {
           var user1 = null;
           var auth = null;
           var project = null;
-          var projectNeed = null;
-          var projectApplication = null;
+          var need = null;
+          var application = null;
 
           var sendApplicationCreatedNotificationsStub;
           var mailGunApiSendEmailStub;
@@ -290,28 +292,28 @@ describe('modules', function() {
                   cb();
                 });
               },
-              function createProjectNeed_step(cb) {
-                projectService.createNeed({
+              function createNeed_step(cb) {
+                needService.create({
                   projectId: project._id,
                   name: 'Project 1',
                   description: 'FOobar',
                   skills: ['Programming']
-                }, function(err, _projectNeed) {
+                }, function(err, _need) {
                   if (err) return cb(err);
 
-                  projectNeed = _projectNeed;
+                  need = _need;
                   cb();
                 });
               },
               function applyToProject_step(cb) {
-                projectService.createApplication({
+                applicationService.create({
                   projectId: project._id,
-                  userId: user2._id,
-                  needId: projectNeed._id
-                }, function(err, _projectApplication) {
+                  createdByUserId: user2._id,
+                  needId: need._id
+                }, function(err, _application) {
                   if (err) return cb(err);
 
-                  projectApplication = _projectApplication;
+                  application = _application;
                   cb();
                 });
               }
@@ -348,14 +350,14 @@ describe('modules', function() {
           });
 
           after(function(done) {
-            ProjectNeed.remove({
-              _id: projectNeed._id
+            Need.remove({
+              _id: need._id
             }, done);
           });
 
           after(function(done) {
-            ProjectApplication.remove({
-              _id: projectApplication._id
+            Application.remove({
+              _id: application._id
             }, done);
           });
 
@@ -363,9 +365,9 @@ describe('modules', function() {
             projectNotificationService.sendApplicationCreatedNotifications.restore();
 
             projectNotificationService.sendApplicationCreatedNotifications({
-              projectApplicationId: projectApplication._id,
+              applicationId: application._id,
               projectId: project._id,
-              userId: user2._id
+              createdByUserId: user2._id
             }, function(err, notifiedUserIds) {
               should.not.exist(err);
               should.exist(notifiedUserIds);

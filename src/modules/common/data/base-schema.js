@@ -3,7 +3,6 @@
  * ========================================================================= */
 var mongoose = require('mongoose');
 var extend = require('mongoose-schema-extend');
-var uuid = require('node-uuid');
 var _ = require('underscore');
 
 var utils = require('utils/utils');
@@ -69,7 +68,7 @@ _.extend(baseSchema.statics, {
  * Methods
  * ========================================================================= */
 _.extend(baseSchema.methods, {
-  toJSON: function(options) {
+  toJSON: function() {
     // base toJSON config object
     var toJSONConfig = _.clone(this.schema.options.toJSON);
     var res = mongoose.Document.prototype.toJSON.call(this, toJSONConfig);

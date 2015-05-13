@@ -1,70 +1,86 @@
 /* =========================================================================
  * Dependencies
  * ========================================================================= */
-var _ = require('underscore');
-
 var baseSchema = require('modules/common/data/base-schema');
+
+var _ = require('underscore');
 
 /* =========================================================================
  * Constants
  * ========================================================================= */
-var APPLICATION_STATUSES = require('../constants/applicationStatuses');
+var NEED_STATUSES = require('../constants/needStatuses');
+var NEED_TYPES = require('../constants/needTypes');
 
 /* =========================================================================
  * Schema
  * ========================================================================= */
-var applicationSchema = baseSchema.extend({
-  project: {
+var needSchema = baseSchema.extend({
+  organization: {
     type: String,
-    ref: 'Project',
-    required: true
+    ref: 'Organization'
   },
   user: {
     type: String,
-    ref: 'User',
+    ref: 'User'
+  },
+  project: {
+    type: String,
+    ref: 'Project'
+  },
+  type: {
+    type: String,
+    required: true,
+    enum: _.values(NEED_TYPES)
+  },
+  skills: [{
+    type: String,
+    ref: 'Skill',
     required: true
-  },
-  userName: {
+  }],
+  name: {
     type: String,
-    trim: true
-  },
-  userFirstName: {
-    type: String,
-    trim: true
-  },
-  userLastName: {
-    type: String,
-    trim: true
-  },
-  projectNeed: {
-    type: String,
-    ref: 'ProjectNeed',
+    trim: true,
     required: true
-  },
-  projectName: {
-    type: String,
-    trim: true
   },
   status: {
     type: String,
     required: true,
-    enum: _.values(APPLICATION_STATUSES)
+    enum: _.values(NEED_STATUSES)
+  },
+  description: {
+    type: String,
+    trim: true
+  },
+  duration: {
+    startDate: {
+      type: Date
+    },
+    endDate: {
+      type: Date
+    },
+  },
+  timeCommitment: {
+    hoursPerWeek: {
+      type: Number,
+      default: 0
+    },
+    totalHours: {
+      type: Number,
+      default: 0
+    }
+  },
+  locationSpecific: {
+    type: Boolean,
+    default: false
   }
 }, {
-  collection: 'projectapplications'
-});
-
-applicationSchema.index({
-  project: 1,
-  user: 1
-}, {
-  unique: true
+  collection: 'needs'
 });
 
 /* =========================================================================
  * Statics
  * ========================================================================= */
-_.extend(applicationSchema.statics, {});
+_.extend(needSchema.statics, {});
 
 /* =========================================================================
  * Private Helpers
@@ -73,4 +89,4 @@ _.extend(applicationSchema.statics, {});
 /* =========================================================================
  * Exports
  * ========================================================================= */
-module.exports = applicationSchema;
+module.exports = needSchema;

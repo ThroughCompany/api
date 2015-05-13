@@ -4,6 +4,7 @@
 var _ = require('underscore');
 
 var baseSchema = require('modules/common/data/base-schema');
+var extend = require('mongoose-schema-extend');
 
 /* =========================================================================
  * Constants
@@ -28,6 +29,11 @@ var skillSchema = baseSchema.extend({
     index: {
       unique: true
     }
+  },
+  organizationUseCount: {
+    type: Number,
+    default: 0,
+    min: 0
   },
   userUseCount: {
     type: Number,

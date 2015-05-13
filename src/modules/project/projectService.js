@@ -14,16 +14,16 @@ var permissionService = require('modules/permission');
 var skillService = require('modules/skill');
 var imageService = require('modules/image');
 var projectPopulateService = require('./populate/service');
-var projectApplicationService = require('./applicationService');
-var projectNeedService = require('./needService');
+var needService = require('modules/need');
 var projectUserService = require('./userService');
 var organizationProjectService = require('modules/organization/projectService');
+var logger = require('modules/logger');
 
 //models
 var User = require('modules/user/data/model');
 var Project = require('modules/project/data/projectModel');
 var ProjectUser = require('modules/project/data/userModel');
-var ProjectNeed = require('modules/project/data/needModel');
+var Need = require('modules/need/data/needModel');
 var Organization = require('modules/organization/data/organizationModel');
 var OrganizationProject = require('modules/organization/data/projectModel');
 var Skill = require('modules/skill/data/model');
@@ -97,7 +97,7 @@ ProjectService.prototype.create = function(options, next) {
       project.name = options.name;
       project.created = new Date();
       project.modified = project.created;
-      project.slug = slug
+      project.slug = slug;
       project.profilePic = DEFAULT_IMAGEURL + randomNum(1, 4) + '.jpg';
       project.description = options.description;
       project.status = PROJECT_STATUSES.DRAFT;
@@ -384,12 +384,12 @@ ProjectService.prototype.getAll = function(options, next) {
   var conditions = {};
   var steps = [];
   var projects = null;
-  var projectNeeds = null;
+  var needs = null;
 
   if (options.skills) {
     options.skills = utils.arrayClean(options.skills.split(','));
 
-    steps.push(function findProjectNeeds_step(done) {
+    steps.push(function findNeeds_step(done) {
       async.waterfall([
         function findSkillsByName_step(cb) {
           Skill.find({
@@ -398,18 +398,18 @@ ProjectService.prototype.getAll = function(options, next) {
             }
           }, cb);
         },
-        function findProjectNeedsBySkillIds_step(skills, cb) {
+        function findNeedsBySkillIds_step(skills, cb) {
 
           //TODO: we should be filtering for only OPEN needs (need to add statuses to project needs)
 
-          ProjectNeed.find({
+          Need.find({
             skills: {
               $in: _.pluck(skills, '_id')
             }
-          }, function(err, _projectNeeds) {
+          }, function(err, _needs) {
             if (err) return next(err);
 
-            projectNeeds = _projectNeeds;
+            needs = _needs;
 
             return done(err);
           });
@@ -426,8 +426,8 @@ ProjectService.prototype.getAll = function(options, next) {
     }
 
     if (options.skills) {
-      conditions.projectNeeds = {
-        $in: _.pluck(projectNeeds, '_id')
+      conditions.needs = {
+        $in: _.pluck(needs, '_id')
       };
     }
 
@@ -557,57 +557,6 @@ ProjectService.prototype.uploadImage = function(options, next) {
       }
     }
   ], next);
-};
-
-/* =========================================================================
- * Project Needs
- * ========================================================================= */
-/**
- * @param {object} options
- * @param {string} projectId
- * @param {string} name
- * @param {object} updates
- * @param {function} next - callback
- */
-ProjectService.prototype.createNeed = function createNeed(options, next) {
-  var _this = this;
-
-  projectNeedService.create(options, next);
-};
-
-/**
- * @param {object} options
- * @param {string} projectId
- * @param {string} projectNeedId
- * @param {object} updates
- * @param {function} next - callback
- */
-ProjectService.prototype.updateNeedById = function updateNeedById(options, next) {
-  projectNeedService.update(options, next);
-};
-
-/* =========================================================================
- * Project Applications
- * ========================================================================= */
-ProjectService.prototype.createApplication = function createApplication(options, next) {
-  projectApplicationService.create(options, next);
-};
-
-/**
- * @param {object} options
- * @param {string} projectId
- * @param {string} projectApplicationId
- * @param {object} updates
- * @param {function} next - callback
- */
-ProjectService.prototype.updateApplicationById = function updateApplicationById(options, next) {
-  projectApplicationService.update(options, next);
-};
-
-ProjectService.prototype.getApplications = function getApplications(options, next) {
-  var _this = this;
-
-  projectApplicationService.getByProjectId(options, next);
 };
 
 /* =========================================================================

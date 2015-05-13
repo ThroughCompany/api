@@ -14,6 +14,8 @@ var logger = require('modules/logger');
 var EVENTS = [];
 var USER_EVENTS = require('modules/user/constants/events');
 var PROJECT_EVENTS = require('modules/project/constants/events');
+var NEED_EVENTS = require('modules/need/constants/events');
+var APPLICATION_EVENTS = require('modules/application/constants/events');
 
 /* =========================================================================
  * User Events
@@ -23,22 +25,12 @@ var userEvents = {
   events: []
 };
 
-//user event 1
-var skillUsedByUserEvent = {
-  name: USER_EVENTS.SKILL_USED_BY_USER,
-  handlers: []
-};
-skillUsedByUserEvent.handlers.push(require('./handlers/user/skillUsedByUser'));
-userEvents.events.push(skillUsedByUserEvent);
-
-//user event 2
 var userCreatedEvent = {
   name: USER_EVENTS.USER_CREATED,
   handlers: []
 };
 userCreatedEvent.handlers.push(require('./handlers/user/userCreated'));
 userEvents.events.push(userCreatedEvent);
-
 
 EVENTS.push(userEvents);
 
@@ -50,23 +42,42 @@ var projectEvents = {
   events: []
 };
 
-//project event 1
-var skillUsedByProjectEvent = {
-  name: PROJECT_EVENTS.SKILL_USED_BY_PROJECT,
-  handlers: []
-};
-skillUsedByProjectEvent.handlers.push(require('./handlers/project/skillUsedByProject'));
-projectEvents.events.push(skillUsedByProjectEvent);
-
-//project event 2
-var applicationCreated = {
-  name: PROJECT_EVENTS.PROJECT_APPLICATION_CREATED,
-  handlers: []
-};
-applicationCreated.handlers.push(require('./handlers/project/applicationCreated'));
-projectEvents.events.push(applicationCreated);
-
 EVENTS.push(projectEvents);
+
+/* =========================================================================
+ * Need Events
+ * ========================================================================= */
+var needEvents = {
+  module: 'modules/need',
+  events: []
+};
+
+var skillUsedEvent = {
+  name: NEED_EVENTS.SKILL_USED,
+  handlers: []
+};
+skillUsedEvent.handlers.push(require('./handlers/need/skillUsed'));
+needEvents.events.push(skillUsedEvent);
+
+EVENTS.push(needEvents);
+
+/* =========================================================================
+ * Application Events
+ * ========================================================================= */
+var applicationEvents = {
+  module: 'modules/application',
+  events: []
+};
+
+var applicationCreated = {
+  name: APPLICATION_EVENTS.APPLICATION_CREATED,
+  handlers: []
+};
+applicationCreated.handlers.push(require('./handlers/application/applicationCreated'));
+applicationEvents.events.push(applicationCreated);
+
+EVENTS.push(applicationEvents);
+
 
 /* =========================================================================
  * Constructor

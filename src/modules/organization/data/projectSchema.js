@@ -5,12 +5,9 @@ var _ = require('underscore');
 
 var baseSchema = require('modules/common/data/base-schema');
 
-var utils = require('utils/utils');
-
 /* =========================================================================
  * Constants
  * ========================================================================= */
-var LINK_TYPES = require('modules/common/constants/linkTypes');
 
 /* =========================================================================
  * Schema

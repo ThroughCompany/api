@@ -110,6 +110,7 @@ steps.push(function createRolesAndPermissions_step(done) {
 
   var organizationAdminRole;
   var projectAdminRole;
+  var projectMemberRole;
 
   var addOrganizationUsersPermission;
   var addProjectUsersPermission;
@@ -126,7 +127,7 @@ steps.push(function createRolesAndPermissions_step(done) {
             }, function(err, role) {
               if (err) return cb3(err);
               if (role) organizationAdminRole = role;
-              cb3()
+              cb3();
             });
           },
           function(cb3) {
@@ -135,7 +136,16 @@ steps.push(function createRolesAndPermissions_step(done) {
             }, function(err, role) {
               if (err) return cb3(err);
               if (role) projectAdminRole = role;
-              cb3()
+              cb3();
+            });
+          },
+          function(cb3) {
+            Role.findOne({
+              name: ROLE_NAMES.PROJECT_MEMBER
+            }, function(err, role) {
+              if (err) return cb3(err);
+              if (role) projectMemberRole = role;
+              cb3();
             });
           }
         ], cb2);
@@ -149,7 +159,7 @@ steps.push(function createRolesAndPermissions_step(done) {
             }, function(err, permission) {
               if (err) return cb3(err);
               if (permission) addOrganizationUsersPermission = permission;
-              cb3()
+              cb3();
             });
           },
           function(cb3) {
@@ -158,7 +168,7 @@ steps.push(function createRolesAndPermissions_step(done) {
             }, function(err, permission) {
               if (err) return cb3(err);
               if (permission) addProjectUsersPermission = permission;
-              cb3()
+              cb3();
             });
           }
         ], cb2);
@@ -200,6 +210,23 @@ steps.push(function createRolesAndPermissions_step(done) {
           });
         } else {
           logger.info('role: ' + ROLE_NAMES.PROJECT_ADMIN + ' found, skipping...');
+          cb2();
+        }
+      },
+      function createProjectMemberRole_step(cb2) {
+        if (!projectMemberRole) {
+          logger.info('creating role: ' + ROLE_NAMES.PROJECT_MEMBER);
+
+          var _projectMemberRole = new Role();
+          _projectMemberRole.name = ROLE_NAMES.PROJECT_MEMBER;
+
+          _projectMemberRole.save(function(err, role) {
+            if (err) return cb2(err);
+            projectMemberRole = role;
+            cb2();
+          });
+        } else {
+          logger.info('role: ' + ROLE_NAMES.PROJECT_MEMBER + ' found, skipping...');
           cb2();
         }
       }

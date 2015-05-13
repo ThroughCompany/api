@@ -113,14 +113,28 @@ var userSchema = baseSchema.extend({
       trim: true
     }
   }],
+  //needs
+  needs: [{
+    type: String,
+    ref: 'Need'
+  }],
+  openNeedsCount: {
+    type: Number,
+    default: 0
+  },
   //projects
   projectUsers: [{
     type: String,
     ref: 'ProjectUser'
   }],
-  projectApplications: [{
+  //applications
+  applications: [{ //applications for this user's needs
     type: String,
-    ref: 'ProjectApplication'
+    ref: 'Application'
+  }],
+  createdApplications: [{ //application this user has created for other needs
+    type: String,
+    ref: 'Application'
   }],
   //organizations
   organizationUsers: [{

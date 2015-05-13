@@ -65,6 +65,20 @@ AuthMiddleware.prototype.currentUserIdBodyParamRequired = function currentUserId
   };
 };
 
+//verifies the user id matches the auth token info - body - only checks if the body param exists
+AuthMiddleware.prototype.currentUserIdBodyParamOptional = function currentUserIdBodyParamOptional(paramName) {
+  var param = paramName || 'id';
+
+  return function _currentUserIdBodyParamOptional(req, res, next) {
+    if (!req.claims) return next(new errors.ForbiddenError('Access Denied'));
+    if (req.claims.admin || !req.body[param]) return next(); //allow admins to bypass
+    if (!req.body[param] || req.body[param] !== req.claims.userId) {
+      return next(new errors.ForbiddenError('Current user id does not match user id body param'));
+    }
+    return next(null);
+  };
+};
+
 // ----------------------------------
 // Organization
 // ----------------------------------
@@ -129,8 +143,36 @@ AuthMiddleware.prototype.currentUserProjectIdQueryParamRequired = function curre
   };
 };
 
+//verifies the user is a project member - param
+AuthMiddleware.prototype.currentUserProjectIdBodyParamRequired = function currentUserProjectIdBodyParamRequired(paramName) {
+  var param = paramName || 'id';
+
+  return function _currentUserProjectIdBodyParamRequired(req, res, next) {
+    if (!req.claims) return next(new errors.ForbiddenError('Access Denied'));
+    if (req.claims.admin) return next(); //allow admins to bypass
+    if (!req.claims || !req.params[param] || !req.claims.projectIds || !req.claims.projectIds.length || !_.contains(req.claims.projectIds, req.body[param])) {
+      return next(new errors.ForbiddenError('Access Denied'));
+    }
+    return next(null);
+  };
+};
+
+//verifies the user is a project member - param
+AuthMiddleware.prototype.currentUserProjectIdBodyParamOptional = function currentUserProjectIdBodyParamOptional(paramName) {
+  var param = paramName || 'id';
+
+  return function _currentUserProjectIdBodyParamOptional(req, res, next) {
+    if (!req.claims) return next(new errors.ForbiddenError('Access Denied'));
+    if (req.claims.admin || !req.body[param]) return next(); //allow admins to bypass, or if the param doesn't exist
+    if (!req.claims || !req.claims.projectIds || !req.claims.projectIds.length || !_.contains(req.claims.projectIds, req.body[param])) {
+      return next(new errors.ForbiddenError('Access Denied'));
+    }
+    return next(null);
+  };
+};
+
 //verifies the user is a project member with a certain permission - param
-AuthMiddleware.prototype.currentProjectPermissionParamRequired = function(permissionName, projectIdParamName) {
+AuthMiddleware.prototype.currentProjectPermissionParamRequired = function currentProjectPermissionParamRequired(permissionName, projectIdParamName) {
   projectIdParamName = projectIdParamName || 'id';
 
   return function _currentProjectPermissionParamRequired(req, res, next) {
@@ -161,6 +203,10 @@ AuthMiddleware.prototype.currentProjectPermissionParamRequired = function(permis
     return next();
   };
 };
+
+// ----------------------------------
+// Admin
+// ----------------------------------
 
 //checks that current user is an system level admin
 AuthMiddleware.prototype.adminRequired = function adminRequired(req, res, next) {

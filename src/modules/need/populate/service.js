@@ -2,28 +2,30 @@
  * Dependencies
  * ========================================================================= */
 var util = require('util');
-var _ = require('underscore');
-var async = require('async');
 
 //modules
-var errors = require('modules/error');
+var partialResponse = require('modules/partialResponse');
+
+//models
 
 //services
-var skillService = require('modules/skill');
+var PopulateService = partialResponse.service;
 
 /* =========================================================================
- * Event Handler
+ * Constructor
  * ========================================================================= */
-function eventHandler(options, next) {
-  if (!options) return next(new errors.InvalidArgumentError('options is required'));
-  if (!options.skillId) return next(new errors.InvalidArgumentError('options.skillId is required'));
-
-  skillService.updateSkillProjectUseCount({
-    skillId: options.skillId
-  }, next);
+function NeedPopulateService() {
+  PopulateService.call(this);
 }
+util.inherits(NeedPopulateService, PopulateService);
+
+var needPopulateService = new NeedPopulateService();
 
 /* =========================================================================
- * Exports
+ * Populates
  * ========================================================================= */
-module.exports = eventHandler;
+
+/* =========================================================================
+ * Expose
+ * ========================================================================= */
+module.exports = needPopulateService;

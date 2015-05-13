@@ -99,15 +99,17 @@ var projectSchema = baseSchema.extend({
     type: String,
     ref: 'ProjectUser'
   }],
-  projectApplications: [{
+  //applications
+  applications: [{
     type: String,
-    ref: 'ProjectApplication'
+    ref: 'Application'
   }],
-  projectNeeds: [{
+  //needs
+  needs: [{
     type: String,
-    ref: 'ProjectNeed'
+    ref: 'Need'
   }],
-  openProjectNeedsCount: {
+  openNeedsCount: {
     type: Number,
     default: 0
   },
