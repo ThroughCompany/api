@@ -21,17 +21,17 @@ Validator.prototype.validateCreate = function(data, next) {
   baseValidate(null, data, next);
 };
 
-Validator.prototype.validateUpdate = function(projectNeed, data, next) {
-  baseValidate(projectNeed, data, next);
+Validator.prototype.validateUpdate = function(need, data, next) {
+  baseValidate(need, data, next);
 };
 
 /* =========================================================================
  * Private Helpers
  * ========================================================================= */
-function baseValidate(projectNeed, data, next) {
+function baseValidate(need, data, next) {
   var steps = [];
 
-  if (data.description && data.description.lengths > FIELD_LENGTHS.NEED_DESCRIPTION) return next(new errors.InvalidArgumentError('Need Description cannot be longer than ' + FIELD_LENGTHS.NEED_DESCRIPTION + ' charachters'));
+  if (data.description && data.description.lengths > FIELD_LENGTHS.DESCRIPTION) return next(new errors.InvalidArgumentError('Need Description cannot be longer than ' + FIELD_LENGTHS.NEED_DESCRIPTION + ' charachters'));
 
   if (data.timeCommitment) {
     if (data.timeCommitment.hoursPerWeek && data.timeCommitment.totalHours) return next(new errors.InvalidArgumentError('Cannot have both a timeCommitment.hoursPerWeek and timeCommitment.totalHours'));

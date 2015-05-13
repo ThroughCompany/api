@@ -9,41 +9,50 @@ var baseSchema = require('modules/common/data/base-schema');
  * Constants
  * ========================================================================= */
 var APPLICATION_STATUSES = require('../constants/applicationStatuses');
+var APPLICATION_TYPES = require('../constants/applicationTypes');
 
 /* =========================================================================
  * Schema
  * ========================================================================= */
 var applicationSchema = baseSchema.extend({
-  project: {
+  organization: {
     type: String,
-    ref: 'Project',
-    required: true
+    ref: 'Organization'
   },
   user: {
+    type: String,
+    ref: 'User'
+  },
+  project: {
+    type: String,
+    ref: 'Project'
+  },
+  type: {
+    type: String,
+    required: true,
+    enum: _.values(APPLICATION_TYPES)
+  },
+  createdByUser: {
     type: String,
     ref: 'User',
     required: true
   },
-  userName: {
+  createdByUserName: {
     type: String,
     trim: true
   },
-  userFirstName: {
+  createdByUserFirstName: {
     type: String,
     trim: true
   },
-  userLastName: {
+  createdByUserLastName: {
     type: String,
     trim: true
   },
-  projectNeed: {
+  need: {
     type: String,
-    ref: 'ProjectNeed',
+    ref: 'Need',
     required: true
-  },
-  projectName: {
-    type: String,
-    trim: true
   },
   status: {
     type: String,
@@ -51,14 +60,31 @@ var applicationSchema = baseSchema.extend({
     enum: _.values(APPLICATION_STATUSES)
   }
 }, {
-  collection: 'projectapplications'
+  collection: 'applications'
+});
+
+applicationSchema.index({
+  organization: 1,
+  createdByUser: 1
+}, {
+  unique: true,
+  sparse: true
 });
 
 applicationSchema.index({
   project: 1,
-  user: 1
+  createdByUser: 1
 }, {
-  unique: true
+  unique: true,
+  sparse: true
+});
+
+applicationSchema.index({
+  user: 1,
+  createdByUser: 1
+}, {
+  unique: true,
+  sparse: true
 });
 
 /* =========================================================================

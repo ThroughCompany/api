@@ -8,6 +8,7 @@ var fs = require('fs');
 var authService = require('modules/auth');
 var projectService = require('modules/project');
 var imageService = require('modules/image');
+var applicationService = require('modules/application');
 
 /* =========================================================================
  * Constants
@@ -85,50 +86,6 @@ Controller.prototype.updateProjectById = function(req, res, next) {
 };
 
 /** 
- * @description Create skill
- */
-Controller.prototype.createProjectNeed = function(req, res, next) {
-  var projectId = req.params.id;
-  var name = req.body.name;
-  var description = req.body.description;
-  var skills = req.body.skills;
-  var locationSpecific = req.body.locationSpecific;
-  var timeCommitment = req.body.timeCommitment;
-  var duration = req.body.duration;
-
-  projectService.createNeed({
-    projectId: projectId,
-    name: name,
-    description: description,
-    skills: skills,
-    locationSpecific: locationSpecific,
-    timeCommitment: timeCommitment,
-    duration: duration
-  }, function(err, projectNeed) {
-    if (err) return next(err);
-    return res.status(201).json(projectNeed);
-  });
-};
-
-/** 
- * @description Create skill
- */
-Controller.prototype.updateProjectNeedById = function(req, res, next) {
-  var projectId = req.params.id;
-  var projectNeedId = req.params.needId;
-  var patches = req.body.patches;
-
-  projectService.updateNeedById({
-    projectId: projectId,
-    projectNeedId: projectNeedId,
-    patches: patches
-  }, function(err, projectNeed) {
-    if (err) return next(err);
-    return res.status(200).json(projectNeed);
-  });
-};
-
-/** 
  * @description Upload a user image
  */
 Controller.prototype.uploadImage = function(req, res, next) {
@@ -174,47 +131,6 @@ Controller.prototype.getProjectUsers = function(req, res, next) {
   });
 };
 
-Controller.prototype.createProjectApplication = function(req, res, next) {
-  var projectId = req.params.id;
-  var userId = req.claims.userId;
-  var needId = req.body.needId;
-
-  projectService.createApplication({
-    projectId: projectId,
-    userId: userId,
-    needId: needId
-  }, function(err, projectApplication) {
-    if (err) return next(err);
-    return res.status(201).json(projectApplication);
-  });
-};
-
-Controller.prototype.updateProjectApplicationById = function(req, res, next) {
-  var projectId = req.params.id;
-  var projectApplicationId = req.params.applicationId;
-  var patches = req.body.patches;
-
-  projectService.updateApplicationById({
-    projectId: projectId,
-    projectApplicationId: projectApplicationId,
-    patches: patches
-  }, function(err, projectApplication) {
-    if (err) return next(err);
-    return res.status(200).json(projectApplication);
-  });
-};
-
-Controller.prototype.getProjectApplications = function(req, res, next) {
-  var projectId = req.params.id;
-
-  projectService.getApplications({
-    projectId: projectId
-  }, function(err, projectApplications) {
-    if (err) return next(err);
-    return res.status(200).json(projectApplications);
-  });
-};
-
 Controller.prototype.createWikiPage = function(req, res, next) {
   var projectId = req.params.id;
   var title = req.body.title;
@@ -244,6 +160,20 @@ Controller.prototype.updateWikiPage = function(req, res, next) {
   }, function(err, project) {
     if (err) return next(err);
     return res.status(200).json(project);
+  });
+};
+
+/** 
+ * @description Get project applications
+ */
+Controller.prototype.getProjectApplications = function(req, res, next) {
+  var projectId = req.params.id;
+
+  applicationService.getProjectApplications({
+    projectId: projectId
+  }, function(err, applications) {
+    if (err) return next(err);
+    return res.status(200).json(applications);
   });
 };
 

@@ -9,7 +9,7 @@ var errors = require('modules/error');
 /* =========================================================================
  * Constants
  * ========================================================================= */
-var APPLICATION_STATUSES = require('modules/project/constants/applicationStatuses');
+var APPLICATION_STATUSES = require('modules/application/constants/applicationStatuses');
 
 /* =========================================================================
  * Constructor
@@ -20,20 +20,20 @@ Validator.prototype.validateCreate = function(data, next) {
   baseValidate(null, data, next);
 };
 
-Validator.prototype.validateUpdate = function(projectApplication, data, next) {
-  baseValidate(projectApplication, data, next);
+Validator.prototype.validateUpdate = function(application, data, next) {
+  baseValidate(application, data, next);
 };
 
 /* =========================================================================
  * Private Helpers
  * ========================================================================= */
-function baseValidate(projectApplication, data, next) {
+function baseValidate(application, data, next) {
   var steps = [];
 
   if (data.status) {
-    if (!_.contains(_.values(APPLICATION_STATUSES), data.status)) return next(new errors.InvalidArgumentError(data.status + ' is not a valid project application status'));
-    if (projectApplication) {
-      if (projectApplication.status === APPLICATION_STATUSES.APPROVED || projectApplication.status === APPLICATION_STATUSES.DECLINED) return next(new errors.InvalidArgumentError(APPLICATION_STATUSES.APPROVED + ' or ' + APPLICATION_STATUSES.DECLINED + ' application status cannot be updated'));
+    if (!_.contains(_.values(APPLICATION_STATUSES), data.status)) return next(new errors.InvalidArgumentError(data.status + ' is not a valid application status'));
+    if (application) {
+      if (application.status === APPLICATION_STATUSES.APPROVED || application.status === APPLICATION_STATUSES.DECLINED) return next(new errors.InvalidArgumentError(APPLICATION_STATUSES.APPROVED + ' or ' + APPLICATION_STATUSES.DECLINED + ' application status cannot be updated'));
     }
   }
 

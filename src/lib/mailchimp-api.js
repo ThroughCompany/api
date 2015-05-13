@@ -15,11 +15,13 @@ var errors = require('modules/error');
  * Constants
  * ========================================================================= */
 var MassChallengeSubscribeListId = '407d0fa0f4';
+var PrivateBetaListId = '674ed7d988';
 var ProjectNeedSubscribeListId = 'e046829080';
 
 var validLists = {
   'massChallenge': MassChallengeSubscribeListId,
-  'prejectNeed': ProjectNeedSubscribeListId
+  'prejectNeed': ProjectNeedSubscribeListId,
+  'privateBeta': PrivateBetaListId
 };
 
 /* =========================================================================

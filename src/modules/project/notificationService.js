@@ -11,7 +11,7 @@ var appConfig = require('src/config/app-config');
 var errors = require('modules/error');
 var logger = require('modules/logger');
 var userService = require('modules/user');
-var projectApplicationService = require('modules/project/applicationService');
+var applicationService = require('modules/application');
 var projectUserService = require('modules/project/userService');
 var permissionService = require('modules/permission');
 var templateService = require('modules/template');
@@ -20,6 +20,7 @@ var templateService = require('modules/template');
 var User = require('modules/user/data/model');
 var Project = require('./data/projectModel');
 var ProjectUser = require('modules/project/data/userModel');
+var Application = require('modules/application/data/applicationModel');
 
 //libs
 var mailgunApi = require('lib/mailgun-api');
@@ -49,16 +50,18 @@ function ProjectNotificationService() {}
 ProjectNotificationService.prototype.sendApplicationCreatedNotifications = function sendApplicationCreatedNotifications(options, next) {
   if (!options) return next(new errors.InvalidArgumentError('options is required'));
   if (!options.projectId) return next(new errors.InvalidArgumentError('Project Id is required'));
-  if (!options.userId) return next(new errors.InvalidArgumentError('User Id is required'));
-  if (!options.projectApplicationId) return next(new errors.InvalidArgumentError('Project Application Id is required'));
+  if (!options.createdByUserId) return next(new errors.InvalidArgumentError('Created By User Id is required'));
+  if (!options.applicationId) return next(new errors.InvalidArgumentError('Application Id is required'));
 
   var _this = this;
   var project = null;
   var projectUsers = null;
-  var projectApplication = null;
-  var user = null;
+  var users = null;
+  var applicationId = null;
+  var createdByUser = null;
   var addProjectUsersPermission = null;
   var projectUsersWithPermissions = null;
+  var usersWithPermissions = null;
 
   async.waterfall([
     function getNotificationData_step(done) {
@@ -67,8 +70,9 @@ ProjectNotificationService.prototype.sendApplicationCreatedNotifications = funct
 
         project = data.project;
         projectUsers = data.projectUsers;
-        projectApplication = data.projectApplication;
-        user = data.user;
+        users = data.users;
+        applicationId = data.applicationId;
+        createdByUser = data.createdByUser;
         addProjectUsersPermission = data.addProjectUsersPermission;
 
         if (!project) return done(new errors.ObjectNotFoundError('Project not found'));
@@ -80,9 +84,9 @@ ProjectNotificationService.prototype.sendApplicationCreatedNotifications = funct
       templateService.generate({
         templateFilePath: APPLICATION_CREATED_EMAIL_PATH,
         templateData: {
-          user: user,
+          createdByUser: createdByUser,
           project: project,
-          projectApplication: projectApplication
+          applicationId: applicationId
         }
       }, done);
     },
@@ -93,20 +97,28 @@ ProjectNotificationService.prototype.sendApplicationCreatedNotifications = funct
         return hasPermission;
       });
 
-      if (!projectUsersWithPermissions || !projectUsersWithPermissions.length) {
+      usersWithPermissions = _.filter(users, function(user) {
+        var projectUser = _.find(projectUsers, function(projectUser) {
+          return projectUser.user === user._id;
+        });
+
+        return projectUser ? projectUser : null;
+      });
+
+      if (!usersWithPermissions || !usersWithPermissions.length) {
         logger.warn('Project does not have users with ADD_PROJECT_USERS permission');
         return done(null);
       }
 
       //TODO: email does not live on the projectUser - it's on the user object - NEED TO FIX THIS!!!
-      var emailAddresses = _.pluck(projectUsersWithPermissions, 'email');
+      var emailAddresses = _.pluck(usersWithPermissions, 'email');
 
       sendUsersEmail(emailAddresses, emailText, APPLICATION_CREATED_EMAIL_SUBJECT, done);
     }
   ], function(err) {
     if (err) return next(err);
 
-    var notifiedUserIds = _.pluck(projectUsersWithPermissions, 'user');
+    var notifiedUserIds = _.pluck(usersWithPermissions, '_id');
 
     return next(null, notifiedUserIds);
   });
@@ -118,14 +130,14 @@ ProjectNotificationService.prototype.sendApplicationCreatedNotifications = funct
 ProjectNotificationService.prototype.sendApplicationApprovedNotifications = function sendApplicationApprovedNotifications(options, next) {
   if (!options) return next(new errors.InvalidArgumentError('options is required'));
   if (!options.projectId) return next(new errors.InvalidArgumentError('Project Id is required'));
-  if (!options.userId) return next(new errors.InvalidArgumentError('User Id is required'));
-  if (!options.projectApplicationId) return next(new errors.InvalidArgumentError('Project Application Id is required'));
+  if (!options.createdByUserId) return next(new errors.InvalidArgumentError('Created By User Id is required'));
+  if (!options.applicationId) return next(new errors.InvalidArgumentError('Application Id is required'));
 
   var _this = this;
   var project = null;
   var projectUsers = null;
-  var projectApplication = null;
-  var user = null;
+  var applicationId = null;
+  var createdByUser = null;
 
   async.waterfall([
     function getNotificationData_step(done) {
@@ -134,8 +146,8 @@ ProjectNotificationService.prototype.sendApplicationApprovedNotifications = func
 
         project = data.project;
         projectUsers = data.projectUsers;
-        projectApplication = data.projectApplication;
-        user = data.user;
+        applicationId = data.applicationId;
+        createdByUser = data.createdByUser;
 
         if (!project) return done(new errors.ObjectNotFoundError('Project not found'));
 
@@ -146,9 +158,9 @@ ProjectNotificationService.prototype.sendApplicationApprovedNotifications = func
       templateService.generate({
         templateFilePath: APPLICATION_APPROVED_EMAIL_PATH,
         templateData: {
-          user: user,
+          createdByUser: createdByUser,
           project: project,
-          projectApplication: projectApplication
+          applicationId: applicationId
         }
       }, done);
     },
@@ -161,7 +173,7 @@ ProjectNotificationService.prototype.sendApplicationApprovedNotifications = func
   ], function(err) {
     if (err) return next(err);
 
-    var notifiedUserIds = [user._id];
+    var notifiedUserIds = [createdByUser._id];
 
     return next(null, notifiedUserIds);
   });
@@ -173,14 +185,14 @@ ProjectNotificationService.prototype.sendApplicationApprovedNotifications = func
 ProjectNotificationService.prototype.sendApplicationDeclinedNotifications = function sendApplicationDeclinedNotifications(options, next) {
   if (!options) return next(new errors.InvalidArgumentError('options is required'));
   if (!options.projectId) return next(new errors.InvalidArgumentError('Project Id is required'));
-  if (!options.userId) return next(new errors.InvalidArgumentError('User Id is required'));
-  if (!options.projectApplicationId) return next(new errors.InvalidArgumentError('Project Application Id is required'));
+  if (!options.createdByUserId) return next(new errors.InvalidArgumentError('Created By User Id is required'));
+  if (!options.applicationId) return next(new errors.InvalidArgumentError('Application Id is required'));
 
   var _this = this;
   var project = null;
   var projectUsers = null;
-  var projectApplication = null;
-  var user = null;
+  var applicationId = null;
+  var createdByUser = null;
 
   async.waterfall([
     function getNotificationData_step(done) {
@@ -189,8 +201,8 @@ ProjectNotificationService.prototype.sendApplicationDeclinedNotifications = func
 
         project = data.project;
         projectUsers = data.projectUsers;
-        projectApplication = data.projectApplication;
-        user = data.user;
+        applicationId = data.applicationId;
+        createdByUser = data.createdByUser;
 
         if (!project) return done(new errors.ObjectNotFoundError('Project not found'));
 
@@ -201,22 +213,22 @@ ProjectNotificationService.prototype.sendApplicationDeclinedNotifications = func
       templateService.generate({
         templateFilePath: APPLICATION_DECLINED_EMAIL_PATH,
         templateData: {
-          user: user,
+          createdByUser: createdByUser,
           project: project,
-          projectApplication: projectApplication
+          applicationId: applicationId
         }
       }, done);
     },
     function sendNotifications_step(emailText, done) {
       //TODO: email does not live on the projectUser - it's on the user object - NEED TO FIX THIS!!!
-      var emailAddresses = [user.email];
+      var emailAddresses = [createdByUser.email];
 
       sendUsersEmail(emailAddresses, emailText, APPLICATION_DECLINED_EMAIL_SUBJECT, done);
     }
   ], function(err) {
     if (err) return next(err);
 
-    var notifiedUserIds = [user._id];
+    var notifiedUserIds = [createdByUser._id];
 
     return next(null, notifiedUserIds);
   });
@@ -226,15 +238,15 @@ ProjectNotificationService.prototype.sendApplicationDeclinedNotifications = func
  * Private Helpers
  * ========================================================================= */
 function getApplicationCreatedData(options, next) {
-  async.parallel({
-    projectApplication: function findProjectApplicationById_step(done) {
-      projectApplicationService.getById({
-        projectApplicationId: options.projectApplicationId
+  async.auto({
+    application: function findApplicationById_step(done) {
+      applicationService.getById({
+        applicationId: options.applicationId
       }, done);
     },
-    user: function findUserById_step(done) {
+    createdByUser: function findUserById_step(done) {
       userService.getById({
-        userId: options.userId
+        userId: options.createdByUserId
       }, done);
     },
     project: function findProjectById_step(done) {
@@ -245,6 +257,15 @@ function getApplicationCreatedData(options, next) {
         projectId: options.projectId
       }, done);
     },
+    users: ['projectUsers', function findUsers_step(done, results) {
+      var userIds = _.pluck(results.projectUsers, 'user');
+
+      User.find({
+        _id: {
+          $in: userIds
+        }
+      }, done);
+    }],
     addProjectUsersPermission: function findPermissionById_step(done) {
       permissionService.getByName({
         name: PERMISSION_NAMES.ADD_PROJECT_USERS
@@ -255,14 +276,14 @@ function getApplicationCreatedData(options, next) {
 
 function getApplicationApprovedData(options, next) {
   async.parallel({
-    projectApplication: function findProjectApplicationById_step(done) {
-      projectApplicationService.getById({
-        projectApplicationId: options.projectApplicationId
+    applicationId: function findApplicationById_step(done) {
+      applicationService.getById({
+        applicationId: options.applicationId
       }, done);
     },
-    user: function findUserById_step(done) {
+    createdByUser: function findUserById_step(done) {
       userService.getById({
-        userId: options.userId
+        userId: options.createdByUserId
       }, done);
     },
     project: function findProjectById_step(done) {

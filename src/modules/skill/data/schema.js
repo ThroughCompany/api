@@ -29,6 +29,11 @@ var skillSchema = baseSchema.extend({
       unique: true
     }
   },
+  organizationUseCount: {
+    type: Number,
+    default: 0,
+    min: 0
+  },
   userUseCount: {
     type: Number,
     default: 0,

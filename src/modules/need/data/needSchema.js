@@ -10,17 +10,29 @@ var utils = require('utils/utils');
 /* =========================================================================
  * Constants
  * ========================================================================= */
-var LINK_TYPES = require('modules/common/constants/linkTypes');
 var NEED_STATUSES = require('../constants/needStatuses');
+var NEED_TYPES = require('../constants/needTypes');
 
 /* =========================================================================
  * Schema
  * ========================================================================= */
 var needSchema = baseSchema.extend({
+  organization: {
+    type: String,
+    ref: 'Organization'
+  },
+  user: {
+    type: String,
+    ref: 'User'
+  },
   project: {
     type: String,
-    ref: 'Project',
-    required: true
+    ref: 'Project'
+  },
+  type: {
+    type: String,
+    required: true,
+    enum: _.values(NEED_TYPES)
   },
   skills: [{
     type: String,
@@ -64,7 +76,7 @@ var needSchema = baseSchema.extend({
     default: false
   }
 }, {
-  collection: 'projectneeds'
+  collection: 'needs'
 });
 
 /* =========================================================================

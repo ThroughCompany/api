@@ -10,6 +10,7 @@ var userService = require('modules/user');
 var projectService = require('modules/project');
 var imageService = require('modules/image');
 var organizationService = require('modules/organization');
+var applicationService = require('modules/application');
 
 var errors = require('modules/error');
 
@@ -165,6 +166,20 @@ Controller.prototype.createSkill = function(req, res, next) {
   }, function(err, skill) {
     if (err) return next(err);
     return res.status(201).json(skill);
+  });
+};
+
+/** 
+ * @description Get user applications
+ */
+Controller.prototype.getUserApplications = function(req, res, next) {
+  var userId = req.params.id;
+
+  applicationService.getUserApplications({
+    userId: userId
+  }, function(err, applications) {
+    if (err) return next(err);
+    return res.status(200).json(applications);
   });
 };
 
