@@ -17,6 +17,7 @@ var projectPopulateService = require('./populate/service');
 var needService = require('modules/need');
 var projectUserService = require('./userService');
 var organizationProjectService = require('modules/organization/projectService');
+var logger = require('modules/logger');
 
 //models
 var User = require('modules/user/data/model');
@@ -96,7 +97,7 @@ ProjectService.prototype.create = function(options, next) {
       project.name = options.name;
       project.created = new Date();
       project.modified = project.created;
-      project.slug = slug
+      project.slug = slug;
       project.profilePic = DEFAULT_IMAGEURL + randomNum(1, 4) + '.jpg';
       project.description = options.description;
       project.status = PROJECT_STATUSES.DRAFT;
@@ -408,7 +409,7 @@ ProjectService.prototype.getAll = function(options, next) {
           }, function(err, _needs) {
             if (err) return next(err);
 
-            need = _needs;
+            needs = _needs;
 
             return done(err);
           });

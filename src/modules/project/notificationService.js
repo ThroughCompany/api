@@ -136,6 +136,7 @@ ProjectNotificationService.prototype.sendApplicationApprovedNotifications = func
   var _this = this;
   var project = null;
   var projectUsers = null;
+  var users = null;
   var applicationId = null;
   var createdByUser = null;
 
@@ -146,6 +147,7 @@ ProjectNotificationService.prototype.sendApplicationApprovedNotifications = func
 
         project = data.project;
         projectUsers = data.projectUsers;
+        users = data.users;
         applicationId = data.applicationId;
         createdByUser = data.createdByUser;
 
@@ -165,8 +167,15 @@ ProjectNotificationService.prototype.sendApplicationApprovedNotifications = func
       }, done);
     },
     function sendNotifications_step(emailText, done) {
-      //TODO: email does not live on the projectUser - it's on the user object - NEED TO FIX THIS!!!
-      var emailAddresses = [user.email];
+      users = _.filter(users, function(user) {
+        var projectUser = _.find(projectUsers, function(projectUser) {
+          return projectUser.user === user._id;
+        });
+
+        return projectUser ? projectUser : null;
+      });
+
+      var emailAddresses = _.pluck(users, 'email');
 
       sendUsersEmail(emailAddresses, emailText, APPLICATION_APPROVED_EMAIL_PATH, done);
     }
@@ -275,7 +284,7 @@ function getApplicationCreatedData(options, next) {
 }
 
 function getApplicationApprovedData(options, next) {
-  async.parallel({
+  async.auto({
     applicationId: function findApplicationById_step(done) {
       applicationService.getById({
         applicationId: options.applicationId
@@ -293,7 +302,16 @@ function getApplicationApprovedData(options, next) {
       projectUserService.getByProjectId({
         projectId: options.projectId
       }, done);
-    }
+    },
+    users: ['projectUsers', function findUsers_step(done, results) {
+      var userIds = _.pluck(results.projectUsers, 'user');
+
+      User.find({
+        _id: {
+          $in: userIds
+        }
+      }, done);
+    }]
   }, next);
 }
 

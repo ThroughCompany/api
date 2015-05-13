@@ -103,7 +103,7 @@ UserService.prototype.createUsingCredentials = function createUsingCredentials(o
       var auth = new Auth();
       auth.user = user._id;
       auth.hash = hash;
-      auth.save(function(err, newAuth) {
+      auth.save(function(err) {
         done(err, user);
       });
     }
@@ -156,7 +156,7 @@ UserService.prototype.createUsingFacebook = function createUsingFacebook(options
       user.created = Date.now();
       user.facebook.id = options.facebookId;
       user.facebook.username = options.facebookUsername;
-      user.profilePic = DEFAULTIMAGEURL + randomNum(1, 4) + '.jpg'
+      user.profilePic = DEFAULTIMAGEURL + randomNum(1, 4) + '.jpg';
 
       user.save(done);
     }
@@ -296,7 +296,7 @@ UserService.prototype.createSkill = function createSkill(options, next) {
 
       user.save(done);
     }
-  ], function finish(err, user) {
+  ], function finish(err) {
     if (err) return next(err);
 
     _this.emit(EVENTS.SKILL_USED_BY_USER, {

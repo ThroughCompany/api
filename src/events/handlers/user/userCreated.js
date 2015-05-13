@@ -1,13 +1,8 @@
 /* =========================================================================
  * Dependencies
  * ========================================================================= */
-var util = require('util');
-var _ = require('underscore');
-var async = require('async');
-
 //modules
 var errors = require('modules/error');
-var logger = require('modules/logger');
 
 //services
 var userNotificationService = require('modules/user/notificationService');

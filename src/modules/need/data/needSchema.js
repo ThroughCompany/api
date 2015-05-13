@@ -1,11 +1,9 @@
 /* =========================================================================
  * Dependencies
  * ========================================================================= */
-var _ = require('underscore');
-
 var baseSchema = require('modules/common/data/base-schema');
 
-var utils = require('utils/utils');
+var _ = require('underscore');
 
 /* =========================================================================
  * Constants

@@ -11,6 +11,7 @@ var errors = require('modules/error');
 var CommonService = require('modules/common');
 var skillService = require('modules/skill');
 var userService = require('modules/user');
+var logger = require('modules/logger');
 
 //models
 var Need = require('modules/need/data/needModel');
@@ -135,8 +136,8 @@ NeedService.prototype.create = function create(options, next) {
 
         if (organization) {
           need.type = NEED_TYPES.ORGANIZATION;
-          need.organization = organization._id
-        };
+          need.organization = organization._id;
+        }
         if (user) {
           need.type = NEED_TYPES.USER;
           need.user = user._id;
@@ -405,7 +406,7 @@ NeedService.prototype.getAll = function(options, next) {
     }
 
     if (options.skills) {
-      conditions.skills = _.pluck(skills, '_id')
+      conditions.skills = _.pluck(skills, '_id');
     }
 
     var query = Need.find(conditions);

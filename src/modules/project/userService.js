@@ -46,8 +46,10 @@ ProjectUserService.prototype.create = function(options, next) {
 
   var _this = this;
   var project = null;
+  var projectUser = null;
   var projectUsers = null;
   var user = null;
+  var permissions = null;
 
   async.waterfall([
     function findProjectandUsers_step(done) {

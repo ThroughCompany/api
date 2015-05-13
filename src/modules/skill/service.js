@@ -160,8 +160,8 @@ SkillsService.prototype.getOrCreateByName = function getOrCreateByName(options, 
         done(null, skill);
       });
     },
-    function createSkill_step(skill, done) {
-      if (skill) return done(null, skill);
+    function createSkill_step(existingSkill, done) {
+      if (existingSkill) return done(null, existingSkill);
 
       var skill = new Skill();
       skill.name = options.name;

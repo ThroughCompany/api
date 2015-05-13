@@ -4,6 +4,7 @@
 var _ = require('underscore');
 
 var baseSchema = require('modules/common/data/base-schema');
+var extend = require('mongoose-schema-extend');
 
 /* =========================================================================
  * Constants
