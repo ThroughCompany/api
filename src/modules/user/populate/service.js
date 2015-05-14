@@ -8,6 +8,7 @@ var partialResponse = require('modules/partialResponse');
 
 //models
 var Application = require('modules/application/data/applicationModel');
+var Need = require('modules/need/data/needModel');
 
 //services
 var PopulateService = partialResponse.service;
@@ -28,6 +29,11 @@ var userPopulateService = new UserPopulateService();
 userPopulateService.addPopulate({
   key: 'applications',
   model: Application
+});
+
+userPopulateService.addPopulate({
+  key: 'needs',
+  model: Need
 });
 
 /* =========================================================================
