@@ -3,6 +3,7 @@
  * ========================================================================= */
 var express = require('express');
 var swagger = require('swagger-node-express');
+
 //middleware
 var authMiddleware = require('src/middleware/authMiddleware');
 
@@ -15,36 +16,14 @@ var controller = require('./controller');
 /* =========================================================================
  * Swagger specs
  * ========================================================================= */
-var createApplication = {
+var createInvitation = {
   spec: {
-    path: '/applications',
-    summary: 'Create an application',
+    path: '/invitations',
+    summary: 'Create an invitation',
     method: 'POST',
-    parameters: [
-      swagger.params.body('createdByUserId', 'user\'s id', 'string')
-    ],
-    nickname: 'createApplication',
-    type: 'Application',
-    produces: ['application/json']
-  },
-  action: function(req, res, next) {
-    authMiddleware.authenticationRequired(req, res, function(err) {
-      if (err) return next(err);
-      controller.createApplication(req, res, next);
-    });
-  }
-};
-
-var updateApplication = {
-  spec: {
-    path: '/applications/{id}',
-    summary: 'Update an application',
-    method: 'PATCH',
-    parameters: [
-      swagger.params.path('id', 'application\'s id', 'string')
-    ],
-    nickname: 'updateApplication',
-    type: 'Application',
+    parameters: [],
+    nickname: 'createInvitation',
+    type: 'Invitation',
     produces: ['application/json']
   },
   action: function(req, res, next) {
@@ -54,30 +33,24 @@ var updateApplication = {
       authMiddleware.currentUserOrganizationIdBodyParamOptional('organizationId')(req, res, function(err) {
         if (err) console.log('FAILED ORG CHECK');
         if (err) return next(err);
-        //optional user id
-        authMiddleware.currentUserIdBodyParamOptional('userId')(req, res, function(err) {
-          if (err) console.log('FAILED USER CHECK');
+        //optional project id
+        authMiddleware.currentUserProjectIdBodyParamOptional('projectId')(req, res, function(err) {
+          if (err) console.log('FAILED PROJECT CHECK');
           if (err) return next(err);
-          //optional project id
-          authMiddleware.currentUserProjectIdBodyParamOptional('projectId')(req, res, function(err) {
-            if (err) console.log('FAILED PROJECT CHECK');
-            if (err) return next(err);
-            controller.updateApplicationById(req, res, next);
-          });
+          controller.createInvitation(req, res, next);
         });
       });
     });
   }
 };
 
-swagger.addPost(createApplication);
-swagger.addPatch(updateApplication);
+swagger.addPost(createInvitation);
 
 /* =========================================================================
  *   Swagger declarations
  * ========================================================================= */
 
-swagger.configureDeclaration('applications', {
-  description: 'Operations for applications',
+swagger.configureDeclaration('invitations', {
+  description: 'Operations for invitations',
   produces: ['application/json']
 });

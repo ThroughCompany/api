@@ -104,6 +104,11 @@ var projectSchema = baseSchema.extend({
     type: String,
     ref: 'Application'
   }],
+  //invitations
+  invitations: [{
+    type: String,
+    ref: 'Invitation'
+  }],
   //needs
   needs: [{
     type: String,

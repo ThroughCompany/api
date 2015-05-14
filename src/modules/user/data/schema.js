@@ -112,6 +112,16 @@ var userSchema = baseSchema.extend({
       type: String,
       trim: true
     }
+    // contributions: [{
+    //   need: {
+    //     type: String,
+    //     ref: 'Need'
+    //   },
+    //   url: {
+    //     type: String,
+    //     trim: true
+    //   }
+    // }]
   }],
   //needs
   needs: [{
@@ -135,6 +145,11 @@ var userSchema = baseSchema.extend({
   createdApplications: [{ //application this user has created for other needs
     type: String,
     ref: 'Application'
+  }],
+  //invitations
+  invitations: [{
+    type: String,
+    ref: 'Invitation'
   }],
   //organizations
   organizationUsers: [{

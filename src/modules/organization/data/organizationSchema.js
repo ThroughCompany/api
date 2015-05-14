@@ -81,6 +81,11 @@ var organizationSchema = baseSchema.extend({
   applications: [{
     type: String,
     ref: 'Application'
+  }],
+  //invitations
+  invitations: [{
+    type: String,
+    ref: 'Invitation'
   }]
 });
 
