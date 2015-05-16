@@ -21,6 +21,7 @@ var User = require('modules/user/data/model');
 var Project = require('./data/projectModel');
 var ProjectUser = require('modules/project/data/userModel');
 var Application = require('modules/application/data/applicationModel');
+var Need = require('modules/need/data/needModel');
 
 //libs
 var mailgunApi = require('lib/mailgun-api');
@@ -31,7 +32,7 @@ var mailgunApi = require('lib/mailgun-api');
 var PERMISSION_NAMES = require('modules/permission/constants/permissionNames');
 
 var APPLICATION_CREATED_EMAIL_PATH = __dirname + '/notifications/applicationCreated/email.html';
-var APPLICATION_CREATED_EMAIL_SUBJECT = 'Some has applied to join your project on Through Company';
+var APPLICATION_CREATED_EMAIL_SUBJECT = 'Someone has applied to your project\s need on Through Company';
 
 var APPLICATION_APPROVED_EMAIL_PATH = __dirname + '/notifications/applicationApproved/email.html';
 var APPLICATION_APPROVED_EMAIL_SUBJECT = 'You have been accepted to join a project on Through Company';
@@ -57,7 +58,8 @@ ProjectNotificationService.prototype.sendApplicationCreatedNotifications = funct
   var project = null;
   var projectUsers = null;
   var users = null;
-  var applicationId = null;
+  var application = null;
+  var need = null;
   var createdByUser = null;
   var addProjectUsersPermission = null;
   var projectUsersWithPermissions = null;
@@ -71,7 +73,8 @@ ProjectNotificationService.prototype.sendApplicationCreatedNotifications = funct
         project = data.project;
         projectUsers = data.projectUsers;
         users = data.users;
-        applicationId = data.applicationId;
+        application = data.application;
+        need = data.need;
         createdByUser = data.createdByUser;
         addProjectUsersPermission = data.addProjectUsersPermission;
 
@@ -81,12 +84,13 @@ ProjectNotificationService.prototype.sendApplicationCreatedNotifications = funct
       });
     },
     function generateEmailTemplate_step(done) {
-      templateService.generate({
+      templateService.generateGenericEmail({
         templateFilePath: APPLICATION_CREATED_EMAIL_PATH,
         templateData: {
           createdByUser: createdByUser,
           project: project,
-          applicationId: applicationId
+          application: application,
+          need: need
         }
       }, done);
     },
@@ -253,6 +257,11 @@ function getApplicationCreatedData(options, next) {
         applicationId: options.applicationId
       }, done);
     },
+    need: ['application', function findNeed_step(done, results) {
+      var application = results.application;
+
+      Need.findById(application.need, done);
+    }],
     createdByUser: function findUserById_step(done) {
       userService.getById({
         userId: options.createdByUserId

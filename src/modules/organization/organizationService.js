@@ -11,6 +11,7 @@ var errors = require('modules/error');
 var CommonService = require('modules/common');
 var permissionService = require('modules/permission');
 var userService = require('modules/user');
+var imageService = require('modules/image');
 var organizationPopulateService = require('./populate/service');
 var organizationProjectService = require('./projectService');
 var organizationUserService = require('./userService');
@@ -32,6 +33,8 @@ var partialResponseParser = require('modules/partialResponse/parser');
  * ========================================================================= */
 //var EVENTS = require('./constants/events');
 var ROLES = require('modules/role/constants/roleNames');
+var DEFAULTIMAGEURL = 'https://s3.amazonaws.com/throughcompany-assets/images/orgprofilepic_default.png';
+var IMAGE_TYPES = require('modules/image/constants/image-types');
 
 var UPDATEDABLE_ORGANIZATION_PROPERTIES = [
   'name',
@@ -84,6 +87,7 @@ OrganizationService.prototype.create = function(options, next) {
       organization.modified = organization.created;
       organization.slug = slug
       organization.description = options.description;
+      organization.profilePic = DEFAULTIMAGEURL;
 
       organization.save(done);
     },
@@ -249,6 +253,65 @@ OrganizationService.prototype.addProject = function(options, next) {
  */
 OrganizationService.prototype.getOrganizationUsersByUserId = function getOrganizationUsersByUserId(options, next) {
   organizationUserService.getByUserId(options, next);
+};
+
+/* =========================================================================
+ * Images
+ * ========================================================================= */
+OrganizationService.prototype.uploadImage = function(options, next) {
+  if (!options) return next(new errors.InvalidArgumentError('options is required'));
+  if (!options.organizationId) return next(new errors.InvalidArgumentError('Organization Id is required'));
+  if (!options.fileName) return next(new errors.InvalidArgumentError('File Name is required'));
+  if (!options.filePath) return next(new errors.InvalidArgumentError('File Path is required'));
+  if (!options.fileType) return next(new errors.InvalidArgumentError('File Type is required'));
+  if (!options.imageType) return next(new errors.InvalidArgumentError('Image Type is required'));
+
+  var validOrganizationImageTypes = [IMAGE_TYPES.PROFILE_PIC_ORGANIZATION];
+
+  if (!_.contains(validOrganizationImageTypes, options.imageType)) return next(new errors.InvalidArgumentError(options.imageType + ' is not a valid image type'));
+
+  var _this = this;
+  var organization = null;
+
+  async.waterfall([
+    function getOrganizationById_step(done) {
+      _this.getById({
+        organizationId: options.organizationId
+      }, done);
+    },
+    function uploadImage_step(_organization, done) {
+      organization = _organization;
+
+      imageService.upload({
+        imageType: options.imageType,
+        fileName: options.fileName,
+        filePath: options.filePath,
+        fileType: options.fileType
+      }, done);
+    },
+    function addImageToOrganization_step(imageUrl, done) {
+      var err = null;
+      
+      console.log('GOT HERE');
+
+      console.log(organization);
+
+      switch (options.imageType) {
+        case IMAGE_TYPES.PROFILE_PIC_ORGANIZATION:
+          organization.profilePic = imageUrl;
+          break;
+        default:
+          err = new errors.InvalidArgumentError('Invalid image type');
+          break;
+      }
+
+      if (err) {
+        return done(err);
+      } else {
+        organization.save(done);
+      }
+    }
+  ], next);
 };
 
 /* =========================================================================

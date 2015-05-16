@@ -32,6 +32,11 @@ userPopulateService.addPopulate({
 });
 
 userPopulateService.addPopulate({
+  key: 'createdApplications',
+  model: Application
+});
+
+userPopulateService.addPopulate({
   key: 'needs',
   model: Need
 });

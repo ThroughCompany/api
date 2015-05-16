@@ -169,7 +169,8 @@ ApplicationService.prototype.create = function create(options, next) {
         function getApplicationsById_step(cb) {
           var conditions = {
             status: APPLICATION_STATUSES.PENDING,
-            createdByUser: options.createdByUserId
+            createdByUser: options.createdByUserId,
+            need: options.needId
           };
 
           if (options.organizationId) conditions.organization = options.organizationId;
@@ -215,6 +216,8 @@ ApplicationService.prototype.create = function create(options, next) {
         application.type = APPLICATION_TYPES.PROJECT;
       }
 
+      application.organizationName = organization ? organization.name : '',
+      application.projectName = project ? project.name : '',
       application.createdByUser = createdByUser._id;
       application.createdByUserName = createdByUser.userName;
       application.createdByUserFirstName = createdByUser.firstName;

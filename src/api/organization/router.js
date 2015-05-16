@@ -57,6 +57,32 @@ var createOrganization = {
   }
 };
 
+var uploadImage = {
+  spec: {
+    path: '/organizations/{id}/images',
+    summary: 'Upload an organization image',
+    method: 'POST',
+    parameters: [
+      swagger.params.path('id', 'organization\'s id', 'string')
+    ],
+    nickname: 'uploadImage',
+    type: 'Organization',
+    produces: ['application/json']
+  },
+  action: function(req, res, next) {
+    authMiddleware.authenticationRequired(req, res, function(err) {
+      if (err) return next(err);
+      authMiddleware.currentUserOrganizationIdQueryParamRequired('id')(req, res, function(err) {
+        if (err) return next(err);
+        multipartMiddleware(req, res, function(err) {
+          if (err) return next(err);
+          controller.uploadImage(req, res, next);
+        });
+      });
+    });
+  }
+};
+
 // ------- Organization Applications ------- //
 var getOrganizationApplications = {
   spec: {
@@ -84,6 +110,7 @@ var getOrganizationApplications = {
 swagger.addGet(getOrganizationById);
 swagger.addPost(createOrganization);
 swagger.addGet(getOrganizationApplications);
+swagger.addPost(uploadImage);
 
 /* =========================================================================
  *   Swagger declarations

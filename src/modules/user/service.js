@@ -34,7 +34,7 @@ var MAX_TAKE = 200;
 
 var EVENTS = require('./constants/events');
 var REGEXES = require('modules/common/constants/regexes');
-var DEFAULTIMAGEURL = 'https://s3.amazonaws.com/throughcompany-assets/user-avatars/avatar';
+var DEFAULTIMAGEURL = 'https://s3.amazonaws.com/throughcompany-assets/images/profilepic_default.png';
 var IMAGE_TYPES = require('modules/image/constants/image-types');
 
 var UPDATEDABLE_USER_PROPERTIES = [
@@ -93,7 +93,7 @@ UserService.prototype.createUsingCredentials = function createUsingCredentials(o
       user.active = true;
       user.created = new Date();
       user.modified = user.created;
-      user.profilePic = DEFAULTIMAGEURL + randomNum(1, 4) + '.jpg';
+      user.profilePic = DEFAULTIMAGEURL;
 
       user.save(function(err, newUser) {
         done(err, newUser, hash);
@@ -156,7 +156,7 @@ UserService.prototype.createUsingFacebook = function createUsingFacebook(options
       user.created = Date.now();
       user.facebook.id = options.facebookId;
       user.facebook.username = options.facebookUsername;
-      user.profilePic = DEFAULTIMAGEURL + randomNum(1, 4) + '.jpg';
+      user.profilePic = DEFAULTIMAGEURL;
 
       user.save(done);
     }
@@ -435,6 +435,9 @@ UserService.prototype.delete = function(options, next) {
   }, next);
 };
 
+/* =========================================================================
+ * Images
+ * ========================================================================= */
 UserService.prototype.uploadImage = function(options, next) {
   if (!options) return next(new errors.InvalidArgumentError('options is required'));
   if (!options.userId) return next(new errors.InvalidArgumentError('User Id is required'));
@@ -457,8 +460,6 @@ UserService.prototype.uploadImage = function(options, next) {
       }, done);
     },
     function uploadImage_step(_user, done) {
-      if (!_user) return done(new errors.InvalidArgumentError('No user exists with the id ' + options.userId));
-
       user = _user;
 
       imageService.upload({

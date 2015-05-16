@@ -37,6 +37,10 @@ var organizationSchema = baseSchema.extend({
     type: String,
     trim: true
   },
+  profilePic: {
+    type: String,
+    trim: true
+  },
   socialLinks: [{
     _id: {
       type: String,
