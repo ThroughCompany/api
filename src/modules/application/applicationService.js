@@ -284,7 +284,6 @@ ApplicationService.prototype.create = function create(options, next) {
  * @param {function} next - callback
  */
 ApplicationService.prototype.update = function update(options, next) {
-  console.log(options);
   if (!options) return next(new errors.InvalidArgumentError('options is required'));
   if (!options.projectId && !options.userId && !options.organizationId) return next(new errors.InvalidArgumentError('Organization Id, User Id, or Project Id is required'));
   if (!options.applicationId) return next(new errors.InvalidArgumentError('Application Id is required'));

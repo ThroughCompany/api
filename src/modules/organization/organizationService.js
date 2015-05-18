@@ -91,46 +91,17 @@ OrganizationService.prototype.create = function(options, next) {
 
       organization.save(done);
     },
-    function getOrganizationUserPermissions_step(_organization, numCreated, done) {
+    function createOrganizationUser_step(_organization, numCreated, done) {
       organization = _organization;
 
-      permissionService.getByRoleName({
-        roleName: ROLES.ORGANIZATION_ADMIN
-      }, done);
-    },
-    function createOrganizationUser_step(_permissions, done) {
-      permissions = _permissions;
-
-      var organizationUser = new OrganizationUser();
-      organizationUser.organization = organization._id;
-      organizationUser.user = user._id;
-      organizationUser.email = user.email;
-      organizationUser.permissions = organizationUser.permissions.concat(permissions);
-
-      organizationUser.save(done);
-    },
-    function updateOrganization_step(_organizationUser, numCreated, done) {
-      organizationUser = _organizationUser;
-
-      organization.organizationUsers.push(organizationUser._id);
-
-      organization.save(function(err, updatedOrganization) {
+      organizationUserService.create({
+        organization: organization,
+        user: user,
+        role: ROLES.ORGANIZATION_ADMIN
+      }, function(err, organizationUser) {
         if (err) return done(err);
 
-        organization = updatedOrganization;
-
-        done();
-      });
-    },
-    function updateUser_step(done) {
-      user.organizationUsers.push(organizationUser._id);
-
-      user.save(function(err, updatedUser) {
-        if (err) return done(err);
-
-        user = updatedUser;
-
-        done();
+        return done(null);
       });
     }
   ], function(err) {
@@ -291,7 +262,7 @@ OrganizationService.prototype.uploadImage = function(options, next) {
     },
     function addImageToOrganization_step(imageUrl, done) {
       var err = null;
-      
+
       console.log('GOT HERE');
 
       console.log(organization);
