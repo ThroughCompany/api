@@ -15,6 +15,7 @@ var applicationService = require('modules/application');
 var projectUserService = require('modules/project/userService');
 var permissionService = require('modules/permission');
 var templateService = require('modules/template');
+var messageService = require('modules/message');
 
 //models
 var User = require('modules/user/data/model');
@@ -117,7 +118,17 @@ ProjectNotificationService.prototype.sendApplicationCreatedNotifications = funct
       //TODO: email does not live on the projectUser - it's on the user object - NEED TO FIX THIS!!!
       var emailAddresses = _.pluck(usersWithPermissions, 'email');
 
-      sendUsersEmail(emailAddresses, emailText, APPLICATION_CREATED_EMAIL_SUBJECT, done);
+      async.parallel([
+        function sendEmails_step(cb) {
+          sendUsersEmail(emailAddresses, emailText, APPLICATION_CREATED_EMAIL_SUBJECT, cb);
+        },
+        function sendMessage_step(cb) {
+          sendUsersMessage([createdByUser._id], 'Your application has been sent', cb);
+        },
+        function sendMessage_step(cb) {
+          sendUsersMessage([_.pluck(usersWithPermissions, '_id')], 'A user has apply to one of your needs', cb);
+        }
+      ], done);
     }
   ], function(err) {
     if (err) return next(err);
@@ -334,6 +345,21 @@ function sendUsersEmail(emailAddresses, html, subject, next) {
         from: appConfig.app.systemEmail,
         to: emailAddress,
         subject: subject
+      }, done);
+    });
+  });
+
+  async.parallel(steps, next);
+}
+
+function sendUsersMessage(userIds, messageBody, next) {
+  var steps = [];
+
+  _.each(userIds, function(userId) {
+    steps.push(function(done) {
+      messageService.create({
+        userId: userId,
+        message: messageBody
       }, done);
     });
   });

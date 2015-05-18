@@ -311,6 +311,28 @@ NeedService.prototype.update = function update(options, next) {
 
 /**
  * @param {object} options
+ * @param {function} next - callback
+ */
+// NeedService.prototype.delete = function delete(options, next) {
+//   if (!options) return next(new errors.InvalidArgumentError('options is required'));
+//   if (!options.needId) return next(new errors.InvalidArgumentError('Need Id is required'));
+
+//   var _this = this;
+//   var need = null;
+
+//   async.waterfall([
+//     function findNeedById_step(done) {
+//       Need.findById({
+//         _id: options.needId
+//       }, done);
+//     }
+//   ], function finish(err, need) {
+//     return next(err, need); //don't remove, callback needed because mongoose save returns 3rd arg
+//   });
+// };
+
+/**
+ * @param {object} options
  * @param {string} options.projectId
  * @param {string} options.fields
  * @param {function} next - callback

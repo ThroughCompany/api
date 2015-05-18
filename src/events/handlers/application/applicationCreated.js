@@ -5,6 +5,8 @@
 var errors = require('modules/error');
 
 //services
+var organizationNotificationService = require('modules/organization/notificationService');
+var userNotificationService = require('modules/user/notificationService');
 var projectNotificationService = require('modules/project/notificationService');
 
 /* =========================================================================
@@ -17,9 +19,17 @@ function eventHandler(options, next) {
   if (!options.applicationId) return next(new errors.InternalServiceError('Application Id is required'));
 
   if (options.organizationId) {
-    return next(new errors.NotImplementedError());
+    organizationNotificationService.sendApplicationCreatedNotifications({
+      organizationId: options.organizationId,
+      createdByUserId: options.createdByUserId,
+      applicationId: options.applicationId
+    }, next);
   } else if (options.userId) {
-    return next(new errors.NotImplementedError());
+    userNotificationService.sendApplicationCreatedNotifications({
+      userId: options.userId,
+      createdByUserId: options.createdByUserId,
+      applicationId: options.applicationId
+    }, next);
   } else {
     projectNotificationService.sendApplicationCreatedNotifications({
       projectId: options.projectId,

@@ -8,59 +8,81 @@ var async = require('async');
 //modules
 var errors = require('modules/error');
 var CommonService = require('modules/common');
-var userService = require('modules/user');
-var permissionService = require('modules/permission');
+var logger = require('modules/logger');
 
 //models
-var OrganizationUser = require('modules/organization/data/userModel');
+var Message = require('modules/message/data/messageModel');
+var User = require('modules/user/data/model');
 
 /* =========================================================================
  * Constants
  * ========================================================================= */
+var MESSAGE_TYPES = require('modules/message/constants/messageTypes');
 
 /* =========================================================================
  * Constructor
  * ========================================================================= */
-var OrganizationUserService = function() {
-  CommonService.call(this, OrganizationUser);
+var MessageService = function() {
+  CommonService.call(this, Message);
 };
-util.inherits(OrganizationUserService, CommonService);
+util.inherits(MessageService, CommonService);
 
 /**
  * @param {object} options
- * @param {object} options.userId
+ * @param {string} options.message
+ * @param {string} options.text
  * @param {function} next - callback
  */
-OrganizationUserService.prototype.getByUserId = function(options, next) {
+MessageService.prototype.create = function create(options, next) {
+  if (!options) return next(new errors.InvalidArgumentError('options is required'));
+  if (!options.userId) return next(new errors.InvalidArgumentError('User Id is required'));
+  if (!options.message) return next(new errors.InvalidArgumentError('Message is required'));
+
+  var _this = this;
+  var user = null;
+
+  async.waterfall([
+      function findUserById_step(done) {
+        User.findById(options.userId, function(err, _user) {
+          if (err) return done(err);
+          if (!_user) return done(new errors.ObjectNotFoundError('User not found'));
+
+          user = _user;
+          return done(null);
+        });
+      },
+      function createMessage_step(done) {
+        var message = new Message();
+        message.message = options.message;
+        message.user = user._id;
+        message.type = MESSAGE_TYPES.RECEIVED;
+
+        message.save(done);
+      }
+    ],
+    next);
+};
+
+/**
+ * @param {object} options
+ * @param {string} options.userId
+ * @param {function} next - callback
+ */
+MessageService.prototype.getByUserId = function getByUserId(options, next) {
   if (!options) return next(new errors.InvalidArgumentError('options is required'));
   if (!options.userId) return next(new errors.InvalidArgumentError('User Id is required'));
 
   var _this = this;
 
-  var query = OrganizationUser.find({
+  var conditions = {
     user: options.userId
-  });
+  };
 
-  query.exec(next);
+  var query = Message.find(conditions);
+
+  return query.exec(next)
 };
 
-/**
- * @param {object} options
- * @param {object} options.userId
- * @param {function} next - callback
- */
-OrganizationUserService.prototype.getByOrganizationId = function(options, next) {
-  if (!options) return next(new errors.InvalidArgumentError('options is required'));
-  if (!options.organizationId) return next(new errors.InvalidArgumentError('Organization Id is required'));
-
-  var _this = this;
-
-  var query = OrganizationUser.find({
-    organization: options.organizationId
-  });
-
-  query.exec(next);
-};
 /* =========================================================================
  * Private Helpers
  * ========================================================================= */
@@ -68,4 +90,4 @@ OrganizationUserService.prototype.getByOrganizationId = function(options, next) 
 /* =========================================================================
  * Exports
  * ========================================================================= */
-module.exports = new OrganizationUserService();
+module.exports = new MessageService();

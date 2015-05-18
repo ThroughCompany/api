@@ -209,6 +209,23 @@ var createSkill = {
   }
 };
 
+var getUserMessagesById = {
+  spec: {
+    path: '/users/{id}/messages',
+    summary: 'Get a user\'s messages by id',
+    method: 'GET',
+    parameters: [
+      swagger.params.path('id', 'user\'s id', 'string')
+    ],
+    nickname: 'getUserMessagesById',
+    type: 'Message',
+    produces: ['application/json']
+  },
+  action: function(req, res, next) {
+    controller.getUserMessagesById(req, res, next);
+  }
+};
+
 // ------- User Applications ------- //
 var getUserApplications = {
   spec: {
@@ -244,6 +261,7 @@ swagger.addPatch(updateUserById);
 swagger.addPost(uploadImage);
 swagger.addPost(createSkill);
 swagger.addGet(getUserApplications);
+swagger.addGet(getUserMessagesById);
 
 /* =========================================================================
  *   Swagger declarations
