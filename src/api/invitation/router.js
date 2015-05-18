@@ -12,6 +12,7 @@ var controller = require('./controller');
 /* =========================================================================
  * Constants
  * ========================================================================= */
+var PERMISSION_NAMES = require('modules/permission/constants/permissionNames');
 
 /* =========================================================================
  * Swagger specs
@@ -33,11 +34,19 @@ var createInvitation = {
       authMiddleware.currentUserOrganizationIdBodyParamOptional('organizationId')(req, res, function(err) {
         if (err) console.log('FAILED ORG CHECK');
         if (err) return next(err);
-        //optional project id
-        authMiddleware.currentUserProjectIdBodyParamOptional('projectId')(req, res, function(err) {
-          if (err) console.log('FAILED PROJECT CHECK');
+        authMiddleware.currentUserOrgnizationPermissionBodyParamOptions('organizationId', PERMISSION_NAMES.ADD_ORGANIZATION_USERS)(req, res, function(err) {
+          if (err) console.log('FAILED ORG PERMISSION CHECK');
           if (err) return next(err);
-          controller.createInvitation(req, res, next);
+          //optional project id
+          authMiddleware.currentUserProjectIdBodyParamOptional('projectId')(req, res, function(err) {
+            if (err) console.log('FAILED PROJECT CHECK');
+            if (err) return next(err);
+            authMiddleware.currentUserProjectPermissionBodyParamOptions('projectId', PERMISSION_NAMES.ADD_PROJECT_USERS)(req, res, function(err) {
+              if (err) console.log('FAILED PROJECT PERMISSION CHECK');
+              if (err) return next(err);
+              controller.createInvitation(req, res, next);
+            });
+          });
         });
       });
     });

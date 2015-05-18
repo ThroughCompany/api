@@ -58,18 +58,35 @@ PermissionService.prototype.getByRoleName = function getByRoleName(options, next
  * @param {array} options.ids
  * @param {function} next - callback
  */
-PermissionService.prototype.getByIds = function getByIds(options, next) {
+// PermissionService.prototype.getByIds = function getByIds(options, next) {
+//   if (!options) return next(new errors.InvalidArgumentError('options is required'));
+//   if (!options.ids || !_.isArray(options.ids)) return next(new errors.InvalidArgumentError('Ids is required'));
+
+//   var _this = this;
+//   var role = null;
+
+//   var query = Permission.find({
+//     _id: {
+//       $in: options.ids
+//     }
+//   });
+
+//   query.exec(next);
+// };
+
+/**
+ * @param {object} options
+ * @param {array} options.ids
+ * @param {function} next - callback
+ */
+PermissionService.prototype.getAll = function getAll(options, next) {
   if (!options) return next(new errors.InvalidArgumentError('options is required'));
-  if (!options.ids || !_.isArray(options.ids)) return next(new errors.InvalidArgumentError('Ids is required'));
 
   var _this = this;
-  var role = null;
 
-  var query = Permission.find({
-    _id: {
-      $in: options.ids
-    }
-  });
+  var conditions = {};
+
+  var query = Permission.find(conditions);
 
   query.exec(next);
 };

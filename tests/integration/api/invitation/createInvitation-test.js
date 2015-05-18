@@ -339,7 +339,7 @@ describe('api', function() {
             }, done);
           });
 
-          it('should return a 400', function(done) {
+          it('should return a 403', function(done) {
 
             agent
               .post('/invitations')
@@ -356,12 +356,12 @@ describe('api', function() {
                 should.exist(error);
 
                 var status = response.status;
-                status.should.equal(400);
+                status.should.equal(403);
 
                 var errorMessage = testUtils.getServerErrorMessage(response);
 
                 should.exist(errorMessage);
-                errorMessage.should.equal('You do not have permission to invite new users');
+                errorMessage.should.equal('Access Denied');
 
                 done();
               });
@@ -870,7 +870,7 @@ describe('api', function() {
             }, done);
           });
 
-          it('should return a 400', function(done) {
+          it('should return a 403', function(done) {
 
             agent
               .post('/invitations')
@@ -887,12 +887,12 @@ describe('api', function() {
                 should.exist(error);
 
                 var status = response.status;
-                status.should.equal(400);
+                status.should.equal(403);
 
                 var errorMessage = testUtils.getServerErrorMessage(response);
 
                 should.exist(errorMessage);
-                errorMessage.should.equal('You do not have permission to invite new users');
+                errorMessage.should.equal('Access Denied');
 
                 done();
               });

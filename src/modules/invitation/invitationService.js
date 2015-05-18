@@ -17,7 +17,6 @@ var Project = require('modules/project/data/projectModel');
 var OrganizationUser = require('modules/organization/data/userModel');
 var ProjectUser = require('modules/project/data/userModel');
 var Invitation = require('modules/invitation/data/invitationModel');
-var Permission = require('modules/permission/data/model');
 
 //utils
 var patchUtils = require('utils/patchUtils');
@@ -30,7 +29,6 @@ var invitationValidator = require('./validators/invitationValidator');
  * ========================================================================= */
 var INVITATION_STATUSES = require('modules/invitation/constants/invitationStatuses');
 var INVITATION_TYPES = require('modules/invitation/constants/invitationTypes');
-var PERMISSION_NAMES = require('modules/permission/constants/permissionNames');
 var EVENTS = require('modules/invitation/constants/events');
 
 /* =========================================================================
@@ -58,11 +56,7 @@ InvitationService.prototype.create = function create(options, next) {
   var project = null;
   var projectUsers = null;
   var user = null; //the invitee
-  var createdByUser = null; //the invitor
-
-  //permissions
-  var addOrganizationUsersPermission = null;
-  var addProjectUsersPermission = null;
+  //var createdByUser = null; //the invitor
 
   var invitation = null;
 
@@ -115,62 +109,41 @@ InvitationService.prototype.create = function create(options, next) {
             });
           }
         },
-        function getPermissions_step(cb) {
-          if (options.organizationId) {
-            Permission.findOne({
-              name: PERMISSION_NAMES.ADD_ORGANIZATION_USERS
-            }, function(err, permission) {
-              if (err) return cb(err);
-              if (permission) addOrganizationUsersPermission = permission;
-              cb();
-            });
-          } else {
-            Permission.findOne({
-              name: PERMISSION_NAMES.ADD_PROJECT_USERS
-            }, function(err, permission) {
-              if (err) return cb(err);
-              if (permission) addProjectUsersPermission = permission;
-              cb();
-            });
-          }
-        },
-        function getEntityUsersById_step(cb) {
-          if (options.organizationId) {
-            OrganizationUser.find({
-              organization: options.organizationId
-            }, function(err, _organizationUsers) {
-              if (err) return cb(err);
+        // function getEntityUsersById_step(cb) {
+        //   if (options.organizationId) {
+        //     OrganizationUser.find({
+        //       organization: options.organizationId
+        //     }, function(err, _organizationUsers) {
+        //       if (err) return cb(err);
 
-              organizationUsers = _organizationUsers;
+        //       organizationUsers = _organizationUsers;
 
-              var invitingOrganizationUser = _.find(organizationUsers, function(organizationUser) {
-                return organizationUser.user === options.createdByUserId;
-              });
+        //       var invitingOrganizationUser = _.find(organizationUsers, function(organizationUser) {
+        //         return organizationUser.user === options.createdByUserId;
+        //       });
 
-              if (!invitingOrganizationUser) return cb(new errors.ObjectNotFoundError('You are not a member of this organization'));
-              if (!_.contains(invitingOrganizationUser.permissions, addOrganizationUsersPermission._id)) return cb(new errors.InvalidArgumentError('You do not have permission to invite new users'));
+        //       if (!invitingOrganizationUser) return cb(new errors.ObjectNotFoundError('You are not a member of this organization'));
 
-              return cb(null);
-            });
-          } else {
-            ProjectUser.find({
-              project: options.projectId
-            }, function(err, _projectUsers) {
-              if (err) return cb(err);
+        //       return cb(null);
+        //     });
+        //   } else {
+        //     ProjectUser.find({
+        //       project: options.projectId
+        //     }, function(err, _projectUsers) {
+        //       if (err) return cb(err);
 
-              projectUsers = _projectUsers;
+        //       projectUsers = _projectUsers;
 
-              var invitingProjectUser = _.find(projectUsers, function(projectUser) {
-                return projectUser.user === options.createdByUserId;
-              })
+        //       var invitingProjectUser = _.find(projectUsers, function(projectUser) {
+        //         return projectUser.user === options.createdByUserId;
+        //       })
 
-              if (!invitingProjectUser) return cb(new errors.ObjectNotFoundError('You are not a member of this project'));
-              if (!_.contains(invitingProjectUser.permissions, addProjectUsersPermission._id)) return cb(new errors.InvalidArgumentError('You do not have permission to invite new users'));
+        //       if (!invitingProjectUser) return cb(new errors.ObjectNotFoundError('You are not a member of this project'));
 
-              return cb(null);
-            });
-          }
-        },
+        //       return cb(null);
+        //     });
+        //   }
+        // },
         function getInvitationsById_step(cb) {
           var conditions = {
             status: INVITATION_STATUSES.PENDING,
