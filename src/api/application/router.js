@@ -3,6 +3,7 @@
  * ========================================================================= */
 var express = require('express');
 var swagger = require('swagger-node-express');
+
 //middleware
 var authMiddleware = require('src/middleware/authMiddleware');
 

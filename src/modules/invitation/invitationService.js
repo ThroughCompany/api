@@ -229,6 +229,24 @@ InvitationService.prototype.create = function create(options, next) {
   });
 };
 
+/**
+ * @param {object} options
+ * @param {string} options.userId
+ * @param {function} next - callback
+ */
+InvitationService.prototype.getByUserId = function getByUserId(options, next) {
+  if (!options) return next(new errors.InvalidArgumentError('options is required'));
+  if (!options.userId) return next(new errors.InvalidArgumentError('User Id is required'));
+
+  var conditions = {
+    user: options.userId
+  };
+
+  var query = Invitation.find(conditions);
+
+  query.exec(next);
+};
+
 /* =========================================================================
  * Private Helpers
  * ========================================================================= */

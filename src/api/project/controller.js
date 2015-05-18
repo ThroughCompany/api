@@ -169,7 +169,7 @@ Controller.prototype.updateWikiPage = function(req, res, next) {
 Controller.prototype.getProjectApplications = function(req, res, next) {
   var projectId = req.params.id;
 
-  applicationService.getProjectApplications({
+  applicationService.getByProjectId({
     projectId: projectId
   }, function(err, applications) {
     if (err) return next(err);

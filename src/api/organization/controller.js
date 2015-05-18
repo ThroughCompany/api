@@ -57,9 +57,11 @@ Controller.prototype.createOrganization = function createOrganization(req, res, 
  */
 Controller.prototype.getOrganizationApplications = function(req, res, next) {
   var organizationId = req.params.id;
+  var fields = req.query.fields;
 
-  applicationService.getOrganizationApplications({
-    organizationId: organizationId
+  applicationService.getByOrganizationId({
+    organizationId: organizationId,
+    fields: fields
   }, function(err, applications) {
     if (err) return next(err);
     return res.status(200).json(applications);

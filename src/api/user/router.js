@@ -245,7 +245,10 @@ var getUserApplications = {
       if (err) return next(err);
       authMiddleware.currentUserIdQueryParamRequired('id')(req, res, function(err) {
         if (err) return next(err);
-        controller.getUserApplications(req, res, next);
+        partialResponseMiddleware(req, res, function(err) {
+          if (err) return next(err);
+          controller.getUserApplications(req, res, next);
+        });
       });
     });
   }

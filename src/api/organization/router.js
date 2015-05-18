@@ -7,6 +7,7 @@ var multipart = require('connect-multiparty');
 
 //middleware
 var authMiddleware = require('src/middleware/authMiddleware');
+var partialResponseMiddleware = require('src/middleware/partialResponseMiddleware');
 var multipartMiddleware = multipart();
 
 var controller = require('./controller');
@@ -33,7 +34,10 @@ var getOrganizationById = {
     produces: ['application/json']
   },
   action: function(req, res, next) {
-    controller.getOrganizationById(req, res, next);
+    partialResponseMiddleware(req, res, function(err) {
+      if (err) return next(err);
+      controller.getOrganizationById(req, res, next);
+    });
   }
 };
 
