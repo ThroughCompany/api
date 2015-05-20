@@ -67,6 +67,13 @@ ImageService.prototype.upload = function(options, next) {
             fileType: options.fileType
           }, done);
           break;
+        case IMAGE_TYPES.PROFILE_PIC_ORGANIZATION:
+          awsApi.uploadOrganizationProfilePic({
+            filePath: options.filePath,
+            fileName: options.fileName,
+            fileType: options.fileType
+          }, done);
+          break;
         case IMAGE_TYPES.BANNER_PIC_PROJECT:
           awsApi.uploadProjectBannerPic({
             filePath: options.filePath,

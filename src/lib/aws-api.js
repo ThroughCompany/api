@@ -20,6 +20,7 @@ AWS.config.update({
  * Constants
  * ========================================================================= */
 var BUCKETS = {
+  ORGANIZATION_PROFILE_PICS: 'throughcompany-images/organizations/profile-pictures',
   USER_PROFILE_PICS: 'throughcompany-images/users/profile-pictures',
   PROJECT_PROFILE_PICS: 'throughcompany-images/projects/profile-pictures',
   PROJECT_BANNER_PICS: 'throughcompany-images/projects/banner-pictures',
@@ -40,6 +41,14 @@ function AwsApi() {}
  * @param {function} next - callback
  * @returns {string} url - image url
  */
+AwsApi.prototype.uploadOrganizationProfilePic = function upload(options, next) {
+  if (!options) return next(new errors.InvalidArgumentError('options is required'));
+
+  options.bucket = BUCKETS.ORGANIZATION_PROFILE_PICS;
+
+  uploadFile(options, next);
+};
+
 AwsApi.prototype.uploadUserProfilePic = function upload(options, next) {
   if (!options) return next(new errors.InvalidArgumentError('options is required'));
 

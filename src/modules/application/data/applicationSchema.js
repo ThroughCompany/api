@@ -49,6 +49,16 @@ var applicationSchema = baseSchema.extend({
     type: String,
     trim: true
   },
+  //project info
+  projectName: {
+    type: String,
+    trim: true
+  },
+  //organization info
+  organizationName: {
+    type: String,
+    trim: true
+  },
   need: {
     type: String,
     ref: 'Need',

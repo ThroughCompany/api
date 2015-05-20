@@ -112,6 +112,16 @@ var userSchema = baseSchema.extend({
       type: String,
       trim: true
     }
+    // contributions: [{
+    //   need: {
+    //     type: String,
+    //     ref: 'Need'
+    //   },
+    //   url: {
+    //     type: String,
+    //     trim: true
+    //   }
+    // }]
   }],
   //needs
   needs: [{
@@ -136,6 +146,11 @@ var userSchema = baseSchema.extend({
     type: String,
     ref: 'Application'
   }],
+  //invitations
+  invitations: [{
+    type: String,
+    ref: 'Invitation'
+  }],
   //organizations
   organizationUsers: [{
     type: String,
@@ -159,6 +174,14 @@ userSchema.pre('save', function(next) {
  * Statics
  * ========================================================================= */
 _.extend(userSchema.statics, {});
+
+/* ========================================================================= 
+ * Virtuals 
+ * ========================================================================= */
+userSchema.virtual('name')
+  .get(function() {
+    return this.firstName ? (this.firstName + ' ' + this.lastName) : this.userName;
+  });
 
 /* =========================================================================
  * Private Helpers

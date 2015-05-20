@@ -15,12 +15,14 @@ var applicationService = require('modules/application');
 var projectUserService = require('modules/project/userService');
 var permissionService = require('modules/permission');
 var templateService = require('modules/template');
+var messageService = require('modules/message');
 
 //models
 var User = require('modules/user/data/model');
 var Project = require('./data/projectModel');
 var ProjectUser = require('modules/project/data/userModel');
 var Application = require('modules/application/data/applicationModel');
+var Need = require('modules/need/data/needModel');
 
 //libs
 var mailgunApi = require('lib/mailgun-api');
@@ -31,7 +33,7 @@ var mailgunApi = require('lib/mailgun-api');
 var PERMISSION_NAMES = require('modules/permission/constants/permissionNames');
 
 var APPLICATION_CREATED_EMAIL_PATH = __dirname + '/notifications/applicationCreated/email.html';
-var APPLICATION_CREATED_EMAIL_SUBJECT = 'Some has applied to join your project on Through Company';
+var APPLICATION_CREATED_EMAIL_SUBJECT = 'Someone has applied to your project\s need on Through Company';
 
 var APPLICATION_APPROVED_EMAIL_PATH = __dirname + '/notifications/applicationApproved/email.html';
 var APPLICATION_APPROVED_EMAIL_SUBJECT = 'You have been accepted to join a project on Through Company';
@@ -57,7 +59,8 @@ ProjectNotificationService.prototype.sendApplicationCreatedNotifications = funct
   var project = null;
   var projectUsers = null;
   var users = null;
-  var applicationId = null;
+  var application = null;
+  var need = null;
   var createdByUser = null;
   var addProjectUsersPermission = null;
   var projectUsersWithPermissions = null;
@@ -71,7 +74,8 @@ ProjectNotificationService.prototype.sendApplicationCreatedNotifications = funct
         project = data.project;
         projectUsers = data.projectUsers;
         users = data.users;
-        applicationId = data.applicationId;
+        application = data.application;
+        need = data.need;
         createdByUser = data.createdByUser;
         addProjectUsersPermission = data.addProjectUsersPermission;
 
@@ -81,12 +85,13 @@ ProjectNotificationService.prototype.sendApplicationCreatedNotifications = funct
       });
     },
     function generateEmailTemplate_step(done) {
-      templateService.generate({
+      templateService.generateGenericEmail({
         templateFilePath: APPLICATION_CREATED_EMAIL_PATH,
         templateData: {
           createdByUser: createdByUser,
           project: project,
-          applicationId: applicationId
+          application: application,
+          need: need
         }
       }, done);
     },
@@ -113,7 +118,17 @@ ProjectNotificationService.prototype.sendApplicationCreatedNotifications = funct
       //TODO: email does not live on the projectUser - it's on the user object - NEED TO FIX THIS!!!
       var emailAddresses = _.pluck(usersWithPermissions, 'email');
 
-      sendUsersEmail(emailAddresses, emailText, APPLICATION_CREATED_EMAIL_SUBJECT, done);
+      async.parallel([
+        function sendEmails_step(cb) {
+          sendUsersEmail(emailAddresses, emailText, APPLICATION_CREATED_EMAIL_SUBJECT, cb);
+        },
+        function sendMessage_step(cb) {
+          sendUsersMessage([createdByUser._id], 'Your application has been sent', cb);
+        },
+        function sendMessage_step(cb) {
+          sendUsersMessage([_.pluck(usersWithPermissions, '_id')], 'A user has apply to one of your needs', cb);
+        }
+      ], done);
     }
   ], function(err) {
     if (err) return next(err);
@@ -253,6 +268,11 @@ function getApplicationCreatedData(options, next) {
         applicationId: options.applicationId
       }, done);
     },
+    need: ['application', function findNeed_step(done, results) {
+      var application = results.application;
+
+      Need.findById(application.need, done);
+    }],
     createdByUser: function findUserById_step(done) {
       userService.getById({
         userId: options.createdByUserId
@@ -325,6 +345,21 @@ function sendUsersEmail(emailAddresses, html, subject, next) {
         from: appConfig.app.systemEmail,
         to: emailAddress,
         subject: subject
+      }, done);
+    });
+  });
+
+  async.parallel(steps, next);
+}
+
+function sendUsersMessage(userIds, messageBody, next) {
+  var steps = [];
+
+  _.each(userIds, function(userId) {
+    steps.push(function(done) {
+      messageService.create({
+        userId: userId,
+        message: messageBody
       }, done);
     });
   });

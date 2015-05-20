@@ -39,7 +39,7 @@ MailgunApi.prototype.sendEmail = function sendEmail(options, next) {
   if (!options.from || !_.isString(options.from)) return next(new errors.InvalidArgumentError('options.from is required'));
   if (!options.to || (!_.isString(options.to) && !_.isArray(options.to))) return next(new errors.InvalidArgumentError('options.to is required'));
   if (!options.subject || !_.isString(options.subject)) return next(new errors.InvalidArgumentError('options.subject is required'));
-
+  
   var postData = querystring.stringify({
     from: options.from,
     to: options.to,
@@ -68,7 +68,15 @@ MailgunApi.prototype.sendEmail = function sendEmail(options, next) {
     });
 
     response.on('end', function() {
-      return next(null, JSON.parse(data));
+      var responseData;
+
+      try {
+        responseData = JSON.parse(data);
+      } catch (err) {
+        return next(new errors.InternalServiceError('Error parsing mailgun response'));
+      }
+
+      return next(null, responseData);
     });
   });
 

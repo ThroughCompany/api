@@ -7,6 +7,7 @@ var multipart = require('connect-multiparty');
 
 //middleware
 var authMiddleware = require('src/middleware/authMiddleware');
+var partialResponseMiddleware = require('src/middleware/partialResponseMiddleware');
 var multipartMiddleware = multipart();
 
 var controller = require('./controller');
@@ -219,7 +220,10 @@ var getProjectApplications = {
       if (err) return next(err);
       authMiddleware.currentUserProjectIdQueryParamRequired('id')(req, res, function(err) {
         if (err) return next(err);
-        controller.getProjectApplications(req, res, next);
+        partialResponseMiddleware(req, res, function(err) {
+          if (err) return next(err);
+          controller.getProjectApplications(req, res, next);
+        });
       });
     });
   }

@@ -11,6 +11,7 @@ var errors = require('modules/error');
 var CommonService = require('modules/common');
 var userService = require('modules/user');
 var projectUserService = require('modules/project/userService');
+var applicationPopulateService = require('modules/application/populate/service');
 
 //models
 var Application = require('modules/application/data/applicationModel');
@@ -169,7 +170,8 @@ ApplicationService.prototype.create = function create(options, next) {
         function getApplicationsById_step(cb) {
           var conditions = {
             status: APPLICATION_STATUSES.PENDING,
-            createdByUser: options.createdByUserId
+            createdByUser: options.createdByUserId,
+            need: options.needId
           };
 
           if (options.organizationId) conditions.organization = options.organizationId;
@@ -215,7 +217,9 @@ ApplicationService.prototype.create = function create(options, next) {
         application.type = APPLICATION_TYPES.PROJECT;
       }
 
-      application.createdByUser = createdByUser._id;
+      application.organizationName = organization ? organization.name : '',
+        application.projectName = project ? project.name : '',
+        application.createdByUser = createdByUser._id;
       application.createdByUserName = createdByUser.userName;
       application.createdByUserFirstName = createdByUser.firstName;
       application.createdByUserLastName = createdByUser.lastName;
@@ -280,7 +284,6 @@ ApplicationService.prototype.create = function create(options, next) {
  * @param {function} next - callback
  */
 ApplicationService.prototype.update = function update(options, next) {
-  console.log(options);
   if (!options) return next(new errors.InvalidArgumentError('options is required'));
   if (!options.projectId && !options.userId && !options.organizationId) return next(new errors.InvalidArgumentError('Organization Id, User Id, or Project Id is required'));
   if (!options.applicationId) return next(new errors.InvalidArgumentError('Application Id is required'));
@@ -479,93 +482,54 @@ ApplicationService.prototype.getById = function(options, next) {
  * @param {string} options.projectId
  * @param {function} next - callback
  */
-ApplicationService.prototype.getOrganizationApplications = function(options, next) {
-  if (!options) return next(new errors.InvalidArgumentError('options is required'));
-  if (!options.organizationId) return next(new errors.InvalidArgumentError('Organization Id is required'));
-
-  var _this = this;
-
-  var query = Application.find({
-    organization: options.organizationId
-  });
-
-  query.exec(next);
-};
-
-/**
- * @param {object} options
- * @param {string} options.userId
- * @param {function} next - callback
- */
-ApplicationService.prototype.getUserApplications = function(options, next) {
-  if (!options) return next(new errors.InvalidArgumentError('options is required'));
-  if (!options.userId) return next(new errors.InvalidArgumentError('User Id is required'));
-
-  var _this = this;
-
-  var query = Application.find({
-    user: options.userId
-  });
-
-  query.exec(next);
-};
-
-/**
- * @param {object} options
- * @param {string} options.userId
- * @param {function} next - callback
- */
-ApplicationService.prototype.getUserCreatedApplications = function(options, next) {
-  if (!options) return next(new errors.InvalidArgumentError('options is required'));
-  if (!options.userId) return next(new errors.InvalidArgumentError('User Id is required'));
-
-  var _this = this;
-
-  var query = Application.find({
-    createdByUser: options.userId
-  });
-
-  query.exec(next);
-};
-
-/**
- * @param {object} options
- * @param {string} options.projectId
- * @param {function} next - callback
- */
-ApplicationService.prototype.getProjectApplications = function(options, next) {
-  if (!options) return next(new errors.InvalidArgumentError('options is required'));
-  if (!options.projectId) return next(new errors.InvalidArgumentError('Project Id is required'));
-
-  var _this = this;
-
-  var query = Application.find({
-    project: options.projectId
-  });
-
-  query.exec(next);
-};
-
-/**
- * @param {object} options
- * @param {string} options.organizationId
- * @param {function} next - callback
- */
 ApplicationService.prototype.getByOrganizationId = function(options, next) {
   if (!options) return next(new errors.InvalidArgumentError('options is required'));
   if (!options.organizationId) return next(new errors.InvalidArgumentError('Organization Id is required'));
 
   var _this = this;
+  var fields = null;
+  var expands = null;
 
-  var query = Application.find({
-    organization: options.organizationId
-  });
+  async.waterfall([
+    function parseFieldsAndExpands(done) {
+      if (options.fields) {
+        partialResponseParser.parse({
+          fields: options.fields
+        }, function(err, results) {
+          if (err) return done(err);
 
-  query.exec(function(err, applications) {
-    if (err) return next(err);
+          fields = results.fields;
+          expands = results.expands;
 
-    return next(null, applications);
-  });
+          return done();
+        });
+      } else {
+        return done(null);
+      }
+    },
+    function getUserById_step(done) {
+      var query = Application.find({
+        organization: options.organizationId
+      });
+
+      if (fields) {
+        query.select(fields.select);
+      }
+
+      query.exec(function(err, applications) {
+        if (err) return done(err);
+        return done(null, applications);
+      });
+    },
+    function populate_step(applications, done) {
+      if (!expands) return done(null, applications);
+
+      applicationPopulateService.populate({
+        docs: applications,
+        expands: expands
+      }, done);
+    }
+  ], next);
 };
 
 /**
@@ -578,16 +542,104 @@ ApplicationService.prototype.getByUserId = function(options, next) {
   if (!options.userId) return next(new errors.InvalidArgumentError('User Id is required'));
 
   var _this = this;
+  var fields = null;
+  var expands = null;
 
-  var query = Application.find({
-    user: options.userId
-  });
+  async.waterfall([
+    function parseFieldsAndExpands(done) {
+      if (options.fields) {
+        partialResponseParser.parse({
+          fields: options.fields
+        }, function(err, results) {
+          if (err) return done(err);
 
-  query.exec(function(err, applications) {
-    if (err) return next(err);
+          fields = results.fields;
+          expands = results.expands;
 
-    return next(null, applications);
-  });
+          return done();
+        });
+      } else {
+        return done(null);
+      }
+    },
+    function getUserById_step(done) {
+      var query = Application.find({
+        user: options.userId
+      });
+
+      if (fields) {
+        query.select(fields.select);
+      }
+
+      query.exec(function(err, applications) {
+        if (err) return done(err);
+        return done(null, applications);
+      });
+    },
+    function populate_step(applications, done) {
+      if (!expands) return done(null, applications);
+
+      applicationPopulateService.populate({
+        docs: applications,
+        expands: expands
+      }, done);
+    }
+  ], next);
+};
+
+/**
+ * @param {object} options
+ * @param {string} options.createdByUserId
+ * @param {function} next - callback
+ */
+ApplicationService.prototype.getByCreatedByUserId = function(options, next) {
+  if (!options) return next(new errors.InvalidArgumentError('options is required'));
+  if (!options.createdByUserId) return next(new errors.InvalidArgumentError('Created By User Id is required'));
+
+  var _this = this;
+  var fields = null;
+  var expands = null;
+
+  async.waterfall([
+    function parseFieldsAndExpands(done) {
+      if (options.fields) {
+        partialResponseParser.parse({
+          fields: options.fields
+        }, function(err, results) {
+          if (err) return done(err);
+
+          fields = results.fields;
+          expands = results.expands;
+
+          return done();
+        });
+      } else {
+        return done(null);
+      }
+    },
+    function getUserById_step(done) {
+      var query = Application.find({
+        createdByUser: options.createdByUserId
+      });
+
+      if (fields) {
+        query.select(fields.select);
+      }
+
+      query.exec(function(err, applications) {
+        if (err) return done(err);
+        return done(null, applications);
+      });
+    },
+    function populate_step(applications, done) {
+      if (!expands) return done(null, applications);
+
+      applicationPopulateService.populate({
+        docs: applications,
+        expands: expands
+      }, done);
+    }
+  ], next);
 };
 
 /**
@@ -600,16 +652,49 @@ ApplicationService.prototype.getByProjectId = function(options, next) {
   if (!options.projectId) return next(new errors.InvalidArgumentError('Project Id is required'));
 
   var _this = this;
+  var fields = null;
+  var expands = null;
 
-  var query = Application.find({
-    project: options.projectId
-  });
+  async.waterfall([
+    function parseFieldsAndExpands(done) {
+      if (options.fields) {
+        partialResponseParser.parse({
+          fields: options.fields
+        }, function(err, results) {
+          if (err) return done(err);
 
-  query.exec(function(err, applications) {
-    if (err) return next(err);
+          fields = results.fields;
+          expands = results.expands;
 
-    return next(null, applications);
-  });
+          return done();
+        });
+      } else {
+        return done(null);
+      }
+    },
+    function getUserById_step(done) {
+      var query = Application.find({
+        project: options.projectId
+      });
+
+      if (fields) {
+        query.select(fields.select);
+      }
+
+      query.exec(function(err, applications) {
+        if (err) return done(err);
+        return done(null, applications);
+      });
+    },
+    function populate_step(applications, done) {
+      if (!expands) return done(null, applications);
+
+      applicationPopulateService.populate({
+        docs: applications,
+        expands: expands
+      }, done);
+    }
+  ], next);
 };
 
 /* =========================================================================

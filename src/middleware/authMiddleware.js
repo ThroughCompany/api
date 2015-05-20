@@ -125,6 +125,36 @@ AuthMiddleware.prototype.currentUserOrganizationIdBodyParamOptional = function c
   };
 };
 
+//verifies the user is an organization member with a certain permission - body - only checks if the body param exists
+AuthMiddleware.prototype.currentUserOrgnizationPermissionBodyParamOptions = function currentUserOrgnizationPermissionBodyParamOptions(paramName, permissionName) {
+  var param = paramName || 'id';
+
+  return function _currentUserOrgnizationPermissionBodyParamOptions(req, res, next) {
+    var organizationId;
+
+    if (!req.claims) return next(new errors.ForbiddenError('Access Denied'));
+    if (req.claims.admin || !req.body[param]) return next(); //allow admins to bypass, or if the param doesn't exist
+
+    organizationId = req.body[paramName];
+
+    if (!req.claims.organizationIds || !req.claims.organizationIds.length || !_.contains(req.claims.organizationIds, req.body[param]) || !req.claims.organizationPermissions[organizationId]) {
+      return next(new errors.ForbiddenError('Access Denied'));
+    }
+
+    var organizationPermissions = req.claims.organizationPermissions[organizationId];
+
+    var foundPermission = _.find(organizationPermissions, function(permission) {
+      return permission.name === permissionName;
+    });
+
+    if (!foundPermission) {
+      return next(new errors.ForbiddenError('Access Denied'));
+    }
+
+    return next();
+  };
+};
+
 // ----------------------------------
 // Projects
 // ----------------------------------
@@ -171,22 +201,19 @@ AuthMiddleware.prototype.currentUserProjectIdBodyParamOptional = function curren
   };
 };
 
-//verifies the user is a project member with a certain permission - param
-AuthMiddleware.prototype.currentProjectPermissionParamRequired = function currentProjectPermissionParamRequired(permissionName, projectIdParamName) {
-  projectIdParamName = projectIdParamName || 'id';
+//verifies the user is a project member with a certain permission - body - only checks if the body param exists
+AuthMiddleware.prototype.currentUserProjectPermissionBodyParamOptions = function currentUserProjectPermissionBodyParamOptions(paramName, permissionName) {
+  var param = paramName || 'id';
 
-  return function _currentProjectPermissionParamRequired(req, res, next) {
+  return function _currentUserProjectPermissionBodyParamOptions(req, res, next) {
     var projectId;
 
-    if (req.claims.admin) return next(); //allow admins to bypass
+    if (!req.claims) return next(new errors.ForbiddenError('Access Denied'));
+    if (req.claims.admin || !req.body[param]) return next(); //allow admins to bypass, or if the param doesn't exist
 
-    if (!req.claims || !req.params) {
-      return next(new errors.ForbiddenError('Access Denied'));
-    }
+    projectId = req.body[paramName];
 
-    projectId = req.params[projectIdParamName];
-
-    if (!req.claims.projectIds || !req.claims.projectIds.length || !_.contains(req.claims.projectIds, req.params[param]) || !req.claims.projectPermissions[projectId]) {
+    if (!req.claims.projectIds || !req.claims.projectIds.length || !_.contains(req.claims.projectIds, req.body[param]) || !req.claims.projectPermissions[projectId]) {
       return next(new errors.ForbiddenError('Access Denied'));
     }
 

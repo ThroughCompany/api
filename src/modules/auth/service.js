@@ -243,22 +243,9 @@ AuthService.prototype.getUserClaims = function getUserClaims(options, next) {
         userId: options.userId
       }, done);
     },
-    permissions: ['projectUsers', function getPermissions_step(done, results) {
-      var projectUsers = results.projectUsers;
-
-      var projectUserPermissionIds = _.pluck(projectUsers, 'permissions');
-      var permissionIds = [];
-
-      _.each(projectUserPermissionIds, function(ids) {
-        permissionIds = permissionIds.concat(ids);
-      });
-
-      permissionIds = _.uniq(permissionIds);
-
-      permissionService.getByIds({
-        ids: permissionIds
-      }, done);
-    }]
+    permissions: function getPermissions_step(done) {
+      permissionService.getAll({}, done);
+    }
   }, function(err, results) {
     if (err) return next(err);
 

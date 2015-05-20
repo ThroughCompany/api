@@ -37,6 +37,10 @@ var organizationSchema = baseSchema.extend({
     type: String,
     trim: true
   },
+  profilePic: {
+    type: String,
+    trim: true
+  },
   socialLinks: [{
     _id: {
       type: String,
@@ -81,6 +85,11 @@ var organizationSchema = baseSchema.extend({
   applications: [{
     type: String,
     ref: 'Application'
+  }],
+  //invitations
+  invitations: [{
+    type: String,
+    ref: 'Invitation'
   }]
 });
 

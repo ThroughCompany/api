@@ -7,6 +7,7 @@ var multipart = require('connect-multiparty');
 
 //middleware
 var authMiddleware = require('src/middleware/authMiddleware');
+var partialResponseMiddleware = require('src/middleware/partialResponseMiddleware');
 var multipartMiddleware = multipart();
 
 var controller = require('./controller');
@@ -33,7 +34,10 @@ var getOrganizationById = {
     produces: ['application/json']
   },
   action: function(req, res, next) {
-    controller.getOrganizationById(req, res, next);
+    partialResponseMiddleware(req, res, function(err) {
+      if (err) return next(err);
+      controller.getOrganizationById(req, res, next);
+    });
   }
 };
 
@@ -53,6 +57,32 @@ var createOrganization = {
     authMiddleware.authenticationRequired(req, res, function(err) {
       if (err) return next(err);
       controller.createOrganization(req, res, next);
+    });
+  }
+};
+
+var uploadImage = {
+  spec: {
+    path: '/organizations/{id}/images',
+    summary: 'Upload an organization image',
+    method: 'POST',
+    parameters: [
+      swagger.params.path('id', 'organization\'s id', 'string')
+    ],
+    nickname: 'uploadImage',
+    type: 'Organization',
+    produces: ['application/json']
+  },
+  action: function(req, res, next) {
+    authMiddleware.authenticationRequired(req, res, function(err) {
+      if (err) return next(err);
+      authMiddleware.currentUserOrganizationIdQueryParamRequired('id')(req, res, function(err) {
+        if (err) return next(err);
+        multipartMiddleware(req, res, function(err) {
+          if (err) return next(err);
+          controller.uploadImage(req, res, next);
+        });
+      });
     });
   }
 };
@@ -84,6 +114,7 @@ var getOrganizationApplications = {
 swagger.addGet(getOrganizationById);
 swagger.addPost(createOrganization);
 swagger.addGet(getOrganizationApplications);
+swagger.addPost(uploadImage);
 
 /* =========================================================================
  *   Swagger declarations

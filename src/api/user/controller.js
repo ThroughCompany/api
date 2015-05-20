@@ -11,6 +11,7 @@ var projectService = require('modules/project');
 var imageService = require('modules/image');
 var organizationService = require('modules/organization');
 var applicationService = require('modules/application');
+var messageService = require('modules/message');
 
 var errors = require('modules/error');
 
@@ -175,19 +176,22 @@ Controller.prototype.createSkill = function(req, res, next) {
 Controller.prototype.getUserApplications = function(req, res, next) {
   var userId = req.params.id;
   var type = req.query.type;
+  var fields = req.query.fields;
 
   if (!type) return next(new errors.InvalidArgumentError('Type is required'));
 
   if (type === 'User') {
-    applicationService.getUserApplications({
-      userId: userId
+    applicationService.getByUserId({
+      userId: userId,
+      fields: fields
     }, function(err, applications) {
       if (err) return next(err);
       return res.status(200).json(applications);
     });
   } else if (type === 'UserCreated') {
-    applicationService.getUserCreatedApplications({
-      userId: userId
+    applicationService.getByCreatedByUserId({
+      createdByUserId: userId,
+      fields: fields
     }, function(err, applications) {
       if (err) return next(err);
       return res.status(200).json(applications);
@@ -195,6 +199,20 @@ Controller.prototype.getUserApplications = function(req, res, next) {
   } else {
     return next(new errors.InvalidArgumentError(type + ' is not a valid user application type'));
   }
+};
+
+/** 
+ * @description Get a user's messages
+ */
+Controller.prototype.getUserMessagesById = function(req, res, next) {
+  var userId = req.params.id;
+
+  messageService.getByUserId({
+    userId: userId
+  }, function(err, messages) {
+    if (err) return next(err);
+    return res.status(200).json(messages);
+  });
 };
 
 /* =========================================================================

@@ -3,18 +3,15 @@
  * ========================================================================= */
 var express = require('express');
 var swagger = require('swagger-node-express');
-var multipart = require('connect-multiparty');
 
 //middleware
 var authMiddleware = require('src/middleware/authMiddleware');
-var multipartMiddleware = multipart();
 
 var controller = require('./controller');
 
 /* =========================================================================
  * Constants
  * ========================================================================= */
-var PERMISSION_NAMES = require('modules/permission/constants/permissionNames');
 
 /* =========================================================================
  * Swagger specs

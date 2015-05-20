@@ -28,6 +28,8 @@ var needPopulateService = require('./populate/service');
 
 var needValidator = require('./validators/needValidator');
 
+var partialResponseParser = require('modules/partialResponse/parser');
+
 /* =========================================================================
  * Constants
  * ========================================================================= */
@@ -311,6 +313,28 @@ NeedService.prototype.update = function update(options, next) {
 
 /**
  * @param {object} options
+ * @param {function} next - callback
+ */
+// NeedService.prototype.delete = function delete(options, next) {
+//   if (!options) return next(new errors.InvalidArgumentError('options is required'));
+//   if (!options.needId) return next(new errors.InvalidArgumentError('Need Id is required'));
+
+//   var _this = this;
+//   var need = null;
+
+//   async.waterfall([
+//     function findNeedById_step(done) {
+//       Need.findById({
+//         _id: options.needId
+//       }, done);
+//     }
+//   ], function finish(err, need) {
+//     return next(err, need); //don't remove, callback needed because mongoose save returns 3rd arg
+//   });
+// };
+
+/**
+ * @param {object} options
  * @param {string} options.projectId
  * @param {string} options.fields
  * @param {function} next - callback
@@ -376,55 +400,65 @@ NeedService.prototype.getAll = function(options, next) {
   if (options.status && !_.contains(_.values(NEED_STATUSES), options.status)) return next(new errors.InvalidArgumentError(options.status + ' is not a valid need status'));
   if (options.skills && !_.isString(options.skills)) return next(new errors.InvalidArgumentError('Skills must be a string'));
 
-  var conditions = {};
-  var steps = [];
-  var needs = null;
+  if (options.skills) options.skills = utils.arrayClean(options.skills.split(','));
 
-  if (options.skills) {
-    options.skills = utils.arrayClean(options.skills.split(','));
+  var _this = this;
+  var fields = null;
+  var expands = null;
 
-    steps.push(function findNeeds_step(done) {
-      Skill.find({
-        name: {
+  async.waterfall([
+    function parseFieldsAndExpands(done) {
+      if (options.fields) {
+        partialResponseParser.parse({
+          fields: options.fields
+        }, function(err, results) {
+          if (err) return done(err);
+
+          fields = results.fields;
+          expands = results.expands;
+
+          return done();
+        });
+      } else {
+        return done(null);
+      }
+    },
+    function getNeeds_step(done) {
+      var conditions = {};
+
+      if (options.skills) {
+        conditions.name = {
           $in: options.skills
         }
-      }, function(err, skills) {
+      }
+
+      conditions.status = options.status || NEED_STATUSES.OPEN;
+
+      var query = Need.find(conditions);
+
+      if (fields) {
+        query.select(fields.select);
+      }
+
+      query.limit(options.limit || _this.LIMIT);
+
+      query.sort(options.sort || '-created');
+
+      query.exec(function(err, needs) {
         if (err) return done(err);
 
-        skills = skills;
-
-        return done(null);
+        return done(null, needs);
       });
-    });
-  }
+    },
+    function populate_step(needs, done) {
+      if (!expands) return done(null, needs);
 
-  steps.push(function findProjects_step(done) {
-    if (options.status) {
-      conditions.status = options.status;
-    } else {
-      conditions.status = PROJECT_STATUSES.OPEN;
+      needPopulateService.populate({
+        docs: needs,
+        expands: expands
+      }, done);
     }
-
-    if (options.skills) {
-      conditions.skills = _.pluck(skills, '_id');
-    }
-
-    var query = Need.find(conditions);
-
-    return query.exec(function(err, _needs) {
-      if (err) return next(err);
-
-      needs = _needs;
-
-      return done(err);
-    });
-  });
-
-  async.series(steps, function(err) {
-    if (err) return next(err);
-
-    return next(null, needs);
-  });
+  ], next);
 };
 
 /* =========================================================================
