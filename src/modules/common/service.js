@@ -14,6 +14,8 @@ function CommonService(model) {
   events.EventEmitter.call(this);
 
   this.Model = model;
+  this.SKIP = 10;
+  this.LIMIT = 50;
 }
 util.inherits(CommonService, events.EventEmitter);
 

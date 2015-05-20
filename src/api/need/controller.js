@@ -23,10 +23,16 @@ function Controller() {}
 Controller.prototype.getNeeds = function getNeeds(req, res, next) {
   var status = req.query.status;
   var skills = req.query.skills;
+  var fields = req.query.fields;
+  var sort = req.query.sort;
+  var limit = req.query.limit;
 
   needService.getAll({
     status: status,
-    skills: skills
+    skills: skills,
+    fields: fields,
+    sort: sort,
+    limit: limit
   }, function(err, needs) {
     if (err) return next(err);
     return res.status(200).json(needs);

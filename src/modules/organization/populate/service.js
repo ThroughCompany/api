@@ -26,7 +26,7 @@ var organizationPopulateService = new OrganizationPopulateService();
  * Populates
  * ========================================================================= */
 organizationPopulateService.addPopulate({
-  key: 'OrganizationUsers',
+  key: 'organizationUsers',
   model: OrganizationUser
 });
 

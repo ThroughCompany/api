@@ -7,6 +7,7 @@ var multipart = require('connect-multiparty');
 
 //middleware
 var authMiddleware = require('src/middleware/authMiddleware');
+var partialResponseMiddleware = require('src/middleware/partialResponseMiddleware');
 var multipartMiddleware = multipart();
 
 var controller = require('./controller');
@@ -26,14 +27,19 @@ var getNeeds = {
     method: 'GET',
     parameters: [
       swagger.params.query('status', 'need status', 'string'),
-      swagger.params.query('fields', 'csv of fields to select', 'string')
+      swagger.params.query('fields', 'csv of fields to select', 'string'),
+      swagger.params.query('sort', 'sort by', 'string'),
+      swagger.params.query('limit', 'limit', 'number')
     ],
     nickname: 'getNeeds',
     type: 'Need',
     produces: ['application/json']
   },
   action: function(req, res, next) {
-    controller.getNeeds(req, res, next);
+    partialResponseMiddleware(req, res, function(err) {
+      if (err) return next(err);
+      controller.getNeeds(req, res, next);
+    });
   }
 };
 

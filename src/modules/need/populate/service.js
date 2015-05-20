@@ -7,6 +7,9 @@ var util = require('util');
 var partialResponse = require('modules/partialResponse');
 
 //models
+var Organization = require('modules/organization/data/organizationModel');
+var User = require('modules/user/data/model');
+var Project = require('modules/project/data/projectModel');
 
 //services
 var PopulateService = partialResponse.service;
@@ -24,6 +27,20 @@ var needPopulateService = new NeedPopulateService();
 /* =========================================================================
  * Populates
  * ========================================================================= */
+ needPopulateService.addPopulate({
+  key: 'organization',
+  model: Organization
+});
+
+needPopulateService.addPopulate({
+  key: 'project',
+  model: Project
+});
+
+needPopulateService.addPopulate({
+  key: 'user',
+  model: User
+});
 
 /* =========================================================================
  * Expose

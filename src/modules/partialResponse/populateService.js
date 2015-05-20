@@ -174,14 +174,14 @@ function populateCollection(options, next) {
               }
             });
           } else {
-            foundObj = foundObjs[getProperty(object, options.key)];
+            foundObj = foundObjs[propertyValue];
           }
 
-          if (object) {
-            //object = (object && object.toJSON) ? object.toJSON() : object;
-            //foundObj = (foundObj && foundObj.toJSON) ? foundObj.toJSON() : foundObj;
-            setProperty(object, options.key, foundObj);
-          }
+          object = (object && object.toJSON) ? object.toJSON() : object;
+          foundObj = (foundObj && foundObj.toJSON) ? foundObj.toJSON() : foundObj;
+
+          setProperty(object, options.key, foundObj);
+
           objects[index] = object;
         });
 
@@ -261,7 +261,6 @@ function setProperty(obj, propertyName, value) {
         subObj = subObj[currentPart];
       }
     }
-
   } else {
     obj[propertyName] = value;
   }
