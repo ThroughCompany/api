@@ -2,23 +2,30 @@
  * Dependencies
  * ========================================================================= */
 var util = require('util');
-var events = require('events');
+var stream = require('stream');
 
 /* =========================================================================
  * Constructor
  * ========================================================================= */
-function CommonService(model) {
-  if (!model) throw new Error('model is required.');
-
-  events.EventEmitter.call(this);
-
-  this.Model = model;
-  this.SKIP = 10;
-  this.LIMIT = 50;
+function JsonStream() {
+  stream.call(this);
+  this.writable = true;
 }
-util.inherits(CommonService, events.EventEmitter);
+util.inherits(JsonStream, stream);
+
+JsonStream.prototype.write = function(data) {
+  this.emit('data', JSON.stringify(data));
+  return true;
+};
+
+JsonStream.prototype.end = JsonStream.prototype.destroy = function() {
+  if (this._done) return;
+  this._done = true;
+
+  this.emit('end');
+};
 
 /* =========================================================================
- * Expose
+ * Exports
  * ========================================================================= */
-module.exports = CommonService;
+module.exports = JsonStream;

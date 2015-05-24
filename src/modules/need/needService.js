@@ -19,6 +19,7 @@ var Organization = require('modules/organization/data/organizationModel');
 var User = require('modules/user/data/model');
 var ProjectUser = require('modules/project/data/userModel');
 var Project = require('modules/project/data/projectModel');
+var Skill = require('modules/skill/data/model');
 
 //utils
 var patchUtils = require('utils/patchUtils');
@@ -398,13 +399,12 @@ NeedService.prototype.getById = function(options, next) {
 NeedService.prototype.getAll = function(options, next) {
   if (!options) return next(new errors.InvalidArgumentError('options is required'));
   if (options.status && !_.contains(_.values(NEED_STATUSES), options.status)) return next(new errors.InvalidArgumentError(options.status + ' is not a valid need status'));
-  if (options.skills && !_.isString(options.skills)) return next(new errors.InvalidArgumentError('Skills must be a string'));
-
-  if (options.skills) options.skills = utils.arrayClean(options.skills.split(','));
+  if (options.skillName && !_.isString(options.skillName)) return next(new errors.InvalidArgumentError('Skill Name must be a string'));
 
   var _this = this;
   var fields = null;
   var expands = null;
+  var skill = null;
 
   async.waterfall([
     function parseFieldsAndExpands(done) {
@@ -423,13 +423,32 @@ NeedService.prototype.getAll = function(options, next) {
         return done(null);
       }
     },
+    function findSkillByName_step(done) {
+      if (options.skillName) {
+        var nameRegex = new RegExp(options.skillName, 'ig');
+
+        Skill.findOne({
+            name: { //skill names are unique
+              $regex: nameRegex
+            }
+          })
+          .select('_id')
+          .exec(function(err, _skill) {
+            if (err) return done(err);
+
+            skill = _skill;
+
+            done(null);
+          });
+      } else {
+        done(null);
+      }
+    },
     function getNeeds_step(done) {
       var conditions = {};
 
-      if (options.skills) {
-        conditions.name = {
-          $in: options.skills
-        }
+      if (skill) {
+        conditions.skills = skill._id;
       }
 
       conditions.status = options.status || NEED_STATUSES.OPEN;

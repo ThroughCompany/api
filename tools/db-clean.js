@@ -84,9 +84,9 @@ function functionName(fun) {
  * ========================================================================= */
 module.exports = {
   run: function(options, next) {
-    if (appConfig.ENV === 'development' || appConfig.ENV === 'production') {
-      return next(new Error('\n\n DELETING ' + appConfig.ENV + ' - BE CAREFUL!!!!! \n\n'));
-    }
+    // if (appConfig.ENV === 'development' || appConfig.ENV === 'production') {
+    //   return next(new Error('\n\n DELETING ' + appConfig.ENV + ' - BE CAREFUL!!!!! \n\n'));
+    // }
 
     dbClean(options, next);
   }

@@ -22,6 +22,7 @@ var OrganizationUser = require('modules/organization/data/userModel');
 
 //utils
 var patchUtils = require('utils/patchUtils');
+var streamUtils = require('utils/streamUtils');
 var utils = require('utils/utils');
 
 var organizationValidator = require('./validators/organizationValidator');
@@ -183,6 +184,9 @@ OrganizationService.prototype.getByUserId = function(options, next) {
   if (!options.userId) return next(new errors.InvalidArgumentError('User Id is required'));
 
   var _this = this;
+  var dataStream = null;
+
+  if (options.stream === true) dataStream = new streamUtils.TransformStream();
 
   async.waterfall([
     function findOrganizationUsersByUserId_step(done) {
@@ -201,9 +205,15 @@ OrganizationService.prototype.getByUserId = function(options, next) {
         }
       });
 
-      query.exec(done);
+      if (options.stream === true) {
+        query.stream().pipe(dataStream);
+      } else {
+        query.exec(done);
+      }
     }
   ], next);
+
+  return dataStream;
 };
 
 /* =========================================================================

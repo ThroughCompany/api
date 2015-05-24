@@ -4,6 +4,9 @@
 var async = require('async');
 var fs = require('fs');
 
+//utils
+var JsonArrayStream = require('utils/streamUtils').JsonArrayStream;
+
 //services
 var authService = require('modules/auth');
 var userService = require('modules/user');
@@ -113,12 +116,19 @@ Controller.prototype.getUserProjectsById = function(req, res, next) {
 Controller.prototype.getUserOrganizationsById = function(req, res, next) {
   var userId = req.params.id;
 
-  organizationService.getByUserId({
-    userId: userId
-  }, function(err, organizations) {
-    if (err) return next(err);
-    return res.status(200).json(organizations);
-  });
+  // organizationService.getByUserId({
+  //   userId: userId
+  // }, function(err, organizations) {
+  //   if (err) return next(err);
+  //   return res.status(200).json(organizations);
+  // });
+
+  res.set('Content-Type', 'application/json; charset=utf-8');
+
+  var stream = organizationService.getByUserId({
+    userId: userId,
+    stream: true
+  }).pipe(new JsonArrayStream()).pipe(res);
 };
 
 /** 

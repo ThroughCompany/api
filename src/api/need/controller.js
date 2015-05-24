@@ -22,14 +22,14 @@ function Controller() {}
  */
 Controller.prototype.getNeeds = function getNeeds(req, res, next) {
   var status = req.query.status;
-  var skills = req.query.skills;
+  var skillName = req.query.skillName;
   var fields = req.query.fields;
   var sort = req.query.sort;
   var limit = req.query.limit;
 
   needService.getAll({
     status: status,
-    skills: skills,
+    skillName: skillName,
     fields: fields,
     sort: sort,
     limit: limit

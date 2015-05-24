@@ -2,23 +2,24 @@
  * Dependencies
  * ========================================================================= */
 var util = require('util');
-var events = require('events');
+var stream = require('stream');
 
 /* =========================================================================
  * Constructor
  * ========================================================================= */
-function CommonService(model) {
-  if (!model) throw new Error('model is required.');
-
-  events.EventEmitter.call(this);
-
-  this.Model = model;
-  this.SKIP = 10;
-  this.LIMIT = 50;
+function TransformStream() {
+  stream.Transform.call(this, {
+    objectMode: true
+  });
 }
-util.inherits(CommonService, events.EventEmitter);
+util.inherits(TransformStream, stream.Transform);
+
+TransformStream.prototype._transform = function(chunk, encoding, done) {
+  this.push(chunk);
+  done(null);
+};
 
 /* =========================================================================
- * Expose
+ * Exports
  * ========================================================================= */
-module.exports = CommonService;
+module.exports = TransformStream;
