@@ -40,6 +40,16 @@ var baseSchemaData = {
 
 var baseSchema = new mongoose.Schema(baseSchemaData);
 
+baseSchema.set('toJSON', {
+  getters: true,
+  virtuals: true
+});
+
+baseSchema.set('toObject', {
+  getters: true,
+  virtuals: true
+});
+
 /* =========================================================================
  * Hooks
  * ========================================================================= */
