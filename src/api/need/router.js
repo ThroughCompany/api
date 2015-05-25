@@ -57,7 +57,7 @@ var getNeedById = {
     produces: ['application/json']
   },
   action: function(req, res, next) {
-    controller.getProjectById(req, res, next);
+    controller.getNeedById(req, res, next);
   }
 };
 
