@@ -293,6 +293,8 @@ ApplicationService.prototype.update = function update(options, next) {
   if (options.patches && !_.isArray(options.patches)) return next(new errors.InvalidArgumentError('patches must be an array'));
 
   var _this = this;
+  var application = null;
+  var applicationClone = null;
   var organization = null;
   var user = null;
   var project = null;
@@ -380,7 +382,7 @@ ApplicationService.prototype.update = function update(options, next) {
       console.log('PATCHES:');
       console.log(patches);
 
-      var applicationClone = _.clone(application.toJSON());
+      applicationClone = _.clone(application.toJSON());
 
       var patchErrors = jsonPatch.validate(patches, applicationClone);
 
@@ -403,19 +405,7 @@ ApplicationService.prototype.update = function update(options, next) {
     },
     function updateApplication(done) {
 
-      try {
-        console.log('APPLYING PATCHES:');
-        console.log(patches);
-
-        jsonPatch.apply(application, patches);
-      } catch (err) {
-        logger.error(err);
-
-        return done(new errors.InvalidArgumentError('error applying patches'));
-      }
-
-      console.log('AFTER PATCHES:');
-      console.log(application);
+      _.extend(application, applicationClone); //apply the updates from the clone
 
       application.save(done);
     },

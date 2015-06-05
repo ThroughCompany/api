@@ -187,6 +187,7 @@ UserService.prototype.update = function update(options, next) {
 
   var _this = this;
   var user = null;
+  var userClone = null;
   var patches = null;
 
   async.waterfall([
@@ -205,7 +206,7 @@ UserService.prototype.update = function update(options, next) {
 
       patches = patchUtils.stripPatches(UPDATEDABLE_USER_PROPERTIES, patches);
 
-      var userClone = _.clone(user.toJSON());
+      userClone = _.clone(user.toJSON());
 
       var patchErrors = jsonPatch.validate(patches, userClone);
 
@@ -225,16 +226,7 @@ UserService.prototype.update = function update(options, next) {
     },
     function updateUser(done) {
 
-      try {
-        jsonPatch.apply(user, patches);
-      } catch (err) {
-        logger.error(err);
-
-        return done(new errors.InvalidArgumentError('error applying patches'));
-      }
-
-      // console.log('AFTER PATCHES:');
-      // console.log(user);
+      _.extend(user, userClone); //apply the updates from the clone
 
       user.save(done);
     }

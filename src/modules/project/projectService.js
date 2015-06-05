@@ -161,6 +161,7 @@ ProjectService.prototype.update = function(options, next) {
 
   var _this = this;
   var project = null;
+  var projectClone = null;
   var patches = null;
 
   async.waterfall([
@@ -185,7 +186,7 @@ ProjectService.prototype.update = function(options, next) {
       console.log('PATCHES:');
       console.log(patches);
 
-      var projectClone = _.clone(project.toJSON());
+      projectClone = _.clone(project.toJSON());
 
       var patchErrors = jsonPatch.validate(patches, projectClone);
 
@@ -208,19 +209,7 @@ ProjectService.prototype.update = function(options, next) {
     },
     function updateProject(done) {
 
-      try {
-        console.log('APPLYING PATCHES:');
-        console.log(patches);
-
-        jsonPatch.apply(project, patches);
-      } catch (err) {
-        logger.error(err);
-
-        return done(new errors.InvalidArgumentError('error applying patches'));
-      }
-
-      console.log('AFTER PATCHES:');
-      console.log(project);
+      _.extend(project, projectClone); //apply the updates from the clone
 
       project.save(done);
     }
