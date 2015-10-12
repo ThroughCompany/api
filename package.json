@@ -9,7 +9,7 @@
     "url": "https://github.com/ThroughCompany/api"
   },
   "engines": {
-    "node": "0.10.35"
+    "node": "4.2.0"
   },
   "dependencies": {
     "async": "0.9.x",
@@ -51,6 +51,7 @@
     "yargs": "^2.1.1"
   },
   "devDependencies": {
+    "gulp": "^3.8.11",
     "should": "3.1.4",
     "sinon": "1.9.0",
     "supertest": "0.15.0"

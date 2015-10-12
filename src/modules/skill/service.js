@@ -245,6 +245,7 @@ SkillsService.prototype.updateSkillProjectUseCount = function updateSkillProject
     }
   ], next);
 };
+
 /* =========================================================================
  * Private Helpers
  * ========================================================================= */
