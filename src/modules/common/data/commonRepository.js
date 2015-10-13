@@ -1,5 +1,13 @@
 'use strict';
 
+// const errors = require('modules/error');
+/* =========================================================================
+ * Dependencies
+ * ========================================================================= */
+
+/*
+ * @class CommonRepository
+ */
 class CommonRepository {
   constructor(model) {
     if (!model) {
@@ -8,6 +16,10 @@ class CommonRepository {
 
     this.model = model;
   }
+
+  // findById(id, options, next) {
+  //
+  // }
 }
 
 module.exports = CommonRepository;
