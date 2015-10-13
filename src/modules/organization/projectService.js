@@ -1,3 +1,5 @@
+'use strict';
+
 /* =========================================================================
  * Dependencies
  * ========================================================================= */
@@ -6,6 +8,7 @@ var _ = require('underscore');
 var async = require('async');
 
 //modules
+const organizationProjectRepository = require('./data/projectRepository')
 var errors = require('modules/error');
 var CommonService = require('modules/common');
 var userService = require('modules/user');
@@ -23,10 +26,11 @@ var Project = require('modules/project/data/projectModel');
 /* =========================================================================
  * Constructor
  * ========================================================================= */
-var OrganizationProjectService = function() {
-  CommonService.call(this, OrganizationProject);
+class OrganizationProjectService extends CommonService {
+  constructor() {
+    super(organizationProjectRepository);
+  }
 };
-util.inherits(OrganizationProjectService, CommonService);
 
 OrganizationProjectService.prototype.create = function(options, next) {
   if (!options) return next(new errors.InvalidArgumentError('options is required'));

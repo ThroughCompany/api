@@ -1,3 +1,5 @@
+'use strict';
+
 /* =========================================================================
  * Dependencies
  * ========================================================================= */
@@ -7,6 +9,7 @@ var async = require('async');
 var jsonPatch = require('fast-json-patch');
 
 //modules
+const organizationRepository = require('./data/organizationRepository');
 var errors = require('modules/error');
 var CommonService = require('modules/common');
 var permissionService = require('modules/permission');
@@ -47,10 +50,11 @@ var UPDATEDABLE_ORGANIZATION_PROPERTIES = [
 /* =========================================================================
  * Constructor
  * ========================================================================= */
-var OrganizationService = function() {
-  CommonService.call(this, Organization);
+class OrganizationService extends CommonService {
+  constructor() {
+    super(organizationRepository);
+  }
 };
-util.inherits(OrganizationService, CommonService);
 
 /**
  * @param {object} options

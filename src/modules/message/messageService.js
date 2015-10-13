@@ -1,3 +1,5 @@
+'use strict';
+
 /* =========================================================================
  * Dependencies
  * ========================================================================= */
@@ -6,6 +8,7 @@ var _ = require('underscore');
 var async = require('async');
 
 //modules
+const messageRepository = require('./data/messageRepository');
 var errors = require('modules/error');
 var CommonService = require('modules/common');
 var logger = require('modules/logger');
@@ -22,10 +25,11 @@ var MESSAGE_TYPES = require('modules/message/constants/messageTypes');
 /* =========================================================================
  * Constructor
  * ========================================================================= */
-var MessageService = function() {
-  CommonService.call(this, Message);
+class MessageService extends CommonService {
+  constructor() {
+    super(messageRepository);
+  }
 };
-util.inherits(MessageService, CommonService);
 
 /**
  * @param {object} options

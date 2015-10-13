@@ -1,3 +1,5 @@
+'use strict';
+
 /* =========================================================================
  * Dependencies
  * ========================================================================= */
@@ -7,6 +9,7 @@ var async = require('async');
 var jsonPatch = require('fast-json-patch');
 
 //modules
+const needRepository = require('./data/needRepository');
 var errors = require('modules/error');
 var CommonService = require('modules/common');
 var skillService = require('modules/skill');
@@ -50,10 +53,11 @@ var UPDATEDABLE_NEED_PROPERTIES = [
 /* =========================================================================
  * Constructor
  * ========================================================================= */
-var NeedService = function() {
-  CommonService.call(this, Need);
+class NeedService extends CommonService {
+  constructor() {
+    super(needRepository);
+  }
 };
-util.inherits(NeedService, CommonService);
 
 /**
  * @param {object} options

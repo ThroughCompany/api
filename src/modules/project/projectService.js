@@ -1,3 +1,5 @@
+'use strict';
+
 /* =========================================================================
  * Dependencies
  * ========================================================================= */
@@ -7,6 +9,7 @@ var async = require('async');
 var jsonPatch = require('fast-json-patch');
 
 //modules
+const projectRepository = require('./data/projectRepository');
 var errors = require('modules/error');
 var CommonService = require('modules/common');
 var userService = require('modules/user');
@@ -57,10 +60,11 @@ var UPDATEDABLE_PROJECT_PROPERTIES = [
 /* =========================================================================
  * Constructor
  * ========================================================================= */
-var ProjectService = function() {
-  CommonService.call(this, Project);
+class ProjectService extends CommonService {
+  constructor() {
+    super(projectRepository);
+  }
 };
-util.inherits(ProjectService, CommonService);
 
 /**
  * @param {object} options

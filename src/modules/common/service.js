@@ -1,22 +1,32 @@
+'use strict';
+
 /* =========================================================================
  * Dependencies
  * ========================================================================= */
-var util = require('util');
-var events = require('events');
+const util = require('util');
+const EventEmitter = require('events').EventEmitter;
+
+const CommonRepository = require('./data/commonRepository');
 
 /* =========================================================================
  * Constructor
  * ========================================================================= */
-function CommonService(model) {
-  if (!model) throw new Error('model is required.');
+class CommonService extends EventEmitter {
+  constructor(repository) {
+    super();
 
-  events.EventEmitter.call(this);
+    if (!repository) {
+      console.warn('CommonService - repository is required');
+    }
+    if (!(repository instanceof CommonRepository)) {
+      console.warn('CommonService - repository is not an instanceof CommonRepository');
+    }
 
-  this.Model = model;
-  this.SKIP = 10;
-  this.LIMIT = 50;
+    this._repository = repository;
+    this.SKIP = 10;
+    this.LIMIT = 50;
+  }
 }
-util.inherits(CommonService, events.EventEmitter);
 
 /* =========================================================================
  * Expose

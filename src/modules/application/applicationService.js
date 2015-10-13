@@ -1,3 +1,5 @@
+'use strict';
+
 /* =========================================================================
  * Dependencies
  * ========================================================================= */
@@ -7,6 +9,7 @@ var async = require('async');
 var jsonPatch = require('fast-json-patch');
 
 //modules
+const applicationRepository = require('./data/applicationRepository');
 var errors = require('modules/error');
 var CommonService = require('modules/common');
 var userService = require('modules/user');
@@ -44,10 +47,11 @@ var UPDATEDABLE_APPLICATION_PROPERTIES = [
 /* =========================================================================
  * Constructor
  * ========================================================================= */
-var ApplicationService = function() {
-  CommonService.call(this, Application);
+class ApplicationService extends CommonService {
+  constructor() {
+    super(applicationRepository);
+  }
 };
-util.inherits(ApplicationService, CommonService);
 
 /**
  * @param {object} options
@@ -298,6 +302,7 @@ ApplicationService.prototype.update = function update(options, next) {
   var organization = null;
   var user = null;
   var project = null;
+  var patches;
 
   async.waterfall([
     function findEntityAndApplication(done) {

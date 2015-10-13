@@ -1,3 +1,5 @@
+'use strict';
+
 /* =========================================================================
  * Dependencies
  * ========================================================================= */
@@ -6,6 +8,7 @@ var _ = require('underscore');
 var async = require('async');
 
 //modules
+const projectUserRepository = require('./data/userRepository');
 var errors = require('modules/error');
 var CommonService = require('modules/common');
 var userService = require('modules/user');
@@ -24,10 +27,11 @@ var ROLES = require('modules/role/constants/roleNames');
 /* =========================================================================
  * Constructor
  * ========================================================================= */
-var ProjectUserService = function() {
-  CommonService.call(this, ProjectUser);
+class ProjectUserService extends CommonService {
+  constructor() {
+    super(projectUserRepository);
+  }
 };
-util.inherits(ProjectUserService, CommonService);
 
 /**
  * @param {object} options

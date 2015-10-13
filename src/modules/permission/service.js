@@ -1,3 +1,5 @@
+'use strict';
+
 /* =========================================================================
  * Dependencies
  * ========================================================================= */
@@ -6,6 +8,7 @@ var _ = require('underscore');
 var async = require('async');
 
 //modules
+const permissionRepository = require('./data/permissionRepository');
 var errors = require('modules/error');
 var CommonService = require('modules/common');
 
@@ -19,10 +22,11 @@ var Permission = require('./data/model');
  * Constructor
  * ========================================================================= */
 
-var PermissionService = function() {
-  CommonService.call(this, Permission);
+class PermissionService extends CommonService {
+  constructor() {
+    super(permissionRepository);
+  }
 };
-util.inherits(PermissionService, CommonService);
 
 /**
  * @param {object} options

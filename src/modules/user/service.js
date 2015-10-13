@@ -1,3 +1,5 @@
+'use strict';
+
 /* =========================================================================
  * Dependencies
  * ========================================================================= */
@@ -7,6 +9,7 @@ var async = require('async');
 var jsonPatch = require('fast-json-patch');
 
 //modules
+const userRepository = require('./data/userRepository');
 var errors = require('modules/error');
 var CommonService = require('modules/common');
 var imageService = require('modules/image');
@@ -48,10 +51,11 @@ var UPDATEDABLE_USER_PROPERTIES = [
 /* =========================================================================
  * Constructor
  * ========================================================================= */
-var UserService = function() {
-  CommonService.call(this, User);
+class UserService extends CommonService {
+  constructor() {
+    super(userRepository);
+  }
 };
-util.inherits(UserService, CommonService);
 
 /**
  * @param {object} options
